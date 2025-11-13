@@ -65,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     
                     // Establecer el tenant en el contexto
                     if (tenantId != null) {
-                        TenantContext.setCurrentTenant(tenantId);
+                        TenantContext.setTenantId(tenantId);
                         log.debug("Tenant {} establecido en el contexto", tenantId);
                     }
 
