@@ -5,11 +5,19 @@
   "java.saveActions.organizeImports": true,
   "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
   "java.format.settings.profile": "GoogleStyle",
+  "java.server.launchMode": "Standard",
+  "java.jdt.ls.java.home": "",
+  "java.configuration.runtimes": [],
+  "java.import.gradle.enabled": false,
+  "java.import.maven.enabled": true,
+
+  // IntelliCode - Desactivar si causa problemas
+  "java.intellicode.enabled": true,
+  "vsintellicode.java.completionsEnabled": true,
 
   // Spring Boot
   "spring-boot.ls.checkJVM": false,
   "spring.initializr.defaultLanguage": "Java",
-  "spring-boot.ls.java.home": "",
 
   // Editor
   "editor.formatOnSave": true,
@@ -88,18 +96,8 @@
     },
     "local": {
       "baseUrl": "http://localhost:8080"
-    },
-    "dev": {
-      "baseUrl": "https://dev.example.com"
-    },
-    "prod": {
-      "baseUrl": "https://api.example.com"
     }
   },
-
-  // Docker
-  "docker.images.label": "FullTag",
-  "docker.containers.label": "FullTag",
 
   // Spell Checker
   "cSpell.words": [
@@ -128,18 +126,5 @@
 
   // Markdown
   "markdown.preview.breaks": true,
-  "markdown.preview.linkify": true,
-
-  // Todo Tree
-  "todo-tree.general.tags": [
-    "TODO",
-    "FIXME",
-    "HACK",
-    "NOTE",
-    "XXX",
-    "BUG"
-  ],
-
-  // Checkstyle
-  "java.checkstyle.configuration": "${workspaceFolder}/backend/checkstyle.xml"
+  "markdown.preview.linkify": true
 }
