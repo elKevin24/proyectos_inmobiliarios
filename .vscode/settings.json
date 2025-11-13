@@ -74,12 +74,12 @@
   "git.enableSmartCommit": true,
 
   // PostgreSQL
-  "sqltools.useNodeRuntime": true,
+  "sqltools.useNodeRuntime": false,
   "sqltools.connections": [
     {
       "name": "PostgreSQL - Terrenos DB (Local)",
       "driver": "PostgreSQL",
-      "server": "localhost",
+      "server": "postgres",
       "port": 5432,
       "database": "terrenos_db",
       "username": "postgres",
