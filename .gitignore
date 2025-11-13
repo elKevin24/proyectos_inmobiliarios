@@ -3,6 +3,7 @@
 
 # Log file
 *.log
+logs/
 
 # BlueJ files
 *.ctxt
@@ -22,3 +23,39 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+.classpath
+.project
+.settings/
+
+# Base de datos
+*.db
+*.sqlite
+
+# Docker
+docker-compose.override.yml
+
+# Backups
+*.bak
+*.backup
+
+# Temporales
+*.tmp
+*.cache
