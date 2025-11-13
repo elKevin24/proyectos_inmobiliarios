@@ -1,0 +1,335 @@
+###
+# API Examples - Terrenos SaaS Backend
+# Usa la extensión REST Client de VS Code
+###
+
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Variables (se actualizan después de cada request)
+@accessToken =
+@refreshToken =
+@tenantId = 1
+@usuarioId = 1
+
+# ==========================================
+# HEALTH CHECK
+# ==========================================
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+Accept: application/json
+
+### API Info
+GET {{baseUrl}}/actuator/info
+Accept: application/json
+
+# ==========================================
+# AUTHENTICATION
+# ==========================================
+
+### 1. Login (obtener token JWT)
+# @name login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### 2. Refresh Token
+# @name refresh
+POST {{baseUrl}}/api/v1/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 3. Logout
+POST {{baseUrl}}/api/v1/auth/logout
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+# ==========================================
+# TENANTS
+# ==========================================
+
+### Registrar nuevo Tenant (empresa)
+# @name registerTenant
+POST {{baseUrl}}/api/v1/tenants/register
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Inmobiliaria Demo",
+  "email": "demo@inmobiliaria.com",
+  "telefono": "5551234567",
+  "direccion": "Av. Principal 123, CDMX",
+  "razonSocial": "Inmobiliaria Demo S.A. de C.V.",
+  "rfc": "IND123456789"
+}
+
+### Obtener información del Tenant actual
+GET {{baseUrl}}/api/v1/tenants/me
+Authorization: Bearer {{accessToken}}
+
+### Actualizar Tenant
+PUT {{baseUrl}}/api/v1/tenants/{{tenantId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Inmobiliaria Demo (Actualizada)",
+  "telefono": "5559876543"
+}
+
+# ==========================================
+# USUARIOS
+# ==========================================
+
+### Listar todos los usuarios del tenant
+GET {{baseUrl}}/api/v1/usuarios
+Authorization: Bearer {{accessToken}}
+
+### Obtener usuario por ID
+GET {{baseUrl}}/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{accessToken}}
+
+### Crear nuevo usuario
+# @name createUsuario
+POST {{baseUrl}}/api/v1/usuarios
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan.perez@example.com",
+  "password": "password123",
+  "telefono": "5551234567",
+  "roles": ["VENDEDOR"]
+}
+
+### Actualizar usuario
+PUT {{baseUrl}}/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Juan Carlos",
+  "apellido": "Pérez García",
+  "telefono": "5559876543"
+}
+
+### Desactivar usuario
+DELETE {{baseUrl}}/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# PROYECTOS
+# ==========================================
+
+### Listar proyectos
+GET {{baseUrl}}/api/v1/proyectos
+Authorization: Bearer {{accessToken}}
+
+### Obtener proyecto por ID
+GET {{baseUrl}}/api/v1/proyectos/1
+Authorization: Bearer {{accessToken}}
+
+### Crear proyecto
+# @name createProyecto
+POST {{baseUrl}}/api/v1/proyectos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Residencial Los Pinos",
+  "descripcion": "Desarrollo residencial de lujo con áreas verdes",
+  "direccion": "Carretera Federal México-Cuernavaca Km 42",
+  "ciudad": "Cuernavaca",
+  "estado": "Morelos",
+  "codigoPostal": "62000",
+  "latitud": 18.9186111,
+  "longitud": -99.2341667,
+  "tipoPrecio": "VARIABLE",
+  "precioBase": 500000.00,
+  "estado": "PLANIFICACION"
+}
+
+### Actualizar proyecto
+PUT {{baseUrl}}/api/v1/proyectos/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Residencial Los Pinos - Fase 1",
+  "estado": "EN_VENTA"
+}
+
+# ==========================================
+# TERRENOS
+# ==========================================
+
+### Listar terrenos
+GET {{baseUrl}}/api/v1/terrenos?proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Filtrar terrenos disponibles
+GET {{baseUrl}}/api/v1/terrenos?estado=DISPONIBLE&proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Obtener terreno por ID
+GET {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+
+### Crear terreno
+# @name createTerreno
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "A-001",
+  "manzana": "A",
+  "area": 200.50,
+  "frente": 10.5,
+  "fondo": 19.5,
+  "precioBase": 500000.00,
+  "precioAjuste": 50000.00,
+  "precioMultiplicador": 1.0,
+  "precioFinal": 550000.00,
+  "estado": "DISPONIBLE"
+}
+
+# ==========================================
+# COTIZACIONES
+# ==========================================
+
+### Listar cotizaciones
+GET {{baseUrl}}/api/v1/cotizaciones
+Authorization: Bearer {{accessToken}}
+
+### Crear cotización
+# @name createCotizacion
+POST {{baseUrl}}/api/v1/cotizaciones
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "clienteNombre": "María González",
+  "clienteEmail": "maria.gonzalez@example.com",
+  "clienteTelefono": "5551234567",
+  "precioBase": 550000.00,
+  "descuento": 10000.00,
+  "precioFinal": 540000.00,
+  "fechaVigencia": "2025-12-31",
+  "observaciones": "Cliente interesado en pago de contado"
+}
+
+# ==========================================
+# APARTADOS
+# ==========================================
+
+### Listar apartados
+GET {{baseUrl}}/api/v1/apartados
+Authorization: Bearer {{accessToken}}
+
+### Crear apartado
+# @name createApartado
+POST {{baseUrl}}/api/v1/apartados
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "clienteNombre": "Carlos Ramírez",
+  "clienteEmail": "carlos.ramirez@example.com",
+  "clienteTelefono": "5559876543",
+  "clienteDireccion": "Calle 5 #123, Colonia Centro",
+  "montoApartado": 50000.00,
+  "precioTotal": 550000.00,
+  "duracionDias": 30,
+  "observaciones": "Cliente solicita 30 días para tramitar crédito"
+}
+
+### Cancelar apartado
+PUT {{baseUrl}}/api/v1/apartados/1/cancelar
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "motivo": "Cliente decidió no continuar con la compra"
+}
+
+# ==========================================
+# VENTAS
+# ==========================================
+
+### Listar ventas
+GET {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+
+### Crear venta
+# @name createVenta
+POST {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "apartadoId": 1,
+  "compradorNombre": "Carlos Ramírez",
+  "compradorEmail": "carlos.ramirez@example.com",
+  "compradorTelefono": "5559876543",
+  "compradorDireccion": "Calle 5 #123, Colonia Centro",
+  "compradorRfc": "RAMC850615ABC",
+  "compradorCurp": "RAMC850615HDFLRR02",
+  "precioTotal": 550000.00,
+  "montoApartadoAcreditado": 50000.00,
+  "montoFinal": 500000.00,
+  "porcentajeComision": 3.0,
+  "montoComision": 15000.00,
+  "formaPago": "CREDITO_BANCARIO",
+  "observaciones": "Venta realizada con crédito hipotecario"
+}
+
+### Actualizar estado de venta
+PUT {{baseUrl}}/api/v1/ventas/1/estado
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "estado": "PAGADO",
+  "observaciones": "Pago completado el 13/11/2025"
+}
+
+# ==========================================
+# REPORTES
+# ==========================================
+
+### Reporte de Ventas
+GET {{baseUrl}}/api/v1/reportes/ventas?fechaInicio=2025-01-01&fechaFin=2025-12-31
+Authorization: Bearer {{accessToken}}
+
+### Reporte de Disponibilidad
+GET {{baseUrl}}/api/v1/reportes/disponibilidad?proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Reporte de Comisiones
+GET {{baseUrl}}/api/v1/reportes/comisiones?vendedorId={{usuarioId}}&mes=11&anio=2025
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# SWAGGER UI
+# ==========================================
+
+### Abrir Swagger UI
+# @name swagger
+GET {{baseUrl}}/swagger-ui.html
+
+### OpenAPI JSON
+GET {{baseUrl}}/api-docs

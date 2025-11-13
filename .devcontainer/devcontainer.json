@@ -1,0 +1,150 @@
+{
+  "name": "Terrenos SaaS - Backend Java 21",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  // Configuración de características
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "jdkDistro": "tem",
+      "installMaven": "true",
+      "mavenVersion": "3.9"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    }
+  },
+
+  // Configuración de VS Code
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Java
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-spring-boot-dashboard",
+        "vscjava.vscode-spring-initializr",
+        "vmware.vscode-boot-dev-pack",
+        "redhat.java",
+        "vscjava.vscode-maven",
+
+        // Spring Boot
+        "pivotal.vscode-spring-boot",
+        "vscjava.vscode-spring-boot-dashboard",
+
+        // Database
+        "ckolkman.vscode-postgres",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+
+        // Utilidades
+        "streetsidesoftware.code-spell-checker",
+        "esbenp.prettier-vscode",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+
+        // REST Client
+        "humao.rest-client",
+
+        // Markdown
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint"
+      ],
+
+      "settings": {
+        // Java
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-21",
+            "path": "/usr/local/sdkman/candidates/java/current",
+            "default": true
+          }
+        ],
+        "java.compile.nullAnalysis.mode": "automatic",
+        "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+
+        // Spring Boot
+        "spring-boot.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+        "spring.initializr.defaultLanguage": "Java",
+
+        // Editor
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+
+        // Files
+        "files.exclude": {
+          "**/.git": true,
+          "**/.DS_Store": true,
+          "**/target": true,
+          "**/.idea": true,
+          "**/*.iml": true
+        },
+
+        // Terminal
+        "terminal.integrated.defaultProfile.linux": "bash",
+
+        // PostgreSQL
+        "sqltools.connections": [
+          {
+            "name": "PostgreSQL - Terrenos DB",
+            "driver": "PostgreSQL",
+            "server": "postgres",
+            "port": 5432,
+            "database": "terrenos_db",
+            "username": "postgres",
+            "password": "postgres"
+          }
+        ]
+      }
+    }
+  },
+
+  // Comandos al crear el container
+  "postCreateCommand": "cd backend && mvn clean install -DskipTests",
+
+  // Comandos al iniciar el container
+  "postStartCommand": "git config --global --add safe.directory /workspace",
+
+  // Port forwarding
+  "forwardPorts": [
+    8080,  // Spring Boot
+    5432,  // PostgreSQL
+    5050   // pgAdmin
+  ],
+
+  "portsAttributes": {
+    "8080": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "5050": {
+      "label": "pgAdmin",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // Usuario remoto
+  "remoteUser": "vscode",
+
+  // Variables de entorno
+  "containerEnv": {
+    "SPRING_PROFILES_ACTIVE": "dev"
+  }
+}

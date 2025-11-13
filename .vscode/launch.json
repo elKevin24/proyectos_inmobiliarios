@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug Backend (Spring Boot)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "mainClass": "com.inmobiliaria.terrenos.TerrenosSaasApplication",
+      "projectName": "terrenos-backend",
+      "args": "",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "vmArgs": "-Dspring.profiles.active=dev",
+      "console": "internalConsole",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "java",
+      "name": "Debug Backend (Production Profile)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "mainClass": "com.inmobiliaria.terrenos.TerrenosSaasApplication",
+      "projectName": "terrenos-backend",
+      "args": "",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "vmArgs": "-Dspring.profiles.active=prod",
+      "console": "internalConsole",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "java",
+      "name": "Debug Single Test",
+      "request": "launch",
+      "mainClass": "",
+      "projectName": "terrenos-backend",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "internalConsole",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "java",
+      "name": "Attach to Remote JVM",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005
+    }
+  ]
+}

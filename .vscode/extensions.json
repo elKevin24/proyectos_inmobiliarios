@@ -1,0 +1,49 @@
+{
+  "recommendations": [
+    // Java
+    "vscjava.vscode-java-pack",
+    "vscjava.vscode-maven",
+    "redhat.java",
+    "vscjava.vscode-java-test",
+    "vscjava.vscode-java-debug",
+    "vscjava.vscode-java-dependency",
+
+    // Spring Boot
+    "vmware.vscode-spring-boot",
+    "vscjava.vscode-spring-boot-dashboard",
+    "vscjava.vscode-spring-initializr",
+
+    // Database
+    "ckolkman.vscode-postgres",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+
+    // Docker
+    "ms-azuretools.vscode-docker",
+
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "github.vscode-pull-request-github",
+
+    // REST/API
+    "humao.rest-client",
+    "42crunch.vscode-openapi",
+
+    // Markdown
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+
+    // Utilidades
+    "streetsidesoftware.code-spell-checker",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "ms-vscode.makefile-tools",
+    "gruntfuggly.todo-tree",
+    "wayou.vscode-todo-highlight",
+
+    // Code Quality
+    "sonarsource.sonarlint-vscode",
+    "shengchen.vscode-checkstyle"
+  ]
+}

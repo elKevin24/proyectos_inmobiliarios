@@ -1,0 +1,145 @@
+{
+  // Java
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.saveActions.organizeImports": true,
+  "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+  "java.format.settings.profile": "GoogleStyle",
+
+  // Spring Boot
+  "spring-boot.ls.checkJVM": false,
+  "spring.initializr.defaultLanguage": "Java",
+  "spring-boot.ls.java.home": "",
+
+  // Editor
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.rulers": [120],
+  "editor.suggestSelection": "first",
+
+  // Files
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/target": true,
+    "**/.idea": true,
+    "**/*.iml": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true
+  },
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true
+  },
+  "files.associations": {
+    "*.sql": "sql",
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // Search
+  "search.exclude": {
+    "**/target": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.git": true
+  },
+
+  // Terminal
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // Git
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+
+  // PostgreSQL
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "name": "PostgreSQL - Terrenos DB (Local)",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "terrenos_db",
+      "username": "postgres",
+      "password": "postgres",
+      "askForPassword": false
+    }
+  ],
+
+  // REST Client
+  "rest-client.environmentVariables": {
+    "$shared": {
+      "baseUrl": "http://localhost:8080",
+      "contentType": "application/json"
+    },
+    "local": {
+      "baseUrl": "http://localhost:8080"
+    },
+    "dev": {
+      "baseUrl": "https://dev.example.com"
+    },
+    "prod": {
+      "baseUrl": "https://api.example.com"
+    }
+  },
+
+  // Docker
+  "docker.images.label": "FullTag",
+  "docker.containers.label": "FullTag",
+
+  // Spell Checker
+  "cSpell.words": [
+    "terrenos",
+    "inmobiliaria",
+    "apartado",
+    "apartados",
+    "cotizacion",
+    "cotizaciones",
+    "lote",
+    "lotes",
+    "manzana",
+    "venta",
+    "ventas",
+    "proyecto",
+    "proyectos",
+    "fase",
+    "fases",
+    "tenant",
+    "tenants",
+    "postgres",
+    "flyway",
+    "lombok",
+    "mapstruct"
+  ],
+
+  // Markdown
+  "markdown.preview.breaks": true,
+  "markdown.preview.linkify": true,
+
+  // Todo Tree
+  "todo-tree.general.tags": [
+    "TODO",
+    "FIXME",
+    "HACK",
+    "NOTE",
+    "XXX",
+    "BUG"
+  ],
+
+  // Checkstyle
+  "java.checkstyle.configuration": "${workspaceFolder}/backend/checkstyle.xml"
+}
