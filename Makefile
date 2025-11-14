@@ -10,9 +10,7 @@ YELLOW := \033[0;33m
 NC     := \033[0m # No Color
 
 # Variables
-BACKEND_DIR := backend
 DOCKER_COMPOSE := docker-compose
-DOCKER_COMPOSE_BACKEND := $(BACKEND_DIR)/docker-compose.yml
 
 ##@ General
 
@@ -24,57 +22,57 @@ help: ## Mostrar esta ayuda
 
 backend-build: ## Compilar el backend
 	@echo "$(GREEN)🏗️  Compilando backend...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw clean package -DskipTests
+	./mvnw clean package -DskipTests
 
 backend-run: ## Ejecutar el backend
 	@echo "$(GREEN)🚀 Ejecutando backend...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw spring-boot:run
+	./mvnw spring-boot:run
 
 backend-test: ## Ejecutar tests del backend
 	@echo "$(GREEN)🧪 Ejecutando tests...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw test
+	./mvnw test
 
 backend-test-integration: ## Ejecutar tests de integración
 	@echo "$(GREEN)🧪 Ejecutando tests de integración...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw verify
+	./mvnw verify
 
 backend-clean: ## Limpiar archivos compilados
 	@echo "$(GREEN)🧹 Limpiando...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw clean
+	./mvnw clean
 
 backend-install: ## Instalar dependencias
 	@echo "$(GREEN)📦 Instalando dependencias...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw clean install
+	./mvnw clean install
 
 backend-format: ## Formatear código
 	@echo "$(GREEN)✨ Formateando código...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw spotless:apply
+	./mvnw spotless:apply
 
 ##@ Docker
 
 docker-up: ## Levantar servicios Docker (PostgreSQL + pgAdmin)
 	@echo "$(GREEN)🐳 Levantando servicios Docker...$(NC)"
-	cd $(BACKEND_DIR) && $(DOCKER_COMPOSE) up -d
+	$(DOCKER_COMPOSE) up -d
 
 docker-down: ## Detener servicios Docker
 	@echo "$(GREEN)🛑 Deteniendo servicios Docker...$(NC)"
-	cd $(BACKEND_DIR) && $(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) down
 
 docker-logs: ## Ver logs de Docker
 	@echo "$(GREEN)📋 Logs de Docker:$(NC)"
-	cd $(BACKEND_DIR) && $(DOCKER_COMPOSE) logs -f
+	$(DOCKER_COMPOSE) logs -f
 
 docker-ps: ## Ver estado de contenedores
 	@echo "$(GREEN)📊 Estado de contenedores:$(NC)"
-	cd $(BACKEND_DIR) && $(DOCKER_COMPOSE) ps
+	$(DOCKER_COMPOSE) ps
 
 docker-clean: ## Limpiar volúmenes de Docker
 	@echo "$(YELLOW)⚠️  Limpiando volúmenes de Docker (se perderán los datos)...$(NC)"
-	cd $(BACKEND_DIR) && $(DOCKER_COMPOSE) down -v
+	$(DOCKER_COMPOSE) down -v
 
 docker-restart: ## Reiniciar servicios Docker
 	@echo "$(GREEN)🔄 Reiniciando servicios Docker...$(NC)"
-	cd $(BACKEND_DIR) && $(DOCKER_COMPOSE) restart
+	$(DOCKER_COMPOSE) restart
 
 ##@ Database
 
@@ -84,15 +82,15 @@ db-connect: ## Conectar a PostgreSQL
 
 db-migrate: ## Ejecutar migraciones Flyway
 	@echo "$(GREEN)📊 Ejecutando migraciones...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw flyway:migrate
+	./mvnw flyway:migrate
 
 db-info: ## Ver información de migraciones
 	@echo "$(GREEN)ℹ️  Información de migraciones:$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw flyway:info
+	./mvnw flyway:info
 
 db-reset: ## Limpiar y recrear base de datos
 	@echo "$(YELLOW)⚠️  Limpiando base de datos...$(NC)"
-	cd $(BACKEND_DIR) && ./mvnw flyway:clean flyway:migrate
+	./mvnw flyway:clean flyway:migrate
 
 ##@ Development
 

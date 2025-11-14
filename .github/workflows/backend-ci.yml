@@ -4,12 +4,14 @@ on:
   push:
     branches: [ main, develop, 'claude/**' ]
     paths:
-      - 'backend/**'
+      - 'src/**'
+      - 'pom.xml'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'backend/**'
+      - 'src/**'
+      - 'pom.xml'
 
 jobs:
   # ==========================================
@@ -22,10 +24,6 @@ jobs:
     strategy:
       matrix:
         java: [ '21' ]
-
-    defaults:
-      run:
-        working-directory: ./backend
 
     steps:
       - name: 📥 Checkout code
@@ -64,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-java-${{ matrix.java }}
-          path: backend/target/surefire-reports/
+          path: target/surefire-reports/
 
       - name: 🐳 Run Integration Tests (Testcontainers)
         run: mvn verify -B
@@ -78,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar-java-${{ matrix.java }}
-          path: backend/target/*.jar
+          path: target/*.jar
           retention-days: 7
 
   # ==========================================
@@ -88,10 +86,6 @@ jobs:
     name: Code Quality & Security Scan
     runs-on: ubuntu-latest
     needs: build-and-test
-
-    defaults:
-      run:
-        working-directory: ./backend
 
     steps:
       - name: 📥 Checkout code
@@ -119,7 +113,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: security-report
-          path: backend/target/dependency-check-report.html
+          path: target/dependency-check-report.html
         continue-on-error: true
 
   # ==========================================
@@ -151,8 +145,8 @@ jobs:
       - name: 🏗️ Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

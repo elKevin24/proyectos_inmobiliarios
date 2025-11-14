@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "TerrenosSaasApplication",
+      "request": "launch",
+      "mainClass": "com.inmobiliaria.terrenos.TerrenosSaasApplication",
+      "projectName": ""
+    },
+    {
+      "type": "java",
       "name": "Debug Backend (Spring Boot)",
       "request": "launch",
       "cwd": "${workspaceFolder}/backend",
