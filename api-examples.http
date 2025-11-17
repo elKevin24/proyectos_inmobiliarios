@@ -148,8 +148,20 @@ Authorization: Bearer {{accessToken}}
 # PROYECTOS
 # ==========================================
 
-### Listar proyectos
+### Listar todos los proyectos
 GET {{baseUrl}}/api/v1/proyectos
+Authorization: Bearer {{accessToken}}
+
+### Listar proyectos activos (en venta)
+GET {{baseUrl}}/api/v1/proyectos?activos=true
+Authorization: Bearer {{accessToken}}
+
+### Listar proyectos con terrenos disponibles
+GET {{baseUrl}}/api/v1/proyectos?disponibles=true
+Authorization: Bearer {{accessToken}}
+
+### Listar proyectos por estado
+GET {{baseUrl}}/api/v1/proyectos?estado=EN_VENTA
 Authorization: Bearer {{accessToken}}
 
 ### Obtener proyecto por ID
@@ -164,7 +176,7 @@ Content-Type: {{contentType}}
 
 {
   "nombre": "Residencial Los Pinos",
-  "descripcion": "Desarrollo residencial de lujo con áreas verdes",
+  "descripcion": "Desarrollo residencial de lujo con áreas verdes, alberca, casa club y seguridad 24/7",
   "direccion": "Carretera Federal México-Cuernavaca Km 42",
   "ciudad": "Cuernavaca",
   "estado": "Morelos",
@@ -173,7 +185,10 @@ Content-Type: {{contentType}}
   "longitud": -99.2341667,
   "tipoPrecio": "VARIABLE",
   "precioBase": 500000.00,
-  "estado": "PLANIFICACION"
+  "precioMaximo": 1200000.00,
+  "totalTerrenos": 50,
+  "terrenosDisponibles": 50,
+  "estadoProyecto": "PLANIFICACION"
 }
 
 ### Actualizar proyecto
@@ -183,8 +198,21 @@ Content-Type: {{contentType}}
 
 {
   "nombre": "Residencial Los Pinos - Fase 1",
-  "estado": "EN_VENTA"
+  "descripcion": "Primera fase del desarrollo con 50 lotes premium",
+  "precioBase": 550000.00
 }
+
+### Cambiar estado del proyecto a EN_VENTA
+PATCH {{baseUrl}}/api/v1/proyectos/1/estado?estado=EN_VENTA
+Authorization: Bearer {{accessToken}}
+
+### Cambiar estado del proyecto a FINALIZADO
+PATCH {{baseUrl}}/api/v1/proyectos/1/estado?estado=FINALIZADO
+Authorization: Bearer {{accessToken}}
+
+### Eliminar proyecto
+DELETE {{baseUrl}}/api/v1/proyectos/1
+Authorization: Bearer {{accessToken}}
 
 # ==========================================
 # TERRENOS
