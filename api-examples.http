@@ -28,17 +28,54 @@ Accept: application/json
 # AUTHENTICATION
 # ==========================================
 
-### 1. Login (obtener token JWT)
+### 1. Registrar Nueva Empresa (Tenant) con Usuario Admin
+# IMPORTANTE: Ejecuta esto primero para crear una empresa y obtener tokens
+# @name register
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "nombreEmpresa": "Inmobiliaria Los Pinos",
+  "emailEmpresa": "contacto@inmobiliaria-pinos.com",
+  "telefonoEmpresa": "5551234567",
+  "direccionEmpresa": "Av. Reforma 123, CDMX",
+  "razonSocial": "Inmobiliaria Los Pinos S.A. de C.V.",
+  "rfc": "ILP230101ABC",
+  "nombre": "Carlos",
+  "apellido": "Mendoza",
+  "email": "carlos.mendoza@inmobiliaria-pinos.com",
+  "password": "Admin123!",
+  "telefono": "5559876543"
+}
+
+# Respuesta esperada:
+# {
+#   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5...",
+#   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5...",
+#   "tokenType": "Bearer",
+#   "expiresIn": 86400000,
+#   "userInfo": {
+#     "id": 1,
+#     "nombre": "Carlos Mendoza",
+#     "email": "carlos.mendoza@inmobiliaria-pinos.com",
+#     "tenantId": 1,
+#     "tenantNombre": "Inmobiliaria Los Pinos"
+#   }
+# }
+
+### 2. Login (obtener token JWT)
+# Usa las credenciales del usuario creado en el registro
 # @name login
 POST {{baseUrl}}/api/v1/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "admin@example.com",
-  "password": "password123"
+  "email": "carlos.mendoza@inmobiliaria-pinos.com",
+  "password": "Admin123!"
 }
 
-### 2. Refresh Token
+### 3. Refresh Token
+# Usa el refreshToken obtenido del login o registro
 # @name refresh
 POST {{baseUrl}}/api/v1/auth/refresh
 Content-Type: {{contentType}}
@@ -47,28 +84,9 @@ Content-Type: {{contentType}}
   "refreshToken": "{{refreshToken}}"
 }
 
-### 3. Logout
-POST {{baseUrl}}/api/v1/auth/logout
-Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
-
 # ==========================================
 # TENANTS
 # ==========================================
-
-### Registrar nuevo Tenant (empresa)
-# @name registerTenant
-POST {{baseUrl}}/api/v1/tenants/register
-Content-Type: {{contentType}}
-
-{
-  "nombre": "Inmobiliaria Demo",
-  "email": "demo@inmobiliaria.com",
-  "telefono": "5551234567",
-  "direccion": "Av. Principal 123, CDMX",
-  "razonSocial": "Inmobiliaria Demo S.A. de C.V.",
-  "rfc": "IND123456789"
-}
 
 ### Obtener información del Tenant actual
 GET {{baseUrl}}/api/v1/tenants/me
