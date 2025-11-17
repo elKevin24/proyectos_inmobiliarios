@@ -299,6 +299,75 @@ DELETE {{baseUrl}}/api/v1/terrenos/1
 Authorization: Bearer {{accessToken}}
 
 # ==========================================
+# FASES
+# ==========================================
+
+### Listar todas las fases
+GET {{baseUrl}}/api/v1/fases
+Authorization: Bearer {{accessToken}}
+
+### Listar fases por proyecto
+GET {{baseUrl}}/api/v1/fases?proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Listar fases activas de un proyecto
+GET {{baseUrl}}/api/v1/fases?proyectoId=1&activas=true
+Authorization: Bearer {{accessToken}}
+
+### Obtener fase por ID
+GET {{baseUrl}}/api/v1/fases/1
+Authorization: Bearer {{accessToken}}
+
+### Crear fase
+# @name createFase
+POST {{baseUrl}}/api/v1/fases
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "nombre": "Fase 1 - Residencial",
+  "descripcion": "Primera fase del desarrollo con lotes premium",
+  "numeroFase": 1,
+  "totalTerrenos": 25,
+  "areaTotal": 5000.00,
+  "fechaInicio": "2025-01-15",
+  "fechaFinEstimada": "2025-12-31",
+  "observaciones": "Incluye obras de urbanización",
+  "activa": true
+}
+
+### Crear Fase 2
+POST {{baseUrl}}/api/v1/fases
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "nombre": "Fase 2 - Comercial",
+  "descripcion": "Segunda fase con lotes comerciales",
+  "numeroFase": 2,
+  "totalTerrenos": 15,
+  "fechaInicio": "2026-01-01",
+  "activa": false
+}
+
+### Actualizar fase
+PUT {{baseUrl}}/api/v1/fases/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Primera fase del desarrollo con lotes premium y áreas verdes",
+  "fechaFinEstimada": "2026-06-30",
+  "observaciones": "Plazo extendido por obras adicionales"
+}
+
+### Eliminar fase
+DELETE {{baseUrl}}/api/v1/fases/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
 # COTIZACIONES
 # ==========================================
 
