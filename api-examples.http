@@ -218,12 +218,20 @@ Authorization: Bearer {{accessToken}}
 # TERRENOS
 # ==========================================
 
-### Listar terrenos
+### Listar todos los terrenos
+GET {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+
+### Listar terrenos por proyecto
 GET {{baseUrl}}/api/v1/terrenos?proyectoId=1
 Authorization: Bearer {{accessToken}}
 
-### Filtrar terrenos disponibles
-GET {{baseUrl}}/api/v1/terrenos?estado=DISPONIBLE&proyectoId=1
+### Listar terrenos disponibles de un proyecto
+GET {{baseUrl}}/api/v1/terrenos?proyectoId=1&disponibles=true
+Authorization: Bearer {{accessToken}}
+
+### Listar terrenos por estado
+GET {{baseUrl}}/api/v1/terrenos?estado=DISPONIBLE
 Authorization: Bearer {{accessToken}}
 
 ### Obtener terreno por ID
@@ -246,9 +254,49 @@ Content-Type: {{contentType}}
   "precioBase": 500000.00,
   "precioAjuste": 50000.00,
   "precioMultiplicador": 1.0,
-  "precioFinal": 550000.00,
-  "estado": "DISPONIBLE"
+  "caracteristicas": "Esquina, vista panorámica",
+  "observaciones": "Lote premium en zona residencial"
 }
+
+### Crear múltiples terrenos (lote B)
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "B-001",
+  "manzana": "B",
+  "area": 180.00,
+  "frente": 9.0,
+  "fondo": 20.0,
+  "precioBase": 450000.00,
+  "precioAjuste": 0.00,
+  "precioMultiplicador": 1.0
+}
+
+### Actualizar terreno
+PUT {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "precioBase": 520000.00,
+  "caracteristicas": "Esquina, vista panorámica, cerca de área verde",
+  "observaciones": "Precio actualizado por plusvalía"
+}
+
+### Cambiar estado del terreno a APARTADO
+PATCH {{baseUrl}}/api/v1/terrenos/1/estado?estado=APARTADO
+Authorization: Bearer {{accessToken}}
+
+### Cambiar estado del terreno a VENDIDO
+PATCH {{baseUrl}}/api/v1/terrenos/1/estado?estado=VENDIDO
+Authorization: Bearer {{accessToken}}
+
+### Eliminar terreno
+DELETE {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
 
 # ==========================================
 # COTIZACIONES
