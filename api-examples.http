@@ -909,6 +909,217 @@ DELETE {{baseUrl}}/api/v1/clientes/1
 Authorization: Bearer {{accessToken}}
 
 # ==========================================
+# PLANES DE PAGO Y PAGOS
+# ==========================================
+
+### Listar planes de pago
+GET {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+
+### Obtener plan de pago por ID
+GET {{baseUrl}}/api/v1/planes-pago/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener plan de pago por venta
+GET {{baseUrl}}/api/v1/planes-pago/venta/1
+Authorization: Bearer {{accessToken}}
+
+### Crear plan de pago CON INTERÉS (Financiamiento)
+# Crea un plan de pago con interés del 12% anual
+# y genera automáticamente la tabla de amortización
+POST {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "ventaId": 1,
+  "tipoPlan": "FINANCIAMIENTO_PROPIO",
+  "frecuenciaPago": "MENSUAL",
+  "montoTotal": 500000.00,
+  "enganche": 100000.00,
+  "tasaInteresAnual": 12.00,
+  "aplicaInteres": true,
+  "numeroPagos": 24,
+  "plazoMeses": 24,
+  "tasaMoraMensual": 2.50,
+  "diasGracia": 5,
+  "fechaInicio": "2025-01-15",
+  "fechaPrimerPago": "2025-02-15",
+  "notas": "Plan de financiamiento a 2 años con 12% de interés anual"
+}
+
+### Crear plan de pago SIN INTERÉS (Pago en parcialidades)
+# Crea un plan de pago sin interés
+POST {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "ventaId": 2,
+  "tipoPlan": "FINANCIAMIENTO_PROPIO",
+  "frecuenciaPago": "MENSUAL",
+  "montoTotal": 300000.00,
+  "enganche": 50000.00,
+  "tasaInteresAnual": 0.00,
+  "aplicaInteres": false,
+  "numeroPagos": 12,
+  "plazoMeses": 12,
+  "tasaMoraMensual": 2.00,
+  "diasGracia": 3,
+  "fechaInicio": "2025-01-20",
+  "fechaPrimerPago": "2025-02-20",
+  "notas": "Plan sin interés a 12 meses"
+}
+
+### Crear plan de pago DE CONTADO
+POST {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "ventaId": 3,
+  "tipoPlan": "CONTADO",
+  "frecuenciaPago": "MENSUAL",
+  "montoTotal": 400000.00,
+  "enganche": 400000.00,
+  "tasaInteresAnual": 0.00,
+  "aplicaInteres": false,
+  "numeroPagos": 1,
+  "plazoMeses": 1,
+  "tasaMoraMensual": 0.00,
+  "diasGracia": 0,
+  "fechaInicio": "2025-01-10",
+  "fechaPrimerPago": "2025-01-10",
+  "notas": "Pago de contado total"
+}
+
+### Actualizar plan de pago (solo campos permitidos)
+# Solo se pueden modificar: tasaMoraMensual, diasGracia, notas
+PUT {{baseUrl}}/api/v1/planes-pago/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "tasaMoraMensual": 3.00,
+  "diasGracia": 7,
+  "notas": "Se aumentó días de gracia a 7 días por solicitud del cliente"
+}
+
+### Obtener tabla de amortización completa
+# Muestra todas las cuotas con capital, interés, fecha de vencimiento, etc.
+GET {{baseUrl}}/api/v1/planes-pago/1/tabla-amortizacion
+Authorization: Bearer {{accessToken}}
+
+### Obtener estado de cuenta completo
+# Incluye: plan de pago, tabla de amortización, historial de pagos,
+# resumen financiero, cuotas vencidas, próximos pagos
+GET {{baseUrl}}/api/v1/planes-pago/1/estado-cuenta
+Authorization: Bearer {{accessToken}}
+
+### Registrar pago en EFECTIVO
+# El sistema aplica el pago automáticamente a las cuotas más antiguas
+# Distribución: mora → interés → capital
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-02-15",
+  "montoPagado": 20000.00,
+  "metodoPago": "EFECTIVO",
+  "observaciones": "Pago de la cuota 1"
+}
+
+### Registrar pago por TRANSFERENCIA
+# Requiere referencia de pago
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-03-15",
+  "montoPagado": 20000.00,
+  "metodoPago": "TRANSFERENCIA",
+  "referenciaPago": "TRF-20250315-001234",
+  "observaciones": "Pago de la cuota 2 vía transferencia BBVA"
+}
+
+### Registrar pago por CHEQUE
+# Requiere referencia de pago (número de cheque)
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-04-15",
+  "montoPagado": 20000.00,
+  "metodoPago": "CHEQUE",
+  "referenciaPago": "CHQ-987654",
+  "observaciones": "Pago con cheque Banamex"
+}
+
+### Registrar pago a amortización específica
+# En lugar de aplicar automáticamente, se aplica a una cuota específica
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "amortizacionId": 5,
+  "fechaPago": "2025-05-01",
+  "montoPagado": 10000.00,
+  "metodoPago": "EFECTIVO",
+  "observaciones": "Pago parcial a cuota 5"
+}
+
+### Registrar pago con comprobante
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-06-15",
+  "montoPagado": 25000.00,
+  "metodoPago": "TARJETA_CREDITO",
+  "comprobanteRuta": "/uploads/comprobantes/2025/06/pago-001.pdf",
+  "observaciones": "Pago con tarjeta Visa terminación 4321"
+}
+
+### Ejemplo: Pago ADELANTADO (varias cuotas)
+# Un pago de 60,000 cubre 3 cuotas de 20,000 c/u
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-02-15",
+  "montoPagado": 60000.00,
+  "metodoPago": "TRANSFERENCIA",
+  "referenciaPago": "TRF-20250215-ADELANTO",
+  "observaciones": "Pago adelantado de 3 cuotas"
+}
+
+### Ejemplo: Pago ATRASADO con MORA
+# Si hay cuotas vencidas, primero se paga la mora acumulada
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-04-01",
+  "montoPagado": 22500.00,
+  "metodoPago": "EFECTIVO",
+  "observaciones": "Pago de cuota vencida más mora"
+}
+
+# ==========================================
 # SWAGGER UI
 # ==========================================
 
