@@ -1,0 +1,72 @@
+.ventas-container {
+  max-width: 1400px;
+}
+
+.ventas-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ventas-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ventas-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.ventas-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ventas-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.ventas-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.ventas-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.ventas-table td.monto {
+  font-weight: 600;
+  color: #27ae60;
+}
+
+.badge-pendiente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-pagado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge-cancelado {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+@media (max-width: 768px) {
+  .ventas-table-container {
+    overflow-x: auto;
+  }
+
+  .ventas-table {
+    min-width: 800px;
+  }
+}
