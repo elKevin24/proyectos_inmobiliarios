@@ -27,6 +27,9 @@ import ClienteForm from './pages/ClienteForm';
 import ApartadosList from './pages/ApartadosList';
 import ApartadoForm from './pages/ApartadoForm';
 import ApartadoDetail from './pages/ApartadoDetail';
+import CotizacionesList from './pages/CotizacionesList';
+import CotizacionForm from './pages/CotizacionForm';
+import CotizacionDetail from './pages/CotizacionDetail';
 
 import './App.css';
 
@@ -83,6 +86,11 @@ function App() {
           <Route path="apartados" element={<ApartadosList />} />
           <Route path="apartados/nuevo" element={<ApartadoForm />} />
           <Route path="apartados/:id" element={<ApartadoDetail />} />
+
+          {/* Cotizaciones */}
+          <Route path="cotizaciones" element={<CotizacionesList />} />
+          <Route path="cotizaciones/nueva" element={<CotizacionForm />} />
+          <Route path="cotizaciones/:id" element={<CotizacionDetail />} />
         </Route>
 
         {/* Redirect any unknown route to home */}
