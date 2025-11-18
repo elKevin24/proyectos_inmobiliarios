@@ -5,6 +5,12 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/terrenos_db}
     username: ${DATABASE_USERNAME:postgres}
@@ -100,6 +106,21 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
   show-actuator: true
+
+# File Storage
+file:
+  storage:
+    upload-dir: ${FILE_UPLOAD_DIR:uploads}
+    max-file-size: 10485760 # 10MB
+    allowed-extensions:
+      - pdf
+      - png
+      - jpg
+      - jpeg
+      - dwg
+      - dxf
+      - doc
+      - docx
 
 ---
 # Perfil de desarrollo

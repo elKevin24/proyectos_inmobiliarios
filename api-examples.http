@@ -552,93 +552,181 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/api/v1/reportes/proyectos/1
 Authorization: Bearer {{accessToken}}
 
-### Listar apartados
-GET {{baseUrl}}/api/v1/apartados
-Authorization: Bearer {{accessToken}}
-
-### Crear apartado
-# @name createApartado
-POST {{baseUrl}}/api/v1/apartados
-Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
-
-{
-  "terrenoId": 1,
-  "clienteNombre": "Carlos Ramírez",
-  "clienteEmail": "carlos.ramirez@example.com",
-  "clienteTelefono": "5559876543",
-  "clienteDireccion": "Calle 5 #123, Colonia Centro",
-  "montoApartado": 50000.00,
-  "precioTotal": 550000.00,
-  "duracionDias": 30,
-  "observaciones": "Cliente solicita 30 días para tramitar crédito"
-}
-
-### Cancelar apartado
-PUT {{baseUrl}}/api/v1/apartados/1/cancelar
-Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
-
-{
-  "motivo": "Cliente decidió no continuar con la compra"
-}
-
 # ==========================================
-# VENTAS
+# ARCHIVOS (File Management)
 # ==========================================
 
-### Listar ventas
-GET {{baseUrl}}/api/v1/ventas
+### Listar todos los archivos del tenant
+GET {{baseUrl}}/api/v1/archivos
 Authorization: Bearer {{accessToken}}
 
-### Crear venta
-# @name createVenta
-POST {{baseUrl}}/api/v1/ventas
-Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
-
-{
-  "terrenoId": 1,
-  "apartadoId": 1,
-  "compradorNombre": "Carlos Ramírez",
-  "compradorEmail": "carlos.ramirez@example.com",
-  "compradorTelefono": "5559876543",
-  "compradorDireccion": "Calle 5 #123, Colonia Centro",
-  "compradorRfc": "RAMC850615ABC",
-  "compradorCurp": "RAMC850615HDFLRR02",
-  "precioTotal": 550000.00,
-  "montoApartadoAcreditado": 50000.00,
-  "montoFinal": 500000.00,
-  "porcentajeComision": 3.0,
-  "montoComision": 15000.00,
-  "formaPago": "CREDITO_BANCARIO",
-  "observaciones": "Venta realizada con crédito hipotecario"
-}
-
-### Actualizar estado de venta
-PUT {{baseUrl}}/api/v1/ventas/1/estado
-Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
-
-{
-  "estado": "PAGADO",
-  "observaciones": "Pago completado el 13/11/2025"
-}
-
-# ==========================================
-# REPORTES
-# ==========================================
-
-### Reporte de Ventas
-GET {{baseUrl}}/api/v1/reportes/ventas?fechaInicio=2025-01-01&fechaFin=2025-12-31
+### Listar archivos por proyecto
+GET {{baseUrl}}/api/v1/archivos?proyectoId=1
 Authorization: Bearer {{accessToken}}
 
-### Reporte de Disponibilidad
-GET {{baseUrl}}/api/v1/reportes/disponibilidad?proyectoId=1
+### Listar archivos por terreno
+GET {{baseUrl}}/api/v1/archivos?terrenoId=1
 Authorization: Bearer {{accessToken}}
 
-### Reporte de Comisiones
-GET {{baseUrl}}/api/v1/reportes/comisiones?vendedorId={{usuarioId}}&mes=11&anio=2025
+### Listar archivos por tipo
+GET {{baseUrl}}/api/v1/archivos?tipo=PLANO_PROYECTO
+Authorization: Bearer {{accessToken}}
+
+### Listar archivos por proyecto y tipo
+GET {{baseUrl}}/api/v1/archivos?proyectoId=1&tipo=IMAGEN_PROYECTO
+Authorization: Bearer {{accessToken}}
+
+### Obtener archivo por ID
+GET {{baseUrl}}/api/v1/archivos/1
+Authorization: Bearer {{accessToken}}
+
+### Subir plano de proyecto (PDF)
+# NOTA: En VS Code REST Client, puedes usar < archivo.pdf para cargar un archivo
+# @name uploadPlanoProyecto
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="plano_proyecto_v1.pdf"
+Content-Type: application/pdf
+
+< /ruta/a/tu/plano_proyecto_v1.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+PLANO_PROYECTO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Plano maestro del proyecto - Versión 1
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir nueva versión del plano (v2)
+# El mismo nombre de archivo crea automáticamente una nueva versión
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="plano_proyecto_v1.pdf"
+Content-Type: application/pdf
+
+< /ruta/a/tu/plano_proyecto_v2.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+PLANO_PROYECTO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Plano actualizado con correcciones - Versión 2
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir imagen de proyecto (JPG)
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="render_proyecto.jpg"
+Content-Type: image/jpeg
+
+< /ruta/a/tu/render_proyecto.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+IMAGEN_PROYECTO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Render 3D del proyecto
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir plano de terreno (DWG)
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="lote_a001.dwg"
+Content-Type: application/acad
+
+< /ruta/a/tu/lote_a001.dwg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+PLANO_TERRENO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="terrenoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Plano arquitectónico del lote A-001
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir documento de venta (PDF)
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="contrato_venta.pdf"
+Content-Type: application/pdf
+
+< /ruta/a/tu/contrato_venta.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+CONTRATO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="terrenoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Contrato de compra-venta firmado
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Descargar archivo
+GET {{baseUrl}}/api/v1/archivos/1/download
+Authorization: Bearer {{accessToken}}
+
+### Obtener galería de imágenes del proyecto
+# Retorna todas las imágenes activas del proyecto (IMAGEN_PROYECTO, IMAGEN_TERRENO)
+GET {{baseUrl}}/api/v1/archivos/galeria/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener todas las versiones de un archivo
+# Útil para ver el historial de versiones de planos
+GET {{baseUrl}}/api/v1/archivos/versiones/1?nombreOriginal=plano_proyecto_v1.pdf
+Authorization: Bearer {{accessToken}}
+
+### Eliminar archivo (soft delete)
+DELETE {{baseUrl}}/api/v1/archivos/1
 Authorization: Bearer {{accessToken}}
 
 # ==========================================
