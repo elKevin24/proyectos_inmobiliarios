@@ -1120,6 +1120,71 @@ Content-Type: {{contentType}}
 }
 
 # ==========================================
+# AUDITORÍA (Solo Administradores)
+# ==========================================
+
+### Obtener logs de auditoría simple (últimos 100)
+# Muestra logins, logouts, exports, etc.
+GET {{baseUrl}}/api/v1/auditoria/simple?limit=100
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs simples por usuario
+GET {{baseUrl}}/api/v1/auditoria/simple?usuarioId=1&limit=50
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs simples por acción (solo LOGINs)
+GET {{baseUrl}}/api/v1/auditoria/simple?accion=LOGIN&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs simples por rango de fechas
+GET {{baseUrl}}/api/v1/auditoria/simple?fechaInicio=2025-01-01&fechaFin=2025-01-31&limit=200
+Authorization: Bearer {{accessToken}}
+
+### Obtener logs de auditoría crítica (cambios en datos)
+# Muestra cambios en precios, transacciones, usuarios, pagos, etc.
+GET {{baseUrl}}/api/v1/auditoria/critica?limit=100
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs críticos por tabla (solo cambios en ventas)
+GET {{baseUrl}}/api/v1/auditoria/critica?tabla=ventas&limit=50
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs críticos por usuario y tabla
+GET {{baseUrl}}/api/v1/auditoria/critica?usuarioId=1&tabla=terrenos&limit=50
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs críticos por rango de fechas
+GET {{baseUrl}}/api/v1/auditoria/critica?fechaInicio=2025-01-01&fechaFin=2025-01-31&tabla=planes_pago
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial completo de un registro específico
+# Muestra todos los cambios realizados a una venta #1
+GET {{baseUrl}}/api/v1/auditoria/registro/ventas/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de un terreno específico
+GET {{baseUrl}}/api/v1/auditoria/registro/terrenos/5
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de cambios de un campo específico
+# Muestra todos los cambios del campo "estado" del terreno #5
+GET {{baseUrl}}/api/v1/auditoria/campo/terrenos/5/estado
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de cambios de precio de un terreno
+GET {{baseUrl}}/api/v1/auditoria/campo/terrenos/5/precio_final
+Authorization: Bearer {{accessToken}}
+
+### Obtener últimos logins de un usuario
+GET {{baseUrl}}/api/v1/auditoria/logins/1?limit=10
+Authorization: Bearer {{accessToken}}
+
+### Archivar logs antiguos (> 1 año) manualmente
+# Esto normalmente se ejecuta automáticamente cada noche a las 2 AM
+POST {{baseUrl}}/api/v1/auditoria/archivar
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
 # SWAGGER UI
 # ==========================================
 
