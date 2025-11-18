@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaFileExcel } from 'react-icons/fa';
 import useApartadoStore from '../store/apartadoStore';
+import { exportarApartadosExcel } from '../utils/excelGenerator';
 import '../styles/Apartados.css';
 
 const ApartadosList = () => {
@@ -73,12 +75,21 @@ const ApartadosList = () => {
     <div className="apartados-container">
       <div className="page-header">
         <h1>Apartados</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate('/apartados/nuevo')}
-        >
-          + Nuevo Apartado
-        </button>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarApartadosExcel(apartados)}
+            disabled={apartados.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate('/apartados/nuevo')}
+          >
+            + Nuevo Apartado
+          </button>
+        </div>
       </div>
 
       {error && (

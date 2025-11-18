@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaFileExcel } from 'react-icons/fa';
 import useCotizacionStore from '../store/cotizacionStore';
+import { exportarCotizacionesExcel } from '../utils/excelGenerator';
 import '../styles/Cotizaciones.css';
 
 const CotizacionesList = () => {
@@ -59,12 +61,21 @@ const CotizacionesList = () => {
     <div className="cotizaciones-container">
       <div className="page-header">
         <h1>Cotizaciones</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate('/cotizaciones/nueva')}
-        >
-          + Nueva Cotización
-        </button>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarCotizacionesExcel(cotizaciones)}
+            disabled={cotizaciones.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate('/cotizaciones/nueva')}
+          >
+            + Nueva Cotización
+          </button>
+        </div>
       </div>
 
       {error && (

@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaFileExcel } from 'react-icons/fa';
 import usePlanPagoStore from '../store/planPagoStore';
+import { exportarPlanesPagoExcel } from '../utils/excelGenerator';
 import '../styles/PlanesPago.css';
 
 const PlanesPagoList = () => {
@@ -58,6 +60,15 @@ const PlanesPagoList = () => {
     <div className="planes-pago-container">
       <div className="page-header">
         <h1>Planes de Pago</h1>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarPlanesPagoExcel(planesPago)}
+            disabled={planesPago.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+        </div>
       </div>
 
       {error && (

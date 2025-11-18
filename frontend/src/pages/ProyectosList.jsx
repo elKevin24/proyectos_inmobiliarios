@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaMap } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaMap, FaFileExcel } from 'react-icons/fa';
 import useProyectoStore from '../store/proyectoStore';
+import { exportarProyectosExcel } from '../utils/excelGenerator';
 import '../styles/Proyectos.css';
 
 function ProyectosList() {
@@ -60,9 +61,18 @@ function ProyectosList() {
           <h1>Proyectos</h1>
           <p>Gestión de desarrollos inmobiliarios</p>
         </div>
-        <Link to="/proyectos/nuevo" className="btn btn-primary">
-          <FaPlus /> Nuevo Proyecto
-        </Link>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarProyectosExcel(filteredProyectos)}
+            disabled={filteredProyectos.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+          <Link to="/proyectos/nuevo" className="btn btn-primary">
+            <FaPlus /> Nuevo Proyecto
+          </Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

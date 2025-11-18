@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import usePlanPagoStore from '../store/planPagoStore';
+import { generarEstadoCuentaPDF } from '../utils/pdfGenerator';
+import { exportarAmortizacionesExcel } from '../utils/excelGenerator';
 import '../styles/PlanesPago.css';
 
 const PlanPagoDetail = () => {
@@ -248,12 +250,28 @@ const PlanPagoDetail = () => {
       <div className="info-section">
         <div className="section-header-with-toggle">
           <h2>Tabla de Amortización</h2>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setShowAmortizaciones(!showAmortizaciones)}
-          >
-            {showAmortizaciones ? 'Ocultar' : 'Mostrar'} Tabla
-          </button>
+          <div className="header-actions">
+            <button
+              className="btn btn-secondary"
+              onClick={() => generarEstadoCuentaPDF(selectedPlan, amortizaciones)}
+              disabled={amortizaciones.length === 0}
+            >
+              📄 Estado de Cuenta PDF
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => exportarAmortizacionesExcel(amortizaciones, selectedPlan.id)}
+              disabled={amortizaciones.length === 0}
+            >
+              📊 Exportar Excel
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowAmortizaciones(!showAmortizaciones)}
+            >
+              {showAmortizaciones ? 'Ocultar' : 'Mostrar'} Tabla
+            </button>
+          </div>
         </div>
 
         {showAmortizaciones && (

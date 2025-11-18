@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import useTerrenoStore from '../store/terrenoStore';
+import { generarReporteTerrenos } from '../utils/pdfGenerator';
+import { exportarTerrenosExcel } from '../utils/excelGenerator';
 import '../styles/Terrenos.css';
 
 function TerrenosList() {
@@ -53,9 +55,25 @@ function TerrenosList() {
           <h1>Terrenos</h1>
           <p>Gestión de lotes e inmuebles</p>
         </div>
-        <Link to="/terrenos/nuevo" className="btn btn-primary">
-          <FaPlus /> Nuevo Terreno
-        </Link>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => generarReporteTerrenos(filteredTerrenos, 'Reporte de Terrenos')}
+            disabled={filteredTerrenos.length === 0}
+          >
+            <FaFilePdf /> PDF
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarTerrenosExcel(filteredTerrenos)}
+            disabled={filteredTerrenos.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+          <Link to="/terrenos/nuevo" className="btn btn-primary">
+            <FaPlus /> Nuevo Terreno
+          </Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

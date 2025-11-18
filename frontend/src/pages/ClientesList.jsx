@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaPhone, FaEnvelope, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import clienteStore from '../store/clienteStore';
+import { generarReporteClientes } from '../utils/pdfGenerator';
+import { exportarClientesExcel } from '../utils/excelGenerator';
 import '../styles/Clientes.css';
 
 function ClientesList() {
@@ -65,9 +67,25 @@ function ClientesList() {
           <h1>Clientes</h1>
           <p>Gestión de clientes y prospectos</p>
         </div>
-        <Link to="/clientes/nuevo" className="btn btn-primary">
-          <FaPlus /> Nuevo Cliente
-        </Link>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => generarReporteClientes(filteredClientes, 'Reporte de Clientes')}
+            disabled={filteredClientes.length === 0}
+          >
+            <FaFilePdf /> PDF
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarClientesExcel(filteredClientes)}
+            disabled={filteredClientes.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+          <Link to="/clientes/nuevo" className="btn btn-primary">
+            <FaPlus /> Nuevo Cliente
+          </Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

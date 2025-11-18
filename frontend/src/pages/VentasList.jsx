@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEye, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import ventaService from '../services/ventaService';
+import { generarReporteVentas } from '../utils/pdfGenerator';
+import { exportarVentasExcel } from '../utils/excelGenerator';
 import '../styles/Ventas.css';
 
 function VentasList() {
@@ -52,9 +54,25 @@ function VentasList() {
           <h1>Ventas</h1>
           <p>Gestión de transacciones</p>
         </div>
-        <Link to="/ventas/nueva" className="btn btn-primary">
-          <FaPlus /> Nueva Venta
-        </Link>
+        <div className="header-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => generarReporteVentas(ventas, 'Reporte de Ventas')}
+            disabled={ventas.length === 0}
+          >
+            <FaFilePdf /> PDF
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => exportarVentasExcel(ventas)}
+            disabled={ventas.length === 0}
+          >
+            <FaFileExcel /> Excel
+          </button>
+          <Link to="/ventas/nueva" className="btn btn-primary">
+            <FaPlus /> Nueva Venta
+          </Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

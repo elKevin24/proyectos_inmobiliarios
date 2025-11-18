@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useCotizacionStore from '../store/cotizacionStore';
+import { generarCotizacionPDF } from '../utils/pdfGenerator';
 import '../styles/Cotizaciones.css';
 
 const CotizacionDetail = () => {
@@ -253,6 +254,13 @@ const CotizacionDetail = () => {
               🔄 Convertir a Venta
             </button>
           )}
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => generarCotizacionPDF(selectedCotizacion)}
+          >
+            📄 Descargar PDF
+          </button>
 
           <button
             className="btn btn-secondary"
