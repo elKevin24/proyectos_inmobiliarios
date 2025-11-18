@@ -1,0 +1,188 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: Build",
+      "type": "shell",
+      "command": "cd backend && ./mvnw clean package -DskipTests",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$maven"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Backend: Run",
+      "type": "shell",
+      "command": "cd backend && ./mvnw spring-boot:run",
+      "group": "none",
+      "problemMatcher": ["$maven"],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Backend: Test",
+      "type": "shell",
+      "command": "cd backend && ./mvnw test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": ["$maven"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Backend: Test (Integration)",
+      "type": "shell",
+      "command": "cd backend && ./mvnw verify",
+      "group": "test",
+      "problemMatcher": ["$maven"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Backend: Clean",
+      "type": "shell",
+      "command": "cd backend && ./mvnw clean",
+      "group": "none",
+      "problemMatcher": ["$maven"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Docker: Start Services",
+      "type": "shell",
+      "command": "cd backend && docker-compose up -d",
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Docker: Stop Services",
+      "type": "shell",
+      "command": "cd backend && docker-compose down",
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Docker: View Logs",
+      "type": "shell",
+      "command": "cd backend && docker-compose logs -f",
+      "group": "none",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Database: Connect",
+      "type": "shell",
+      "command": "psql -h localhost -p 5432 -U postgres -d terrenos_db",
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Flyway: Migrate",
+      "type": "shell",
+      "command": "cd backend && ./mvnw flyway:migrate",
+      "group": "none",
+      "problemMatcher": ["$maven"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Flyway: Info",
+      "type": "shell",
+      "command": "cd backend && ./mvnw flyway:info",
+      "group": "none",
+      "problemMatcher": ["$maven"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Dev: Start Full Environment",
+      "dependsOn": ["Docker: Start Services", "Backend: Run"],
+      "dependsOrder": "sequence",
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ]
+}

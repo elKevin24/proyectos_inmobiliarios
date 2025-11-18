@@ -1,0 +1,1196 @@
+###
+# API Examples - Terrenos SaaS Backend
+# Usa la extensión REST Client de VS Code
+###
+
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Variables (se actualizan después de cada request)
+@accessToken =
+@refreshToken =
+@tenantId = 1
+@usuarioId = 1
+
+# ==========================================
+# HEALTH CHECK
+# ==========================================
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+Accept: application/json
+
+### API Info
+GET {{baseUrl}}/actuator/info
+Accept: application/json
+
+# ==========================================
+# AUTHENTICATION
+# ==========================================
+
+### 1. Registrar Nueva Empresa (Tenant) con Usuario Admin
+# IMPORTANTE: Ejecuta esto primero para crear una empresa y obtener tokens
+# @name register
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "nombreEmpresa": "Inmobiliaria Los Pinos",
+  "emailEmpresa": "contacto@inmobiliaria-pinos.com",
+  "telefonoEmpresa": "5551234567",
+  "direccionEmpresa": "Av. Reforma 123, CDMX",
+  "razonSocial": "Inmobiliaria Los Pinos S.A. de C.V.",
+  "rfc": "ILP230101ABC",
+  "nombre": "Carlos",
+  "apellido": "Mendoza",
+  "email": "carlos.mendoza@inmobiliaria-pinos.com",
+  "password": "Admin123!",
+  "telefono": "5559876543"
+}
+
+# Respuesta esperada:
+# {
+#   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5...",
+#   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5...",
+#   "tokenType": "Bearer",
+#   "expiresIn": 86400000,
+#   "userInfo": {
+#     "id": 1,
+#     "nombre": "Carlos Mendoza",
+#     "email": "carlos.mendoza@inmobiliaria-pinos.com",
+#     "tenantId": 1,
+#     "tenantNombre": "Inmobiliaria Los Pinos"
+#   }
+# }
+
+### 2. Login (obtener token JWT)
+# Usa las credenciales del usuario creado en el registro
+# @name login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "carlos.mendoza@inmobiliaria-pinos.com",
+  "password": "Admin123!"
+}
+
+### 3. Refresh Token
+# Usa el refreshToken obtenido del login o registro
+# @name refresh
+POST {{baseUrl}}/api/v1/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+# ==========================================
+# TENANTS
+# ==========================================
+
+### Obtener información del Tenant actual
+GET {{baseUrl}}/api/v1/tenants/me
+Authorization: Bearer {{accessToken}}
+
+### Actualizar Tenant
+PUT {{baseUrl}}/api/v1/tenants/{{tenantId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Inmobiliaria Demo (Actualizada)",
+  "telefono": "5559876543"
+}
+
+# ==========================================
+# USUARIOS
+# ==========================================
+
+### Listar todos los usuarios del tenant
+GET {{baseUrl}}/api/v1/usuarios
+Authorization: Bearer {{accessToken}}
+
+### Obtener usuario por ID
+GET {{baseUrl}}/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{accessToken}}
+
+### Crear nuevo usuario
+# @name createUsuario
+POST {{baseUrl}}/api/v1/usuarios
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan.perez@example.com",
+  "password": "password123",
+  "telefono": "5551234567",
+  "roles": ["VENDEDOR"]
+}
+
+### Actualizar usuario
+PUT {{baseUrl}}/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Juan Carlos",
+  "apellido": "Pérez García",
+  "telefono": "5559876543"
+}
+
+### Desactivar usuario
+DELETE {{baseUrl}}/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# PROYECTOS
+# ==========================================
+
+### Listar todos los proyectos
+GET {{baseUrl}}/api/v1/proyectos
+Authorization: Bearer {{accessToken}}
+
+### Listar proyectos activos (en venta)
+GET {{baseUrl}}/api/v1/proyectos?activos=true
+Authorization: Bearer {{accessToken}}
+
+### Listar proyectos con terrenos disponibles
+GET {{baseUrl}}/api/v1/proyectos?disponibles=true
+Authorization: Bearer {{accessToken}}
+
+### Listar proyectos por estado
+GET {{baseUrl}}/api/v1/proyectos?estado=EN_VENTA
+Authorization: Bearer {{accessToken}}
+
+### Obtener proyecto por ID
+GET {{baseUrl}}/api/v1/proyectos/1
+Authorization: Bearer {{accessToken}}
+
+### Crear proyecto
+# @name createProyecto
+POST {{baseUrl}}/api/v1/proyectos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Residencial Los Pinos",
+  "descripcion": "Desarrollo residencial de lujo con áreas verdes, alberca, casa club y seguridad 24/7",
+  "direccion": "Carretera Federal México-Cuernavaca Km 42",
+  "ciudad": "Cuernavaca",
+  "estado": "Morelos",
+  "codigoPostal": "62000",
+  "latitud": 18.9186111,
+  "longitud": -99.2341667,
+  "tipoPrecio": "VARIABLE",
+  "precioBase": 500000.00,
+  "precioMaximo": 1200000.00,
+  "totalTerrenos": 50,
+  "terrenosDisponibles": 50,
+  "estadoProyecto": "PLANIFICACION"
+}
+
+### Actualizar proyecto
+PUT {{baseUrl}}/api/v1/proyectos/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Residencial Los Pinos - Fase 1",
+  "descripcion": "Primera fase del desarrollo con 50 lotes premium",
+  "precioBase": 550000.00
+}
+
+### Cambiar estado del proyecto a EN_VENTA
+PATCH {{baseUrl}}/api/v1/proyectos/1/estado?estado=EN_VENTA
+Authorization: Bearer {{accessToken}}
+
+### Cambiar estado del proyecto a FINALIZADO
+PATCH {{baseUrl}}/api/v1/proyectos/1/estado?estado=FINALIZADO
+Authorization: Bearer {{accessToken}}
+
+### Eliminar proyecto
+DELETE {{baseUrl}}/api/v1/proyectos/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# TERRENOS
+# ==========================================
+
+### Listar todos los terrenos
+GET {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+
+### Listar terrenos por proyecto
+GET {{baseUrl}}/api/v1/terrenos?proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Listar terrenos disponibles de un proyecto
+GET {{baseUrl}}/api/v1/terrenos?proyectoId=1&disponibles=true
+Authorization: Bearer {{accessToken}}
+
+### Listar terrenos por estado
+GET {{baseUrl}}/api/v1/terrenos?estado=DISPONIBLE
+Authorization: Bearer {{accessToken}}
+
+### Obtener terreno por ID
+GET {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+
+### Crear terreno
+# @name createTerreno
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "A-001",
+  "manzana": "A",
+  "area": 200.50,
+  "frente": 10.5,
+  "fondo": 19.5,
+  "precioBase": 500000.00,
+  "precioAjuste": 50000.00,
+  "precioMultiplicador": 1.0,
+  "caracteristicas": "Esquina, vista panorámica",
+  "observaciones": "Lote premium en zona residencial"
+}
+
+### Crear múltiples terrenos (lote B)
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "B-001",
+  "manzana": "B",
+  "area": 180.00,
+  "frente": 9.0,
+  "fondo": 20.0,
+  "precioBase": 450000.00,
+  "precioAjuste": 0.00,
+  "precioMultiplicador": 1.0
+}
+
+### Actualizar terreno
+PUT {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "precioBase": 520000.00,
+  "caracteristicas": "Esquina, vista panorámica, cerca de área verde",
+  "observaciones": "Precio actualizado por plusvalía"
+}
+
+### Cambiar estado del terreno a APARTADO
+PATCH {{baseUrl}}/api/v1/terrenos/1/estado?estado=APARTADO
+Authorization: Bearer {{accessToken}}
+
+### Cambiar estado del terreno a VENDIDO
+PATCH {{baseUrl}}/api/v1/terrenos/1/estado?estado=VENDIDO
+Authorization: Bearer {{accessToken}}
+
+### Eliminar terreno
+DELETE {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# FASES
+# ==========================================
+
+### Listar todas las fases
+GET {{baseUrl}}/api/v1/fases
+Authorization: Bearer {{accessToken}}
+
+### Listar fases por proyecto
+GET {{baseUrl}}/api/v1/fases?proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Listar fases activas de un proyecto
+GET {{baseUrl}}/api/v1/fases?proyectoId=1&activas=true
+Authorization: Bearer {{accessToken}}
+
+### Obtener fase por ID
+GET {{baseUrl}}/api/v1/fases/1
+Authorization: Bearer {{accessToken}}
+
+### Crear fase
+# @name createFase
+POST {{baseUrl}}/api/v1/fases
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "nombre": "Fase 1 - Residencial",
+  "descripcion": "Primera fase del desarrollo con lotes premium",
+  "numeroFase": 1,
+  "totalTerrenos": 25,
+  "areaTotal": 5000.00,
+  "fechaInicio": "2025-01-15",
+  "fechaFinEstimada": "2025-12-31",
+  "observaciones": "Incluye obras de urbanización",
+  "activa": true
+}
+
+### Crear Fase 2
+POST {{baseUrl}}/api/v1/fases
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "nombre": "Fase 2 - Comercial",
+  "descripcion": "Segunda fase con lotes comerciales",
+  "numeroFase": 2,
+  "totalTerrenos": 15,
+  "fechaInicio": "2026-01-01",
+  "activa": false
+}
+
+### Actualizar fase
+PUT {{baseUrl}}/api/v1/fases/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Primera fase del desarrollo con lotes premium y áreas verdes",
+  "fechaFinEstimada": "2026-06-30",
+  "observaciones": "Plazo extendido por obras adicionales"
+}
+
+### Eliminar fase
+DELETE {{baseUrl}}/api/v1/fases/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# COTIZACIONES
+# ==========================================
+
+### Listar todas las cotizaciones
+GET {{baseUrl}}/api/v1/cotizaciones
+Authorization: Bearer {{accessToken}}
+
+### Listar cotizaciones vigentes
+GET {{baseUrl}}/api/v1/cotizaciones?vigentes=true
+Authorization: Bearer {{accessToken}}
+
+### Buscar cotizaciones por cliente
+GET {{baseUrl}}/api/v1/cotizaciones?cliente=María
+Authorization: Bearer {{accessToken}}
+
+### Obtener cotización por ID
+GET {{baseUrl}}/api/v1/cotizaciones/1
+Authorization: Bearer {{accessToken}}
+
+### Crear cotización
+# @name createCotizacion
+POST {{baseUrl}}/api/v1/cotizaciones
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "clienteNombre": "María González",
+  "clienteEmail": "maria.gonzalez@example.com",
+  "clienteTelefono": "5551234567",
+  "precioBase": 550000.00,
+  "descuento": 10000.00,
+  "porcentajeDescuento": 1.82,
+  "precioFinal": 540000.00,
+  "fechaVigencia": "2025-12-31",
+  "observaciones": "Cliente interesado en pago de contado"
+}
+
+### Eliminar cotización
+DELETE {{baseUrl}}/api/v1/cotizaciones/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# APARTADOS
+# ==========================================
+
+### Listar todos los apartados
+GET {{baseUrl}}/api/v1/apartados
+Authorization: Bearer {{accessToken}}
+
+### Listar apartados vigentes
+GET {{baseUrl}}/api/v1/apartados?vigentes=true
+Authorization: Bearer {{accessToken}}
+
+### Listar apartados vencidos
+GET {{baseUrl}}/api/v1/apartados?vencidos=true
+Authorization: Bearer {{accessToken}}
+
+### Obtener apartado por ID
+GET {{baseUrl}}/api/v1/apartados/1
+Authorization: Bearer {{accessToken}}
+
+### Crear apartado
+# @name createApartado
+POST {{baseUrl}}/api/v1/apartados
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "cotizacionId": 1,
+  "clienteNombre": "Carlos Ramírez",
+  "clienteEmail": "carlos.ramirez@example.com",
+  "clienteTelefono": "5559876543",
+  "clienteDireccion": "Calle 5 #123, Colonia Centro",
+  "montoApartado": 50000.00,
+  "precioTotal": 550000.00,
+  "duracionDias": 30,
+  "observaciones": "Cliente solicita 30 días para tramitar crédito"
+}
+
+### Cancelar apartado
+PUT {{baseUrl}}/api/v1/apartados/1/cancelar
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "motivo": "Cliente decidió no continuar con la compra"
+}
+
+### Eliminar apartado
+DELETE {{baseUrl}}/api/v1/apartados/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# VENTAS
+# ==========================================
+
+### Listar todas las ventas
+GET {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+
+### Listar ventas por estado
+GET {{baseUrl}}/api/v1/ventas?estado=PAGADO
+Authorization: Bearer {{accessToken}}
+
+### Obtener venta por ID
+GET {{baseUrl}}/api/v1/ventas/1
+Authorization: Bearer {{accessToken}}
+
+### Crear venta (conversión de apartado)
+# @name createVenta
+POST {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "apartadoId": 1,
+  "compradorNombre": "Carlos Ramírez",
+  "compradorEmail": "carlos.ramirez@example.com",
+  "compradorTelefono": "5559876543",
+  "compradorDireccion": "Calle 5 #123, Colonia Centro",
+  "compradorRfc": "RAMC850615ABC",
+  "compradorCurp": "RAMC850615HDFLRR02",
+  "precioTotal": 550000.00,
+  "montoApartadoAcreditado": 50000.00,
+  "montoFinal": 500000.00,
+  "porcentajeComision": 3.0,
+  "montoComision": 15000.00,
+  "formaPago": "CREDITO_BANCARIO",
+  "observaciones": "Venta realizada con crédito hipotecario"
+}
+
+### Crear venta directa (sin apartado)
+POST {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 2,
+  "compradorNombre": "Ana Martínez",
+  "compradorEmail": "ana.martinez@example.com",
+  "compradorTelefono": "5551112222",
+  "compradorDireccion": "Av. Insurgentes #456",
+  "compradorRfc": "MAMA900215XYZ",
+  "compradorCurp": "MAMA900215MDFRNN03",
+  "precioTotal": 450000.00,
+  "montoApartadoAcreditado": 0.00,
+  "montoFinal": 450000.00,
+  "porcentajeComision": 3.0,
+  "montoComision": 13500.00,
+  "formaPago": "CONTADO",
+  "observaciones": "Venta de contado sin apartado previo"
+}
+
+### Cambiar estado de venta a PAGADO
+PATCH {{baseUrl}}/api/v1/ventas/1/estado?estado=PAGADO
+Authorization: Bearer {{accessToken}}
+
+### Cambiar estado de venta a CANCELADO
+PATCH {{baseUrl}}/api/v1/ventas/1/estado?estado=CANCELADO
+Authorization: Bearer {{accessToken}}
+
+### Eliminar venta (solo canceladas)
+DELETE {{baseUrl}}/api/v1/ventas/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# REPORTES Y DASHBOARD
+# ==========================================
+
+### Dashboard principal
+GET {{baseUrl}}/api/v1/reportes/dashboard
+Authorization: Bearer {{accessToken}}
+
+### Estadísticas por proyecto
+GET {{baseUrl}}/api/v1/reportes/proyectos
+Authorization: Bearer {{accessToken}}
+
+### Estadísticas de un proyecto específico
+GET {{baseUrl}}/api/v1/reportes/proyectos/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# ARCHIVOS (File Management)
+# ==========================================
+
+### Listar todos los archivos del tenant
+GET {{baseUrl}}/api/v1/archivos
+Authorization: Bearer {{accessToken}}
+
+### Listar archivos por proyecto
+GET {{baseUrl}}/api/v1/archivos?proyectoId=1
+Authorization: Bearer {{accessToken}}
+
+### Listar archivos por terreno
+GET {{baseUrl}}/api/v1/archivos?terrenoId=1
+Authorization: Bearer {{accessToken}}
+
+### Listar archivos por tipo
+GET {{baseUrl}}/api/v1/archivos?tipo=PLANO_PROYECTO
+Authorization: Bearer {{accessToken}}
+
+### Listar archivos por proyecto y tipo
+GET {{baseUrl}}/api/v1/archivos?proyectoId=1&tipo=IMAGEN_PROYECTO
+Authorization: Bearer {{accessToken}}
+
+### Obtener archivo por ID
+GET {{baseUrl}}/api/v1/archivos/1
+Authorization: Bearer {{accessToken}}
+
+### Subir plano de proyecto (PDF)
+# NOTA: En VS Code REST Client, puedes usar < archivo.pdf para cargar un archivo
+# @name uploadPlanoProyecto
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="plano_proyecto_v1.pdf"
+Content-Type: application/pdf
+
+< /ruta/a/tu/plano_proyecto_v1.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+PLANO_PROYECTO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Plano maestro del proyecto - Versión 1
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir nueva versión del plano (v2)
+# El mismo nombre de archivo crea automáticamente una nueva versión
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="plano_proyecto_v1.pdf"
+Content-Type: application/pdf
+
+< /ruta/a/tu/plano_proyecto_v2.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+PLANO_PROYECTO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Plano actualizado con correcciones - Versión 2
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir imagen de proyecto (JPG)
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="render_proyecto.jpg"
+Content-Type: image/jpeg
+
+< /ruta/a/tu/render_proyecto.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+IMAGEN_PROYECTO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Render 3D del proyecto
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir plano de terreno (DWG)
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="lote_a001.dwg"
+Content-Type: application/acad
+
+< /ruta/a/tu/lote_a001.dwg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+PLANO_TERRENO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="terrenoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Plano arquitectónico del lote A-001
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Subir documento de venta (PDF)
+POST {{baseUrl}}/api/v1/archivos/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="contrato_venta.pdf"
+Content-Type: application/pdf
+
+< /ruta/a/tu/contrato_venta.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tipo"
+
+CONTRATO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="proyectoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="terrenoId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+Contrato de compra-venta firmado
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Descargar archivo
+GET {{baseUrl}}/api/v1/archivos/1/download
+Authorization: Bearer {{accessToken}}
+
+### Obtener galería de imágenes del proyecto
+# Retorna todas las imágenes activas del proyecto (IMAGEN_PROYECTO, IMAGEN_TERRENO)
+GET {{baseUrl}}/api/v1/archivos/galeria/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener todas las versiones de un archivo
+# Útil para ver el historial de versiones de planos
+GET {{baseUrl}}/api/v1/archivos/versiones/1?nombreOriginal=plano_proyecto_v1.pdf
+Authorization: Bearer {{accessToken}}
+
+### Eliminar archivo (soft delete)
+DELETE {{baseUrl}}/api/v1/archivos/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# PLANO INTERACTIVO
+# ==========================================
+
+### Obtener plano interactivo del proyecto
+# Retorna el plano de imagen + todos los terrenos con coordenadas y color según estado
+GET {{baseUrl}}/api/v1/proyectos/1/plano-interactivo
+Authorization: Bearer {{accessToken}}
+
+### Crear terreno con coordenadas para plano interactivo
+# Las coordenadas se usan para renderizar el terreno en el plano
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "A-001",
+  "manzana": "A",
+  "area": 200.50,
+  "frente": 10.5,
+  "fondo": 19.5,
+  "precioBase": 500000.00,
+  "precioAjuste": 50000.00,
+  "precioMultiplicador": 1.0,
+  "caracteristicas": "Esquina, vista panorámica",
+  "observaciones": "Lote premium en zona residencial",
+  "coordenadasPlano": {
+    "tipo": "poligono",
+    "puntos": [
+      {"x": 100, "y": 150},
+      {"x": 200, "y": 150},
+      {"x": 200, "y": 350},
+      {"x": 100, "y": 350}
+    ]
+  }
+}
+
+### Crear terreno A-002 con coordenadas
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "A-002",
+  "manzana": "A",
+  "area": 180.00,
+  "precioBase": 450000.00,
+  "coordenadasPlano": {
+    "tipo": "poligono",
+    "puntos": [
+      {"x": 200, "y": 150},
+      {"x": 300, "y": 150},
+      {"x": 300, "y": 330},
+      {"x": 200, "y": 330}
+    ]
+  }
+}
+
+### Actualizar coordenadas de un terreno existente
+PUT {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "coordenadasPlano": {
+    "tipo": "poligono",
+    "puntos": [
+      {"x": 105, "y": 155},
+      {"x": 205, "y": 155},
+      {"x": 205, "y": 355},
+      {"x": 105, "y": 355}
+    ]
+  }
+}
+
+# ==========================================
+# CLIENTES
+# ==========================================
+
+### Listar todos los clientes
+GET {{baseUrl}}/api/v1/clientes
+Authorization: Bearer {{accessToken}}
+
+### Listar clientes por estado
+GET {{baseUrl}}/api/v1/clientes?estado=PROSPECTO
+Authorization: Bearer {{accessToken}}
+
+### Listar clientes activos (no inactivos)
+GET {{baseUrl}}/api/v1/clientes?activos=true
+Authorization: Bearer {{accessToken}}
+
+### Buscar clientes por nombre
+GET {{baseUrl}}/api/v1/clientes?nombre=María
+Authorization: Bearer {{accessToken}}
+
+### Obtener cliente por ID
+GET {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de transacciones del cliente
+# Incluye cotizaciones, apartados, ventas y estadísticas
+GET {{baseUrl}}/api/v1/clientes/1/historial
+Authorization: Bearer {{accessToken}}
+
+### Crear nuevo cliente
+# @name createCliente
+POST {{baseUrl}}/api/v1/clientes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "María",
+  "apellido": "González",
+  "email": "maria.gonzalez@example.com",
+  "telefono": "5551234567",
+  "telefonoSecundario": "5559876543",
+  "direccion": "Av. Insurgentes Sur 1234",
+  "ciudad": "Ciudad de México",
+  "estado": "CDMX",
+  "codigoPostal": "01000",
+  "pais": "México",
+  "rfc": "GOMA850615ABC",
+  "curp": "GOMA850615MDFLRR03",
+  "fechaNacimiento": "1985-06-15",
+  "origen": "REDES_SOCIALES",
+  "estadoCliente": "PROSPECTO",
+  "notas": "Cliente interesado en lotes de la Manzana A",
+  "preferencias": "{\"presupuesto\":500000,\"ubicacion\":\"cerca del parque\",\"tamano\":\"200m2\"}"
+}
+
+### Crear cliente comprador
+POST {{baseUrl}}/api/v1/clientes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Carlos",
+  "apellido": "Ramírez",
+  "email": "carlos.ramirez@example.com",
+  "telefono": "5559876543",
+  "direccion": "Calle 5 #123, Colonia Centro",
+  "ciudad": "Cuernavaca",
+  "estado": "Morelos",
+  "codigoPostal": "62000",
+  "rfc": "RAMC800715XYZ",
+  "curp": "RAMC800715HDFLRR02",
+  "fechaNacimiento": "1980-07-15",
+  "origen": "REFERIDO",
+  "estadoCliente": "COMPRADOR"
+}
+
+### Actualizar cliente
+PUT {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "estadoCliente": "INTERESADO",
+  "notas": "Cliente mostró interés en lote A-001. Siguiente seguimiento en 5 días.",
+  "telefonoSecundario": "5551112233"
+}
+
+### Cambiar estado del cliente a COMPRADOR
+PUT {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "estadoCliente": "COMPRADOR",
+  "notas": "Cliente realizó compra del lote A-001"
+}
+
+### Eliminar cliente (soft delete)
+# No se puede eliminar si tiene transacciones activas
+DELETE {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# PLANES DE PAGO Y PAGOS
+# ==========================================
+
+### Listar planes de pago
+GET {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+
+### Obtener plan de pago por ID
+GET {{baseUrl}}/api/v1/planes-pago/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener plan de pago por venta
+GET {{baseUrl}}/api/v1/planes-pago/venta/1
+Authorization: Bearer {{accessToken}}
+
+### Crear plan de pago CON INTERÉS (Financiamiento)
+# Crea un plan de pago con interés del 12% anual
+# y genera automáticamente la tabla de amortización
+POST {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "ventaId": 1,
+  "tipoPlan": "FINANCIAMIENTO_PROPIO",
+  "frecuenciaPago": "MENSUAL",
+  "montoTotal": 500000.00,
+  "enganche": 100000.00,
+  "tasaInteresAnual": 12.00,
+  "aplicaInteres": true,
+  "numeroPagos": 24,
+  "plazoMeses": 24,
+  "tasaMoraMensual": 2.50,
+  "diasGracia": 5,
+  "fechaInicio": "2025-01-15",
+  "fechaPrimerPago": "2025-02-15",
+  "notas": "Plan de financiamiento a 2 años con 12% de interés anual"
+}
+
+### Crear plan de pago SIN INTERÉS (Pago en parcialidades)
+# Crea un plan de pago sin interés
+POST {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "ventaId": 2,
+  "tipoPlan": "FINANCIAMIENTO_PROPIO",
+  "frecuenciaPago": "MENSUAL",
+  "montoTotal": 300000.00,
+  "enganche": 50000.00,
+  "tasaInteresAnual": 0.00,
+  "aplicaInteres": false,
+  "numeroPagos": 12,
+  "plazoMeses": 12,
+  "tasaMoraMensual": 2.00,
+  "diasGracia": 3,
+  "fechaInicio": "2025-01-20",
+  "fechaPrimerPago": "2025-02-20",
+  "notas": "Plan sin interés a 12 meses"
+}
+
+### Crear plan de pago DE CONTADO
+POST {{baseUrl}}/api/v1/planes-pago
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "ventaId": 3,
+  "tipoPlan": "CONTADO",
+  "frecuenciaPago": "MENSUAL",
+  "montoTotal": 400000.00,
+  "enganche": 400000.00,
+  "tasaInteresAnual": 0.00,
+  "aplicaInteres": false,
+  "numeroPagos": 1,
+  "plazoMeses": 1,
+  "tasaMoraMensual": 0.00,
+  "diasGracia": 0,
+  "fechaInicio": "2025-01-10",
+  "fechaPrimerPago": "2025-01-10",
+  "notas": "Pago de contado total"
+}
+
+### Actualizar plan de pago (solo campos permitidos)
+# Solo se pueden modificar: tasaMoraMensual, diasGracia, notas
+PUT {{baseUrl}}/api/v1/planes-pago/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "tasaMoraMensual": 3.00,
+  "diasGracia": 7,
+  "notas": "Se aumentó días de gracia a 7 días por solicitud del cliente"
+}
+
+### Obtener tabla de amortización completa
+# Muestra todas las cuotas con capital, interés, fecha de vencimiento, etc.
+GET {{baseUrl}}/api/v1/planes-pago/1/tabla-amortizacion
+Authorization: Bearer {{accessToken}}
+
+### Obtener estado de cuenta completo
+# Incluye: plan de pago, tabla de amortización, historial de pagos,
+# resumen financiero, cuotas vencidas, próximos pagos
+GET {{baseUrl}}/api/v1/planes-pago/1/estado-cuenta
+Authorization: Bearer {{accessToken}}
+
+### Registrar pago en EFECTIVO
+# El sistema aplica el pago automáticamente a las cuotas más antiguas
+# Distribución: mora → interés → capital
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-02-15",
+  "montoPagado": 20000.00,
+  "metodoPago": "EFECTIVO",
+  "observaciones": "Pago de la cuota 1"
+}
+
+### Registrar pago por TRANSFERENCIA
+# Requiere referencia de pago
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-03-15",
+  "montoPagado": 20000.00,
+  "metodoPago": "TRANSFERENCIA",
+  "referenciaPago": "TRF-20250315-001234",
+  "observaciones": "Pago de la cuota 2 vía transferencia BBVA"
+}
+
+### Registrar pago por CHEQUE
+# Requiere referencia de pago (número de cheque)
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-04-15",
+  "montoPagado": 20000.00,
+  "metodoPago": "CHEQUE",
+  "referenciaPago": "CHQ-987654",
+  "observaciones": "Pago con cheque Banamex"
+}
+
+### Registrar pago a amortización específica
+# En lugar de aplicar automáticamente, se aplica a una cuota específica
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "amortizacionId": 5,
+  "fechaPago": "2025-05-01",
+  "montoPagado": 10000.00,
+  "metodoPago": "EFECTIVO",
+  "observaciones": "Pago parcial a cuota 5"
+}
+
+### Registrar pago con comprobante
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-06-15",
+  "montoPagado": 25000.00,
+  "metodoPago": "TARJETA_CREDITO",
+  "comprobanteRuta": "/uploads/comprobantes/2025/06/pago-001.pdf",
+  "observaciones": "Pago con tarjeta Visa terminación 4321"
+}
+
+### Ejemplo: Pago ADELANTADO (varias cuotas)
+# Un pago de 60,000 cubre 3 cuotas de 20,000 c/u
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-02-15",
+  "montoPagado": 60000.00,
+  "metodoPago": "TRANSFERENCIA",
+  "referenciaPago": "TRF-20250215-ADELANTO",
+  "observaciones": "Pago adelantado de 3 cuotas"
+}
+
+### Ejemplo: Pago ATRASADO con MORA
+# Si hay cuotas vencidas, primero se paga la mora acumulada
+POST {{baseUrl}}/api/v1/pagos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "planPagoId": 1,
+  "fechaPago": "2025-04-01",
+  "montoPagado": 22500.00,
+  "metodoPago": "EFECTIVO",
+  "observaciones": "Pago de cuota vencida más mora"
+}
+
+# ==========================================
+# AUDITORÍA (Solo Administradores)
+# ==========================================
+
+### Obtener logs de auditoría simple (últimos 100)
+# Muestra logins, logouts, exports, etc.
+GET {{baseUrl}}/api/v1/auditoria/simple?limit=100
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs simples por usuario
+GET {{baseUrl}}/api/v1/auditoria/simple?usuarioId=1&limit=50
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs simples por acción (solo LOGINs)
+GET {{baseUrl}}/api/v1/auditoria/simple?accion=LOGIN&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs simples por rango de fechas
+GET {{baseUrl}}/api/v1/auditoria/simple?fechaInicio=2025-01-01&fechaFin=2025-01-31&limit=200
+Authorization: Bearer {{accessToken}}
+
+### Obtener logs de auditoría crítica (cambios en datos)
+# Muestra cambios en precios, transacciones, usuarios, pagos, etc.
+GET {{baseUrl}}/api/v1/auditoria/critica?limit=100
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs críticos por tabla (solo cambios en ventas)
+GET {{baseUrl}}/api/v1/auditoria/critica?tabla=ventas&limit=50
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs críticos por usuario y tabla
+GET {{baseUrl}}/api/v1/auditoria/critica?usuarioId=1&tabla=terrenos&limit=50
+Authorization: Bearer {{accessToken}}
+
+### Filtrar logs críticos por rango de fechas
+GET {{baseUrl}}/api/v1/auditoria/critica?fechaInicio=2025-01-01&fechaFin=2025-01-31&tabla=planes_pago
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial completo de un registro específico
+# Muestra todos los cambios realizados a una venta #1
+GET {{baseUrl}}/api/v1/auditoria/registro/ventas/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de un terreno específico
+GET {{baseUrl}}/api/v1/auditoria/registro/terrenos/5
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de cambios de un campo específico
+# Muestra todos los cambios del campo "estado" del terreno #5
+GET {{baseUrl}}/api/v1/auditoria/campo/terrenos/5/estado
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de cambios de precio de un terreno
+GET {{baseUrl}}/api/v1/auditoria/campo/terrenos/5/precio_final
+Authorization: Bearer {{accessToken}}
+
+### Obtener últimos logins de un usuario
+GET {{baseUrl}}/api/v1/auditoria/logins/1?limit=10
+Authorization: Bearer {{accessToken}}
+
+### Archivar logs antiguos (> 1 año) manualmente
+# Esto normalmente se ejecuta automáticamente cada noche a las 2 AM
+POST {{baseUrl}}/api/v1/auditoria/archivar
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# SWAGGER UI
+# ==========================================
+
+### Abrir Swagger UI
+# @name swagger
+GET {{baseUrl}}/swagger-ui.html
+
+### OpenAPI JSON
+GET {{baseUrl}}/api-docs

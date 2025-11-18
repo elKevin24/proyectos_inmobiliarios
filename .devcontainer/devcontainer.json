@@ -1,0 +1,73 @@
+{
+  "name": "Terrenos SaaS - Backend Java 21",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": "true",
+      "mavenVersion": "3.9"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-spring-boot-dashboard",
+        "vmware.vscode-boot-dev-pack",
+        "redhat.java",
+        "vscjava.vscode-maven",
+        "pivotal.vscode-spring-boot",
+        "ckolkman.vscode-postgres",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "humao.rest-client",
+        "redhat.vscode-yaml"
+      ],
+
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.compile.nullAnalysis.mode": "automatic",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "postCreateCommand": "bash -c 'cd backend && mvn clean install -DskipTests'",
+
+  "forwardPorts": [8080, 5432, 5050],
+
+  "portsAttributes": {
+    "8080": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "5050": {
+      "label": "pgAdmin",
+      "onAutoForward": "silent"
+    }
+  },
+
+  "remoteUser": "vscode",
+
+  "containerEnv": {
+    "SPRING_PROFILES_ACTIVE": "dev",
+    "DATABASE_URL": "jdbc:postgresql://postgres:5432/terrenos_db",
+    "DATABASE_USERNAME": "postgres",
+    "DATABASE_PASSWORD": "postgres"
+  }
+}
