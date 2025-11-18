@@ -371,8 +371,20 @@ Authorization: Bearer {{accessToken}}
 # COTIZACIONES
 # ==========================================
 
-### Listar cotizaciones
+### Listar todas las cotizaciones
 GET {{baseUrl}}/api/v1/cotizaciones
+Authorization: Bearer {{accessToken}}
+
+### Listar cotizaciones vigentes
+GET {{baseUrl}}/api/v1/cotizaciones?vigentes=true
+Authorization: Bearer {{accessToken}}
+
+### Buscar cotizaciones por cliente
+GET {{baseUrl}}/api/v1/cotizaciones?cliente=María
+Authorization: Bearer {{accessToken}}
+
+### Obtener cotización por ID
+GET {{baseUrl}}/api/v1/cotizaciones/1
 Authorization: Bearer {{accessToken}}
 
 ### Crear cotización
@@ -388,14 +400,157 @@ Content-Type: {{contentType}}
   "clienteTelefono": "5551234567",
   "precioBase": 550000.00,
   "descuento": 10000.00,
+  "porcentajeDescuento": 1.82,
   "precioFinal": 540000.00,
   "fechaVigencia": "2025-12-31",
   "observaciones": "Cliente interesado en pago de contado"
 }
 
+### Eliminar cotización
+DELETE {{baseUrl}}/api/v1/cotizaciones/1
+Authorization: Bearer {{accessToken}}
+
 # ==========================================
 # APARTADOS
 # ==========================================
+
+### Listar todos los apartados
+GET {{baseUrl}}/api/v1/apartados
+Authorization: Bearer {{accessToken}}
+
+### Listar apartados vigentes
+GET {{baseUrl}}/api/v1/apartados?vigentes=true
+Authorization: Bearer {{accessToken}}
+
+### Listar apartados vencidos
+GET {{baseUrl}}/api/v1/apartados?vencidos=true
+Authorization: Bearer {{accessToken}}
+
+### Obtener apartado por ID
+GET {{baseUrl}}/api/v1/apartados/1
+Authorization: Bearer {{accessToken}}
+
+### Crear apartado
+# @name createApartado
+POST {{baseUrl}}/api/v1/apartados
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "cotizacionId": 1,
+  "clienteNombre": "Carlos Ramírez",
+  "clienteEmail": "carlos.ramirez@example.com",
+  "clienteTelefono": "5559876543",
+  "clienteDireccion": "Calle 5 #123, Colonia Centro",
+  "montoApartado": 50000.00,
+  "precioTotal": 550000.00,
+  "duracionDias": 30,
+  "observaciones": "Cliente solicita 30 días para tramitar crédito"
+}
+
+### Cancelar apartado
+PUT {{baseUrl}}/api/v1/apartados/1/cancelar
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "motivo": "Cliente decidió no continuar con la compra"
+}
+
+### Eliminar apartado
+DELETE {{baseUrl}}/api/v1/apartados/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# VENTAS
+# ==========================================
+
+### Listar todas las ventas
+GET {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+
+### Listar ventas por estado
+GET {{baseUrl}}/api/v1/ventas?estado=PAGADO
+Authorization: Bearer {{accessToken}}
+
+### Obtener venta por ID
+GET {{baseUrl}}/api/v1/ventas/1
+Authorization: Bearer {{accessToken}}
+
+### Crear venta (conversión de apartado)
+# @name createVenta
+POST {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 1,
+  "apartadoId": 1,
+  "compradorNombre": "Carlos Ramírez",
+  "compradorEmail": "carlos.ramirez@example.com",
+  "compradorTelefono": "5559876543",
+  "compradorDireccion": "Calle 5 #123, Colonia Centro",
+  "compradorRfc": "RAMC850615ABC",
+  "compradorCurp": "RAMC850615HDFLRR02",
+  "precioTotal": 550000.00,
+  "montoApartadoAcreditado": 50000.00,
+  "montoFinal": 500000.00,
+  "porcentajeComision": 3.0,
+  "montoComision": 15000.00,
+  "formaPago": "CREDITO_BANCARIO",
+  "observaciones": "Venta realizada con crédito hipotecario"
+}
+
+### Crear venta directa (sin apartado)
+POST {{baseUrl}}/api/v1/ventas
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "terrenoId": 2,
+  "compradorNombre": "Ana Martínez",
+  "compradorEmail": "ana.martinez@example.com",
+  "compradorTelefono": "5551112222",
+  "compradorDireccion": "Av. Insurgentes #456",
+  "compradorRfc": "MAMA900215XYZ",
+  "compradorCurp": "MAMA900215MDFRNN03",
+  "precioTotal": 450000.00,
+  "montoApartadoAcreditado": 0.00,
+  "montoFinal": 450000.00,
+  "porcentajeComision": 3.0,
+  "montoComision": 13500.00,
+  "formaPago": "CONTADO",
+  "observaciones": "Venta de contado sin apartado previo"
+}
+
+### Cambiar estado de venta a PAGADO
+PATCH {{baseUrl}}/api/v1/ventas/1/estado?estado=PAGADO
+Authorization: Bearer {{accessToken}}
+
+### Cambiar estado de venta a CANCELADO
+PATCH {{baseUrl}}/api/v1/ventas/1/estado?estado=CANCELADO
+Authorization: Bearer {{accessToken}}
+
+### Eliminar venta (solo canceladas)
+DELETE {{baseUrl}}/api/v1/ventas/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
+# REPORTES Y DASHBOARD
+# ==========================================
+
+### Dashboard principal
+GET {{baseUrl}}/api/v1/reportes/dashboard
+Authorization: Bearer {{accessToken}}
+
+### Estadísticas por proyecto
+GET {{baseUrl}}/api/v1/reportes/proyectos
+Authorization: Bearer {{accessToken}}
+
+### Estadísticas de un proyecto específico
+GET {{baseUrl}}/api/v1/reportes/proyectos/1
+Authorization: Bearer {{accessToken}}
 
 ### Listar apartados
 GET {{baseUrl}}/api/v1/apartados
