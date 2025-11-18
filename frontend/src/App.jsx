@@ -14,11 +14,13 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import TerrenosList from './pages/TerrenosList';
 import TerrenoForm from './pages/TerrenoForm';
+import TerrenoDetail from './pages/TerrenoDetail';
 import VentasList from './pages/VentasList';
-
-// Placeholder pages
-import Proyectos from './pages/Proyectos';
-import Clientes from './pages/Clientes';
+import ProyectosList from './pages/ProyectosList';
+import ProyectoForm from './pages/ProyectoForm';
+import ProyectoPlano from './pages/ProyectoPlano';
+import ClientesList from './pages/ClientesList';
+import ClienteForm from './pages/ClienteForm';
 
 import './App.css';
 
@@ -49,15 +51,21 @@ function App() {
           <Route index element={<Dashboard />} />
 
           {/* Proyectos */}
-          <Route path="proyectos" element={<Proyectos />} />
+          <Route path="proyectos" element={<ProyectosList />} />
+          <Route path="proyectos/nuevo" element={<ProyectoForm />} />
+          <Route path="proyectos/:id/editar" element={<ProyectoForm />} />
+          <Route path="proyectos/:id/plano" element={<ProyectoPlano />} />
 
           {/* Terrenos */}
           <Route path="terrenos" element={<TerrenosList />} />
           <Route path="terrenos/nuevo" element={<TerrenoForm />} />
+          <Route path="terrenos/:id" element={<TerrenoDetail />} />
           <Route path="terrenos/:id/editar" element={<TerrenoForm />} />
 
           {/* Clientes */}
-          <Route path="clientes" element={<Clientes />} />
+          <Route path="clientes" element={<ClientesList />} />
+          <Route path="clientes/nuevo" element={<ClienteForm />} />
+          <Route path="clientes/:id/editar" element={<ClienteForm />} />
 
           {/* Ventas */}
           <Route path="ventas" element={<VentasList />} />

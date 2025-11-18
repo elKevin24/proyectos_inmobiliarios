@@ -1,0 +1,130 @@
+.proyectos-container {
+  max-width: 1400px;
+}
+
+.proyectos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.proyecto-card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.proyecto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.proyecto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.proyecto-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 20px;
+  flex: 1;
+}
+
+.badge-planificacion {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-en-venta {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge-agotado {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge-suspendido {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-cancelado {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.proyecto-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.proyecto-info .value.disponible {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.proyecto-info .value.vendido {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+.proyecto-info .value.precio {
+  color: #3498db;
+  font-weight: 700;
+}
+
+.proyecto-descripcion {
+  margin: 0 0 16px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.proyecto-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+/* Form specific styles */
+.form-container h3 {
+  margin: 30px 0 20px 0;
+  color: #2c3e50;
+  font-size: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.form-container h3:first-of-type {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .proyectos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .proyecto-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
