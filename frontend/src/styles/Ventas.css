@@ -61,6 +61,209 @@
   color: #721c24;
 }
 
+/* Monto Info Section */
+.monto-info {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.monto-info .info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.monto-info .label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.monto-info .value {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.monto-info .info-item.highlight {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 15px 25px;
+  border-radius: 8px;
+}
+
+/* Pagos Summary */
+.pagos-summary {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.pagos-summary .summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pagos-summary .label {
+  color: #7f8c8d;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pagos-summary .value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pagos-summary .value.pagado {
+  color: #27ae60;
+}
+
+.pagos-summary .value.pendiente {
+  color: #e74c3c;
+}
+
+/* Pagos Table */
+.pagos-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.pagos-table thead {
+  background-color: #ecf0f1;
+}
+
+.pagos-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #2c3e50;
+}
+
+.pagos-table tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.pagos-table td {
+  padding: 12px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.pagos-table td.monto {
+  font-weight: 600;
+  color: #27ae60;
+}
+
+/* Empty State Small */
+.empty-state-small {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+.empty-state-small p {
+  color: #7f8c8d;
+  margin-bottom: 15px;
+}
+
+/* Detail Styles */
+.detail-container {
+  max-width: 1200px;
+}
+
+.detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.info-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-section h2 {
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  font-size: 20px;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #7f8c8d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.descripcion-text {
+  margin: 0;
+  color: #2c3e50;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  transition: color 0.3s;
+}
+
+.btn-back:hover {
+  color: #764ba2;
+}
+
 @media (max-width: 768px) {
   .ventas-table-container {
     overflow-x: auto;
@@ -68,5 +271,17 @@
 
   .ventas-table {
     min-width: 800px;
+  }
+
+  .monto-info {
+    flex-direction: column;
+  }
+
+  .pagos-summary {
+    flex-direction: column;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
   }
 }

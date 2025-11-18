@@ -16,6 +16,9 @@ import TerrenosList from './pages/TerrenosList';
 import TerrenoForm from './pages/TerrenoForm';
 import TerrenoDetail from './pages/TerrenoDetail';
 import VentasList from './pages/VentasList';
+import VentaForm from './pages/VentaForm';
+import VentaDetail from './pages/VentaDetail';
+import PagoForm from './pages/PagoForm';
 import ProyectosList from './pages/ProyectosList';
 import ProyectoForm from './pages/ProyectoForm';
 import ProyectoPlano from './pages/ProyectoPlano';
@@ -69,6 +72,9 @@ function App() {
 
           {/* Ventas */}
           <Route path="ventas" element={<VentasList />} />
+          <Route path="ventas/nueva" element={<VentaForm />} />
+          <Route path="ventas/:id" element={<VentaDetail />} />
+          <Route path="ventas/:id/pagos/nuevo" element={<PagoForm />} />
         </Route>
 
         {/* Redirect any unknown route to home */}
