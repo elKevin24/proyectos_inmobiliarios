@@ -76,4 +76,18 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     long countByTenantIdAndEstadoAndDeletedFalse(Long tenantId, EstadoVenta estado);
 
     long countByTenantIdAndDeletedFalse(Long tenantId);
+
+    /**
+     * Cuenta ventas por cliente
+     */
+    @Query("SELECT COUNT(v) FROM Venta v WHERE v.clienteId = :clienteId AND v.deleted = false")
+    Long countByClienteId(@Param("clienteId") Long clienteId);
+
+    /**
+     * Busca ventas por cliente ordenadas por fecha
+     */
+    @Query("SELECT v FROM Venta v WHERE v.clienteId = :clienteId " +
+           "AND v.deleted = false " +
+           "ORDER BY v.createdAt DESC")
+    List<Venta> findByClienteIdOrderByCreatedAtDesc(@Param("clienteId") Long clienteId);
 }

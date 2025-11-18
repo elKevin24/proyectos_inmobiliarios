@@ -55,4 +55,26 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Long> {
                                         @Param("fechaFin") LocalDate fechaFin);
 
     long countByTenantIdAndDeletedFalse(Long tenantId);
+
+    /**
+     * Cuenta cotizaciones por cliente
+     */
+    @Query("SELECT COUNT(c) FROM Cotizacion c WHERE c.clienteId = :clienteId AND c.deleted = false")
+    Long countByClienteId(@Param("clienteId") Long clienteId);
+
+    /**
+     * Cuenta cotizaciones vigentes de un cliente
+     */
+    @Query("SELECT COUNT(c) FROM Cotizacion c WHERE c.clienteId = :clienteId " +
+           "AND c.fechaVigencia > :fecha " +
+           "AND c.deleted = false")
+    Long countByClienteIdAndFechaVigenciaAfter(@Param("clienteId") Long clienteId, @Param("fecha") LocalDate fecha);
+
+    /**
+     * Busca cotizaciones por cliente ordenadas por fecha
+     */
+    @Query("SELECT c FROM Cotizacion c WHERE c.clienteId = :clienteId " +
+           "AND c.deleted = false " +
+           "ORDER BY c.createdAt DESC")
+    List<Cotizacion> findByClienteIdOrderByCreatedAtDesc(@Param("clienteId") Long clienteId);
 }

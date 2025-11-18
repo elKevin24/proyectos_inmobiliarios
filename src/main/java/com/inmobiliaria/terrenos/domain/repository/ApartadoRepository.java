@@ -58,4 +58,26 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
     List<Apartado> findByClienteNombre(@Param("tenantId") Long tenantId, @Param("nombre") String nombre);
 
     long countByTenantIdAndEstadoAndDeletedFalse(Long tenantId, EstadoApartado estado);
+
+    /**
+     * Cuenta apartados por cliente
+     */
+    @Query("SELECT COUNT(a) FROM Apartado a WHERE a.clienteId = :clienteId AND a.deleted = false")
+    Long countByClienteId(@Param("clienteId") Long clienteId);
+
+    /**
+     * Cuenta apartados vigentes de un cliente
+     */
+    @Query("SELECT COUNT(a) FROM Apartado a WHERE a.clienteId = :clienteId " +
+           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.VIGENTE " +
+           "AND a.deleted = false")
+    Long countByClienteIdAndEstadoVigente(@Param("clienteId") Long clienteId);
+
+    /**
+     * Busca apartados por cliente ordenados por fecha
+     */
+    @Query("SELECT a FROM Apartado a WHERE a.clienteId = :clienteId " +
+           "AND a.deleted = false " +
+           "ORDER BY a.createdAt DESC")
+    List<Apartado> findByClienteIdOrderByCreatedAtDesc(@Param("clienteId") Long clienteId);
 }

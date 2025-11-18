@@ -807,6 +807,108 @@ Content-Type: {{contentType}}
 }
 
 # ==========================================
+# CLIENTES
+# ==========================================
+
+### Listar todos los clientes
+GET {{baseUrl}}/api/v1/clientes
+Authorization: Bearer {{accessToken}}
+
+### Listar clientes por estado
+GET {{baseUrl}}/api/v1/clientes?estado=PROSPECTO
+Authorization: Bearer {{accessToken}}
+
+### Listar clientes activos (no inactivos)
+GET {{baseUrl}}/api/v1/clientes?activos=true
+Authorization: Bearer {{accessToken}}
+
+### Buscar clientes por nombre
+GET {{baseUrl}}/api/v1/clientes?nombre=María
+Authorization: Bearer {{accessToken}}
+
+### Obtener cliente por ID
+GET {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+
+### Obtener historial de transacciones del cliente
+# Incluye cotizaciones, apartados, ventas y estadísticas
+GET {{baseUrl}}/api/v1/clientes/1/historial
+Authorization: Bearer {{accessToken}}
+
+### Crear nuevo cliente
+# @name createCliente
+POST {{baseUrl}}/api/v1/clientes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "María",
+  "apellido": "González",
+  "email": "maria.gonzalez@example.com",
+  "telefono": "5551234567",
+  "telefonoSecundario": "5559876543",
+  "direccion": "Av. Insurgentes Sur 1234",
+  "ciudad": "Ciudad de México",
+  "estado": "CDMX",
+  "codigoPostal": "01000",
+  "pais": "México",
+  "rfc": "GOMA850615ABC",
+  "curp": "GOMA850615MDFLRR03",
+  "fechaNacimiento": "1985-06-15",
+  "origen": "REDES_SOCIALES",
+  "estadoCliente": "PROSPECTO",
+  "notas": "Cliente interesado en lotes de la Manzana A",
+  "preferencias": "{\"presupuesto\":500000,\"ubicacion\":\"cerca del parque\",\"tamano\":\"200m2\"}"
+}
+
+### Crear cliente comprador
+POST {{baseUrl}}/api/v1/clientes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Carlos",
+  "apellido": "Ramírez",
+  "email": "carlos.ramirez@example.com",
+  "telefono": "5559876543",
+  "direccion": "Calle 5 #123, Colonia Centro",
+  "ciudad": "Cuernavaca",
+  "estado": "Morelos",
+  "codigoPostal": "62000",
+  "rfc": "RAMC800715XYZ",
+  "curp": "RAMC800715HDFLRR02",
+  "fechaNacimiento": "1980-07-15",
+  "origen": "REFERIDO",
+  "estadoCliente": "COMPRADOR"
+}
+
+### Actualizar cliente
+PUT {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "estadoCliente": "INTERESADO",
+  "notas": "Cliente mostró interés en lote A-001. Siguiente seguimiento en 5 días.",
+  "telefonoSecundario": "5551112233"
+}
+
+### Cambiar estado del cliente a COMPRADOR
+PUT {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "estadoCliente": "COMPRADOR",
+  "notas": "Cliente realizó compra del lote A-001"
+}
+
+### Eliminar cliente (soft delete)
+# No se puede eliminar si tiene transacciones activas
+DELETE {{baseUrl}}/api/v1/clientes/1
+Authorization: Bearer {{accessToken}}
+
+# ==========================================
 # SWAGGER UI
 # ==========================================
 
