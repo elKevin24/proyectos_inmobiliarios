@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import useVentaStore from '../store/ventaStore';
 import useTerrenoStore from '../store/terrenoStore';
@@ -8,6 +8,7 @@ import '../styles/Ventas.css';
 
 function VentaForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { createVenta, isLoading } = useVentaStore();
   const { terrenos, fetchTerrenos } = useTerrenoStore();
   const { clientes, fetchClientes } = clienteStore();
@@ -15,6 +16,9 @@ function VentaForm() {
 
   const [terrenosDisponibles, setTerrenosDisponibles] = useState([]);
   const [selectedTerreno, setSelectedTerreno] = useState(null);
+
+  // Datos del apartado si viene desde conversión
+  const apartadoData = location.state || null;
 
   useEffect(() => {
     loadData();
@@ -27,6 +31,19 @@ function VentaForm() {
       // Solo mostrar terrenos disponibles
       const disponibles = allTerrenos.filter(t => t.estado === 'DISPONIBLE');
       setTerrenosDisponibles(disponibles);
+
+      // Si viene desde apartado, pre-llenar campos
+      if (apartadoData) {
+        if (apartadoData.terrenoId) {
+          setValue('terrenoId', apartadoData.terrenoId);
+        }
+        if (apartadoData.clienteId) {
+          setValue('clienteId', apartadoData.clienteId);
+        }
+        if (apartadoData.montoApartado) {
+          setValue('enganche', apartadoData.montoApartado);
+        }
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -58,6 +75,8 @@ function VentaForm() {
         montoFinanciado: montoFinanciado,
         metodoPago: data.metodoPago,
         observaciones: data.observaciones || null,
+        // Incluir apartadoId si viene desde conversión
+        apartadoId: apartadoData?.apartadoId || null,
         // Datos del plan de pago si hay financiamiento
         planPago: montoFinanciado > 0 ? {
           tipoPlan: data.tipoPlan || 'CREDITO',

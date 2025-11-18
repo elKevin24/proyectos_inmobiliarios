@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaMap, FaUsers, FaMoneyBillWave, FaSignOutAlt, FaBuilding } from 'react-icons/fa';
+import { FaHome, FaMap, FaUsers, FaMoneyBillWave, FaSignOutAlt, FaBuilding, FaBookmark } from 'react-icons/fa';
 import useAuthStore from '../store/authStore';
 import '../styles/Layout.css';
 
@@ -44,6 +44,11 @@ function Layout() {
           <li>
             <Link to="/ventas">
               <FaMoneyBillWave /> Ventas
+            </Link>
+          </li>
+          <li>
+            <Link to="/apartados">
+              <FaBookmark /> Apartados
             </Link>
           </li>
         </ul>

@@ -24,6 +24,9 @@ import ProyectoForm from './pages/ProyectoForm';
 import ProyectoPlano from './pages/ProyectoPlano';
 import ClientesList from './pages/ClientesList';
 import ClienteForm from './pages/ClienteForm';
+import ApartadosList from './pages/ApartadosList';
+import ApartadoForm from './pages/ApartadoForm';
+import ApartadoDetail from './pages/ApartadoDetail';
 
 import './App.css';
 
@@ -75,6 +78,11 @@ function App() {
           <Route path="ventas/nueva" element={<VentaForm />} />
           <Route path="ventas/:id" element={<VentaDetail />} />
           <Route path="ventas/:id/pagos/nuevo" element={<PagoForm />} />
+
+          {/* Apartados */}
+          <Route path="apartados" element={<ApartadosList />} />
+          <Route path="apartados/nuevo" element={<ApartadoForm />} />
+          <Route path="apartados/:id" element={<ApartadoDetail />} />
         </Route>
 
         {/* Redirect any unknown route to home */}
