@@ -1,8 +1,10 @@
 package com.inmobiliaria.terrenos.interfaces.rest;
 
+import com.inmobiliaria.terrenos.application.dto.plano.PlanoInteractivoResponse;
 import com.inmobiliaria.terrenos.application.dto.proyecto.CreateProyectoRequest;
 import com.inmobiliaria.terrenos.application.dto.proyecto.ProyectoResponse;
 import com.inmobiliaria.terrenos.application.dto.proyecto.UpdateProyectoRequest;
+import com.inmobiliaria.terrenos.application.service.PlanoService;
 import com.inmobiliaria.terrenos.application.service.ProyectoService;
 import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +41,7 @@ import java.util.List;
 public class ProyectoController {
 
     private final ProyectoService proyectoService;
+    private final PlanoService planoService;
 
     /**
      * Lista todos los proyectos del tenant
@@ -242,5 +245,37 @@ public class ProyectoController {
         log.info("PATCH /api/v1/proyectos/{}/estado - Nuevo estado: {}", id, estado);
         ProyectoResponse proyecto = proyectoService.cambiarEstado(id, estado);
         return ResponseEntity.ok(proyecto);
+    }
+
+    /**
+     * Obtiene el plano interactivo de un proyecto
+     */
+    @GetMapping("/{id}/plano-interactivo")
+    @PreAuthorize("hasAnyAuthority('PROYECTO_VER', 'ADMIN')")
+    @Operation(
+            summary = "Obtener plano interactivo",
+            description = "Obtiene el plano del proyecto con todos los terrenos, sus coordenadas y colores según estado. " +
+                         "Retorna el archivo de plano y la lista de terrenos con sus coordenadas para renderizar un mapa interactivo."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Plano interactivo obtenido exitosamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PlanoInteractivoResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Proyecto no encontrado"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
+    public ResponseEntity<PlanoInteractivoResponse> obtenerPlanoInteractivo(
+            @Parameter(description = "ID del proyecto", required = true)
+            @PathVariable Long id
+    ) {
+        log.info("GET /api/v1/proyectos/{}/plano-interactivo", id);
+        PlanoInteractivoResponse plano = planoService.obtenerPlanoInteractivo(id);
+        return ResponseEntity.ok(plano);
     }
 }

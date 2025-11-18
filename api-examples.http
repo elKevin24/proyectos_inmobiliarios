@@ -730,6 +730,83 @@ DELETE {{baseUrl}}/api/v1/archivos/1
 Authorization: Bearer {{accessToken}}
 
 # ==========================================
+# PLANO INTERACTIVO
+# ==========================================
+
+### Obtener plano interactivo del proyecto
+# Retorna el plano de imagen + todos los terrenos con coordenadas y color según estado
+GET {{baseUrl}}/api/v1/proyectos/1/plano-interactivo
+Authorization: Bearer {{accessToken}}
+
+### Crear terreno con coordenadas para plano interactivo
+# Las coordenadas se usan para renderizar el terreno en el plano
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "A-001",
+  "manzana": "A",
+  "area": 200.50,
+  "frente": 10.5,
+  "fondo": 19.5,
+  "precioBase": 500000.00,
+  "precioAjuste": 50000.00,
+  "precioMultiplicador": 1.0,
+  "caracteristicas": "Esquina, vista panorámica",
+  "observaciones": "Lote premium en zona residencial",
+  "coordenadasPlano": {
+    "tipo": "poligono",
+    "puntos": [
+      {"x": 100, "y": 150},
+      {"x": 200, "y": 150},
+      {"x": 200, "y": 350},
+      {"x": 100, "y": 350}
+    ]
+  }
+}
+
+### Crear terreno A-002 con coordenadas
+POST {{baseUrl}}/api/v1/terrenos
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "proyectoId": 1,
+  "numeroLote": "A-002",
+  "manzana": "A",
+  "area": 180.00,
+  "precioBase": 450000.00,
+  "coordenadasPlano": {
+    "tipo": "poligono",
+    "puntos": [
+      {"x": 200, "y": 150},
+      {"x": 300, "y": 150},
+      {"x": 300, "y": 330},
+      {"x": 200, "y": 330}
+    ]
+  }
+}
+
+### Actualizar coordenadas de un terreno existente
+PUT {{baseUrl}}/api/v1/terrenos/1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "coordenadasPlano": {
+    "tipo": "poligono",
+    "puntos": [
+      {"x": 105, "y": 155},
+      {"x": 205, "y": 155},
+      {"x": 205, "y": 355},
+      {"x": 105, "y": 355}
+    ]
+  }
+}
+
+# ==========================================
 # SWAGGER UI
 # ==========================================
 

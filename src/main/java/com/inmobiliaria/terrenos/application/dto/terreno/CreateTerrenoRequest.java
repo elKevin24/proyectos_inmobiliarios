@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.terreno;
 
+import com.inmobiliaria.terrenos.application.dto.plano.CoordenadasPlano;
 import com.inmobiliaria.terrenos.domain.enums.EstadoTerreno;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -62,4 +63,7 @@ public class CreateTerrenoRequest {
     private String observaciones;
 
     private EstadoTerreno estado;
+
+    // Coordenadas en el plano para renderizado interactivo
+    private CoordenadasPlano coordenadasPlano;
 }

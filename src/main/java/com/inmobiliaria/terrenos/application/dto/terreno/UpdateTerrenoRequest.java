@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.terreno;
 
+import com.inmobiliaria.terrenos.application.dto.plano.CoordenadasPlano;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,4 +53,7 @@ public class UpdateTerrenoRequest {
 
     @Size(max = 1000, message = "Las observaciones no pueden exceder 1000 caracteres")
     private String observaciones;
+
+    // Coordenadas en el plano para renderizado interactivo
+    private CoordenadasPlano coordenadasPlano;
 }

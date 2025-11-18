@@ -1,10 +1,14 @@
 package com.inmobiliaria.terrenos.interfaces.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inmobiliaria.terrenos.application.dto.plano.CoordenadasPlano;
 import com.inmobiliaria.terrenos.application.dto.terreno.CreateTerrenoRequest;
 import com.inmobiliaria.terrenos.application.dto.terreno.TerrenoResponse;
 import com.inmobiliaria.terrenos.application.dto.terreno.UpdateTerrenoRequest;
 import com.inmobiliaria.terrenos.domain.entity.Terreno;
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -19,7 +23,10 @@ import java.util.List;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
-public interface TerrenoMapper {
+public abstract class TerrenoMapper {
+
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     /**
      * Convierte CreateTerrenoRequest a entidad Terreno
@@ -29,21 +36,21 @@ public interface TerrenoMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "proyecto", ignore = true)
-    @Mapping(target = "fase", ignore = true)
-    Terreno toEntity(CreateTerrenoRequest request);
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "poligono", ignore = true)
+    @Mapping(target = "coordenadasPlano", expression = "java(coordenadasToJson(request.getCoordenadasPlano()))")
+    public abstract Terreno toEntity(CreateTerrenoRequest request);
 
     /**
      * Convierte entidad Terreno a TerrenoResponse
      */
-    @Mapping(target = "proyectoNombre", source = "proyecto.nombre")
-    @Mapping(target = "faseNombre", source = "fase.nombre")
-    TerrenoResponse toResponse(Terreno terreno);
+    public abstract TerrenoResponse toResponse(Terreno terreno);
 
     /**
      * Convierte lista de entidades a lista de respuestas
      */
-    List<TerrenoResponse> toResponseList(List<Terreno> terrenos);
+    public abstract List<TerrenoResponse> toResponseList(List<Terreno> terrenos);
 
     /**
      * Actualiza una entidad Terreno existente con datos de UpdateTerrenoRequest
@@ -57,7 +64,46 @@ public interface TerrenoMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "proyecto", ignore = true)
-    @Mapping(target = "fase", ignore = true)
-    void updateEntityFromRequest(UpdateTerrenoRequest request, @MappingTarget Terreno terreno);
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "poligono", ignore = true)
+    public abstract void updateEntityFromRequest(UpdateTerrenoRequest request, @MappingTarget Terreno terreno);
+
+    /**
+     * Actualiza coordenadas de un terreno
+     */
+    @AfterMapping
+    protected void afterUpdate(UpdateTerrenoRequest request, @MappingTarget Terreno terreno) {
+        if (request.getCoordenadasPlano() != null) {
+            terreno.setCoordenadasPlano(coordenadasToJson(request.getCoordenadasPlano()));
+        }
+    }
+
+    /**
+     * Convierte CoordenadasPlano a JSON string
+     */
+    protected String coordenadasToJson(CoordenadasPlano coordenadas) {
+        if (coordenadas == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(coordenadas);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error al convertir coordenadas a JSON", e);
+        }
+    }
+
+    /**
+     * Convierte JSON string a CoordenadasPlano
+     */
+    protected CoordenadasPlano jsonToCoordenadas(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, CoordenadasPlano.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error al parsear coordenadas JSON", e);
+        }
+    }
 }
