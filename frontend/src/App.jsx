@@ -30,6 +30,8 @@ import ApartadoDetail from './pages/ApartadoDetail';
 import CotizacionesList from './pages/CotizacionesList';
 import CotizacionForm from './pages/CotizacionForm';
 import CotizacionDetail from './pages/CotizacionDetail';
+import PlanesPagoList from './pages/PlanesPagoList';
+import PlanPagoDetail from './pages/PlanPagoDetail';
 
 import './App.css';
 
@@ -91,6 +93,10 @@ function App() {
           <Route path="cotizaciones" element={<CotizacionesList />} />
           <Route path="cotizaciones/nueva" element={<CotizacionForm />} />
           <Route path="cotizaciones/:id" element={<CotizacionDetail />} />
+
+          {/* Planes de Pago */}
+          <Route path="planes-pago" element={<PlanesPagoList />} />
+          <Route path="planes-pago/:id" element={<PlanPagoDetail />} />
         </Route>
 
         {/* Redirect any unknown route to home */}
