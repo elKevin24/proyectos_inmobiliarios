@@ -45,7 +45,7 @@ public class Proyecto {
     private String codigoPostal;
 
     private Double latitud;
-    private Long itud;
+    private Double longitud;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_precio", length = 20)
@@ -91,6 +91,10 @@ public class Proyecto {
 
     @Column(name = "updated_by")
     private String updatedBy;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proyecto_id", insertable = false, updatable = false)
+    private java.util.List<Terreno> terrenos;
 
     @PrePersist
     protected void onCreate() {

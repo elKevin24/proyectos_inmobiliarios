@@ -53,8 +53,6 @@ public interface FaseMapper {
     @Mapping(target = "proyectoId", ignore = true)
     @Mapping(target = "totalTerrenos", ignore = true)
     @Mapping(target = "terrenosDisponibles", ignore = true)
-    @Mapping(target = "terrenosApartados", ignore = true)
-    @Mapping(target = "terrenosVendidos", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)

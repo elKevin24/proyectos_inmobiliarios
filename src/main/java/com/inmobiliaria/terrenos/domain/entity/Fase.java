@@ -84,6 +84,14 @@ public class Fase {
     @Column(name = "updated_by")
     private String updatedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proyecto_id", insertable = false, updatable = false)
+    private Proyecto proyecto;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fase_id", insertable = false, updatable = false)
+    private java.util.List<Terreno> terrenos;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

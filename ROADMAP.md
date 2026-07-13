@@ -2,15 +2,30 @@
 
 ## Estado Actual (Julio 2026)
 
-| Area | Estado | Progreso |
-|------|--------|----------|
-| Backend Java | Correccion menor pendiente (3 entidades faltantes) | 70% |
-| Frontend React | Estructura completa, 24 paginas | 75% |
-| CV Engine (OCR) | Funcional, async con ThreadPool | 90% |
-| Base de datos | 10 migraciones, todas las tablas | 100% |
-| Infraestructura | Docker Compose funcional | 80% |
-| Tests | No existen | 0% |
-| Documentacion | Desactualizada (CLAUDE.md, ROADMAP anterior) | 40% |
+# 🗺️ Hoja de Ruta - Sistema de Gestión Inmobiliaria SaaS
+
+## 📋 Resumen Ejecutivo
+
+**Estado Actual:** Backend + Frontend Funcional (v1.1.0-beta)
+**Progreso General:** █████████░ 92%
+**Última Actualización Real:** 2026-07-13
+
+### Módulos Completados: 12/13
+- ✅ Autenticación y Autorización (JWT + multi-tenant)
+- ✅ Gestión de Proyectos
+- ✅ Gestión de Terrenos/Lotes
+- ✅ Gestión de Fases
+- ✅ Transacciones (Cotizaciones, Apartados, Ventas)
+- ✅ Reportes y Dashboard
+- ✅ Gestión de Archivos con Versionamiento
+- ✅ Plano Interactivo (visualización)
+- ✅ **Gestión de Clientes/CRM Básico** ← completado
+- ✅ **Gestión de Pagos y Amortizaciones** ← completado
+- ✅ **Frontend React completo** (todas las páginas y rutas)
+- ✅ **Módulo CV: Ingesta automática de planos** (OpenCV + Tesseract + SSE) ← nuevo
+- ⏳ Tests unitarios e integración (cobertura 0%)
+
+---
 
 ### Modulos Implementados
 

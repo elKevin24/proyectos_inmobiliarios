@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaRobot, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { FaArrowLeft, FaRobot, FaSpinner, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import ImageUploader from '../components/ImageUploader';
 import PlanoValidator from '../components/PlanoValidator';
 import archivoService from '../services/archivoService';
-import cvEngineService from '../services/cvEngineService';
+import api from '../services/api';
 import useProyectoStore from '../store/proyectoStore';
 import '../styles/Proyectos.css';
 import '../styles/PlanoValidatorPage.css';
@@ -26,13 +26,21 @@ function PlanoValidatorPage() {
   const [lotesDetectados, setLotesDetectados] = useState([]);
   const [error, setError] = useState(null);
   const [processingMessage, setProcessingMessage] = useState('');
+  const [processingPercent, setProcessingPercent] = useState(0);
   const [validatedLotes, setValidatedLotes] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const sseRef = useRef(null);
 
   useEffect(() => {
     if (proyectoId) {
       fetchProyectoById(proyectoId).catch(() => {});
     }
   }, [proyectoId, fetchProyectoById]);
+
+  // Cleanup SSE on unmount
+  useEffect(() => {
+    return () => sseRef.current?.close();
+  }, []);
 
   const handleUploadSuccess = useCallback(async (archivoResponse) => {
     if (!archivoResponse) {
@@ -42,33 +50,90 @@ function PlanoValidatorPage() {
 
     setImageUrl(archivoService.getDownloadUrl(archivoResponse.id));
     setError(null);
-
     setStep(STEPS.PROCESSING);
-    setProcessingMessage('Analizando plano con OCR...');
+    setProcessingMessage('Enviando plano al servidor...');
+    setProcessingPercent(5);
 
     try {
-      const filePath = archivoResponse.nombreAlmacenado;
-      const result = await cvEngineService.extractLots(filePath);
+      // 1. Llamar al Backend Java (no directo a Python)
+      const formData = new FormData();
+      // Re-fetch the file from the already-uploaded archive URL to send to analizar
+      // El archivo ya está en el servidor; enviamos su nombre almacenado
+      const initRes = await api.post(
+        `/proyectos/${proyectoId}/planos/analizar`,
+        { nombreAlmacenado: archivoResponse.nombreAlmacenado },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      const { tareaId, sseUrl } = initRes.data;
 
-      if (result.lotes && result.lotes.length > 0) {
-        setLotesDetectados(result.lotes);
+      // 2. Suscribirse al canal SSE para recibir progreso en tiempo real
+      const token = localStorage.getItem('token');
+      const eventSource = new EventSource(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${sseUrl}?token=${token}`
+      );
+      sseRef.current = eventSource;
+
+      eventSource.addEventListener('progreso', (e) => {
+        const data = JSON.parse(e.data);
+        setProcessingMessage(data.paso || 'Procesando...');
+        setProcessingPercent(data.porcentaje || 0);
+      });
+
+      eventSource.addEventListener('completado', (e) => {
+        eventSource.close();
+        const resultado = JSON.parse(e.data);
+        if (resultado.lotes?.length > 0) {
+          setLotesDetectados(resultado.lotes);
+        } else {
+          setError('No se detectaron lotes. Puedes validar el plano manualmente.');
+          setLotesDetectados([]);
+        }
         setStep(STEPS.VALIDATE);
-      } else {
-        setError('No se detectaron lotes en la imagen. Puedes continuar y dibujar los lotes manualmente.');
+      });
+
+      eventSource.addEventListener('error', (e) => {
+        eventSource.close();
+        let msg = 'Error al procesar el plano.';
+        try { msg = JSON.parse(e.data)?.mensaje || msg; } catch (_) {}
+        setError(`OCR no disponible: ${msg}. Puedes validar el plano manualmente.`);
         setStep(STEPS.VALIDATE);
         setLotesDetectados([]);
-      }
-    } catch (err) {
-      setError(`OCR no disponible: ${err.message}. Puedes validar el plano manualmente.`);
-      setStep(STEPS.VALIDATE);
-      setLotesDetectados([]);
-    }
-  }, []);
+      });
 
-  const handleConfirmValidation = useCallback((lotesValidados) => {
-    setValidatedLotes(lotesValidados);
-    setStep(STEPS.COMPLETE);
-  }, []);
+      eventSource.onerror = () => {
+        eventSource.close();
+        setError('Se perdió la conexión con el servidor. Intenta de nuevo.');
+        setStep(STEPS.UPLOAD);
+      };
+
+    } catch (err) {
+      const msg = err.response?.data?.mensaje || err.message;
+      setError(`Error al iniciar análisis: ${msg}`);
+      setStep(STEPS.UPLOAD);
+    }
+  }, [proyectoId]);
+
+  const handleConfirmValidation = useCallback(async (lotesValidados) => {
+    setSaving(true);
+    setError(null);
+    try {
+      // Llamar al endpoint de confirmación para persistir en BD
+      await api.post(`/proyectos/${proyectoId}/planos/confirmar`, {
+        proyectoId: Number(proyectoId),
+        lotes: lotesValidados.map((l) => ({
+          numeroLote: l.numeroLote,
+          area: l.area ? Number(l.area) : null,
+          coordenadasPlanoJson: JSON.stringify(l.poligono),
+        })),
+      });
+      setValidatedLotes(lotesValidados);
+      setStep(STEPS.COMPLETE);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al guardar los lotes. Intenta de nuevo.');
+    } finally {
+      setSaving(false);
+    }
+  }, [proyectoId]);
 
   const handleCancelValidation = useCallback(() => {
     setLotesDetectados([]);
@@ -135,8 +200,12 @@ function PlanoValidatorPage() {
             <h3>Procesando plano...</h3>
             <p>{processingMessage}</p>
             <div className="processing-bar">
-              <div className="processing-bar-fill" />
+              <div
+                className="processing-bar-fill"
+                style={{ width: `${processingPercent}%`, transition: 'width 0.5s ease' }}
+              />
             </div>
+            <span className="processing-percent">{processingPercent}%</span>
           </div>
         )}
 
@@ -146,16 +215,19 @@ function PlanoValidatorPage() {
             lotesDetectados={lotesDetectados}
             onConfirm={handleConfirmValidation}
             onCancel={handleCancelValidation}
+            saving={saving}
           />
         )}
 
         {step === STEPS.COMPLETE && (
           <div className="complete-section">
             <div className="complete-icon">
-              <FaRobot size={64} />
+              <FaCheckCircle size={64} style={{ color: '#4CAF50' }} />
             </div>
-            <h3>Validacion Completada</h3>
-            <p>{validatedLotes.length} lote{validatedLotes.length !== 1 ? 's' : ''} validado{validatedLotes.length !== 1 ? 's' : ''} correctamente.</p>
+            <h3>¡Ingesta Completada!</h3>
+            <p>
+              <strong>{validatedLotes.length}</strong> lote{validatedLotes.length !== 1 ? 's' : ''} guardado{validatedLotes.length !== 1 ? 's' : ''} en el sistema con estado <strong>DISPONIBLE</strong>.
+            </p>
             <div className="complete-actions">
               {proyectoId && (
                 <button onClick={() => navigate(`/proyectos/${proyectoId}/plano`)} className="btn btn-primary">

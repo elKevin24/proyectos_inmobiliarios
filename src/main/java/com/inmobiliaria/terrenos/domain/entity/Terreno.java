@@ -36,6 +36,10 @@ public class Terreno {
     @Column(name = "proyecto_id", nullable = false)
     private Long proyectoId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proyecto_id", insertable = false, updatable = false)
+    private Proyecto proyecto;
+
     @Column(name = "fase_id")
     private Long faseId;
 

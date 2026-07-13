@@ -124,6 +124,13 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
+        <!-- Hypersistence Utils: JsonBinaryType para columnas JSONB en PostgreSQL -->
+        <dependency>
+            <groupId>io.hypersistence</groupId>
+            <artifactId>hypersistence-utils-hibernate-63</artifactId>
+            <version>3.9.0</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

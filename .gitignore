@@ -97,3 +97,14 @@ Thumbs.db
 *.ear
 hs_err_pid*
 replay_pid*
+
+# =====================================================
+# Python
+# =====================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
