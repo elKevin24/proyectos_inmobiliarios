@@ -1,545 +1,265 @@
-# 🗺️ Hoja de Ruta - Sistema de Gestión Inmobiliaria SaaS
+# Roadmap - Sistema de Gestion Inmobiliaria SaaS
 
-## 📋 Resumen Ejecutivo
+## Estado Actual (Julio 2026)
 
-**Estado Actual:** Backend Funcional (v1.0.0-beta)
-**Progreso General:** ████████░░ 80%
+| Area | Estado | Progreso |
+|------|--------|----------|
+| Backend Java | Correccion menor pendiente (3 entidades faltantes) | 70% |
+| Frontend React | Estructura completa, 24 paginas | 75% |
+| CV Engine (OCR) | Funcional, async con ThreadPool | 90% |
+| Base de datos | 10 migraciones, todas las tablas | 100% |
+| Infraestructura | Docker Compose funcional | 80% |
+| Tests | No existen | 0% |
+| Documentacion | Desactualizada (CLAUDE.md, ROADMAP anterior) | 40% |
 
-### Módulos Completados: 8/10
-- ✅ Autenticación y Autorización
-- ✅ Gestión de Proyectos
-- ✅ Gestión de Terrenos/Lotes
-- ✅ Gestión de Fases
-- ✅ Transacciones (Cotizaciones, Apartados, Ventas)
-- ✅ Reportes y Dashboard
-- ✅ Gestión de Archivos con Versionamiento
-- ✅ Plano Interactivo
+### Modulos Implementados
 
-### Pendientes: 2/10
-- ⏳ Gestión de Clientes/Compradores
-- ⏳ Gestión de Pagos y Amortizaciones
+- [x] Autenticacion JWT (login, register, refresh, multi-tenant)
+- [x] Gestión de Proyectos (CRUD, estados, contadores)
+- [x] Gestion de Terrenos/Lotes (CRUD, precio calculado, coordenadas JSONB)
+- [x] Gestion de Fases (CRUD por proyecto)
+- [x] Cotizaciones (descuentos, vigencia, busqueda por cliente)
+- [x] Apartados (anticipo, vencimiento, cancelacion con motivo)
+- [x] Ventas (conversion desde apartado, comisiones, formas de pago)
+- [x] Clientes (CRUD, historial de transacciones)
+- [x] Planes de Pago (amortizaciones, tabla de amortizacion, estado de cuenta)
+- [x] Pagos (registro, validacion, estados)
+- [x] Reportes y Dashboard (metricas generales y por proyecto)
+- [x] Gestion de Archivos (upload, download, versionamiento, galeria)
+- [x] Plano Interactivo (imagen + poligonos coloreados por estado)
+- [x] Auditoria (logs simples/criticos, archivado automatico)
+- [x] CV Engine - OCR de planos (OpenCV + Tesseract, async)
+- [x] Frontend React 19 (24 paginas, 12 servicios, 8 stores Zustand)
 
----
+### Problemas Conocidos (Bloqueantes)
 
-## ✅ Fase 1: Infraestructura y Base (COMPLETADO)
-
-### 1.1 Configuración Inicial ✅
-- [x] Proyecto Spring Boot 3.4.0 con Java 21
-- [x] PostgreSQL 16 con Flyway
-- [x] Arquitectura Hexagonal/Clean
-- [x] Multi-tenancy (discriminator-based)
-- [x] Docker y Docker Compose
-- [x] GitHub Actions CI/CD
-- [x] Codespaces configuration
-
-**Commits:**
-- `refactor: Reestructurar proyecto eliminando carpeta backend redundante`
-
----
-
-## ✅ Fase 2: Autenticación (COMPLETADO)
-
-### 2.1 Sistema de Autenticación JWT ✅
-- [x] Registro de empresa (tenant) + usuario admin
-- [x] Login con JWT (access token + refresh token)
-- [x] Refresh token endpoint
-- [x] Multi-tenant context (ThreadLocal)
-- [x] TenantInterceptor para extraer tenant_id del JWT
-- [x] Permisos granulares por módulo
-- [x] Roles configurables
-
-### 2.2 Gestión de Usuarios ✅
-- [x] CRUD de usuarios
-- [x] Asignación de roles
-- [x] Desactivación de usuarios
-- [x] Hash de contraseñas con BCrypt
-
-**Base de Datos:**
-- Migración V1: tenants
-- Migración V2: usuarios, roles, permisos, usuarios_roles
-
-**Commits:**
-- `feat: Implementar sistema de autenticación JWT completo`
+1. **3 entidades Java faltantes:** `Venta.java`, `Cotizacion.java`, `Apartado.java` no existen como archivos en `domain/entity/` aunque son importadas por repositories y services
+2. **Auth desubicado:** `AuthController.java`, `AuthService.java`, `UsuarioDTO.java` estan en `backend/src/main/java/` en vez de `src/main/java/` - Maven no los compila
+3. **Dependencia faltante:** `hibernate-types-60` no esta en pom.xml pero el codigo la importa
+4. **Typo en Proyecto.java:** Campo `itud` deberia ser `longitud` (Double)
 
 ---
 
-## ✅ Fase 3: Gestión de Proyectos (COMPLETADO)
+## Fase 0 — Estabilizacion (URGENTE)
 
-### 3.1 Proyectos Inmobiliarios ✅
-- [x] CRUD completo de proyectos
-- [x] Estados: PLANIFICACION, EN_VENTA, VENDIDO, FINALIZADO, CANCELADO
-- [x] Cambio de estado con validaciones
-- [x] Ubicación con coordenadas (lat/lng)
-- [x] Tipos de precio: FIJO, VARIABLE
-- [x] Contadores automáticos (terrenos disponibles, apartados, vendidos)
-- [x] Filtros: activos, disponibles, por estado
+*El backend no compila. Sin esto, nada mas funciona.*
 
-**Base de Datos:**
-- Migración V3: proyectos
+| # | Tarea | Archivos | Esfuerzo |
+|---|-------|----------|----------|
+| 0.1 | Crear entidad `Venta.java` en `domain/entity/` | 1 archivo nuevo | 20min |
+| 0.2 | Crear entidad `Cotizacion.java` en `domain/entity/` | 1 archivo nuevo | 20min |
+| 0.3 | Crear entidad `Apartado.java` en `domain/entity/` | 1 archivo nuevo | 20min |
+| 0.4 | Mover `AuthController.java` de `backend/` a `src/` | 1 archivo | 10min |
+| 0.5 | Mover `AuthService.java` de `backend/` a `src/` | 1 archivo | 10min |
+| 0.6 | Mover `UsuarioDTO.java` de `backend/` a `src/` | 1 archivo | 10min |
+| 0.7 | Agregar `hibernate-types-60` al `pom.xml` | 1 archivo | 5min |
+| 0.8 | Corregir typo `itud` a `longitud` en `Proyecto.java` | 1 linea | 2min |
+| 0.9 | Verificar `mvn clean compile` pase sin errores | - | 15min |
+| 0.10 | Verificar `docker-compose up` levante todos los servicios | - | 15min |
 
-**Commits:**
-- `feat: Implementar gestión completa de proyectos inmobiliarios`
-
----
-
-## ✅ Fase 4: Gestión de Terrenos (COMPLETADO)
-
-### 4.1 Terrenos/Lotes ✅
-- [x] CRUD completo de terrenos
-- [x] Estados: DISPONIBLE, APARTADO, VENDIDO, RESERVADO
-- [x] Cálculo automático de precio: `(base + ajuste) × multiplicador`
-- [x] Dimensiones: área, frente, fondo
-- [x] Identificación: número de lote, manzana
-- [x] Coordenadas para plano interactivo (JSONB)
-- [x] Actualización automática de contadores del proyecto
-- [x] Búsquedas: por proyecto, fase, estado, rango de precio, rango de área
-
-**Base de Datos:**
-- Migración V4: terrenos (incluye coordenadas_plano)
-
-**Commits:**
-- `feat: Implementar gestión completa de terrenos/lotes`
+**Resultado esperado:** Backend compila y levanta. Frontend se conecta correctamente.
 
 ---
 
-## ✅ Fase 5: Organización por Fases (COMPLETADO)
+## Fase 1 — Calidad y Tests
 
-### 5.1 Fases de Proyectos ✅
-- [x] CRUD de fases
-- [x] Numeración secuencial
-- [x] Fechas de inicio y fin
-- [x] Total de terrenos por fase
-- [x] Estado activo/inactivo
-- [x] Búsqueda de fases activas con terrenos disponibles
+*Proyecto funcional sin bugs, pero sin ninguna prueba.*
 
-**Base de Datos:**
-- Migración V5: fases
-
-**Commits:**
-- `feat: Implementar gestión completa de fases de proyectos`
+| # | Tarea | Detalle | Esfuerzo |
+|---|-------|---------|----------|
+| 1.1 | Configurar testing backend | H2 para tests unitarios, JUnit 5, Mockito | 2h |
+| 1.2 | Tests unitarios de servicios | ProyectoService, TerrenoService, VentaService, ApartadoService | 1 semana |
+| 1.3 | Tests de integracion | Flujos end-to-end: crear proyecto > terreno > cotizacion > venta | 1 semana |
+| 1.4 | Configurar testing frontend | Vitest + @testing-library/react | 2h |
+| 1.5 | Tests de componentes | ImageUploader, PlanoValidator, PlanoViewer | 3 dias |
+| 1.6 | Tests de servicios frontend | Mocks de axios, pruebas de auth flow | 2 dias |
+| 1.7 | Cobertura minima | Backend: 60%, Frontend: 40% | continua |
 
 ---
 
-## ✅ Fase 6: Transacciones de Venta (COMPLETADO)
+## Fase 2 — Frontend: Pulir y Completar
 
-### 6.1 Cotizaciones ✅
-- [x] Crear cotizaciones para clientes interesados
-- [x] Cálculo de descuentos (monto y porcentaje)
-- [x] Precio final calculado
-- [x] Fecha de vigencia
-- [x] Búsqueda por cliente y vigencia
-- [x] Eliminación (soft delete)
+*La estructura existe, pero hay componentes incompletos y UX por mejorar.*
 
-### 6.2 Apartados ✅
-- [x] Crear apartado desde cotización (opcional)
-- [x] Monto de apartado (anticipo)
-- [x] Duración configurable en días
-- [x] Cambio automático de estado del terreno a APARTADO
-- [x] Estados: VIGENTE, VENCIDO, CANCELADO, CONVERTIDO
-- [x] Cancelación con motivo (libera terreno)
-- [x] Búsqueda por vigencia y vencimiento
-- [x] Actualización automática de contadores
-
-### 6.3 Ventas ✅
-- [x] Crear venta desde apartado (lo marca como CONVERTIDO)
-- [x] Venta directa sin apartado
-- [x] Cambio automático de estado del terreno a VENDIDO
-- [x] Datos del comprador (nombre, RFC, CURP, dirección)
-- [x] Cálculo de comisiones
-- [x] Formas de pago: CONTADO, CREDITO_BANCARIO, FINANCIAMIENTO_PROPIO
-- [x] Estados: PENDIENTE, PAGADO, CANCELADO
-- [x] Actualización automática de contadores
-- [x] Solo se pueden eliminar ventas CANCELADAS
-
-**Base de Datos:**
-- Migración V6: cotizaciones, apartados, ventas
-
-**Commits:**
-- `feat: Implementar módulos completos de transacciones (Cotizaciones, Apartados, Ventas)`
+| # | Tarea | Detalle | Esfuerzo |
+|---|-------|---------|----------|
+| 2.1 | `clienteService.js` | Crear service independiente (actualmente solo en store) | 1h |
+| 2.2 | Paginacion backend | Agregar paginacion real a todos los endpoints de listado | 3 dias |
+| 2.3 | Paginacion frontend | Agregar controles de paginacion en todas las listas | 2 dias |
+| 2.4 | Busqueda avanzada | Filtros por fecha, rango de precios, estado en proyectos/terrenos/ventas | 3 dias |
+| 2.5 | Formularios de edicion | Verificar que todos los forms de edicion carguen datos correctamente | 2 dias |
+| 2.6 | Dashboard con graficas | Agregar recharts o chart.js para metricas visuales | 3 dias |
+| 2.7 | Notificaciones toast | Reemplazar alerts nativos por react-hot-toast | 1 dia |
+| 2.8 | Responsive design | Verificar que funcione en mobile/tablet | 3 dias |
+| 2.9 | Dark mode | Opcional pero valorado | 2 dias |
 
 ---
 
-## ✅ Fase 7: Reportes y Analítica (COMPLETADO)
+## Fase 3 — Funcionalidades Nuevas
 
-### 7.1 Dashboard General ✅
-- [x] Total de proyectos (activos, finalizados)
-- [x] Total de terrenos (disponibles, apartados, vendidos)
-- [x] Porcentaje de ocupación
-- [x] Total de cotizaciones (vigentes)
-- [x] Total de apartados (vigentes, vencidos)
-- [x] Total de ventas (pendientes, pagadas)
-- [x] Monto total de ventas y comisiones
-- [x] Ticket promedio
-- [x] Tasa de conversión (cotizaciones → ventas)
+*Nuevos modulos que agregan valor de negocio.*
 
-### 7.2 Estadísticas por Proyecto ✅
-- [x] Endpoint para todos los proyectos con stats
-- [x] Endpoint para proyecto específico
-- [x] Terrenos por estado
-- [x] Porcentajes de ocupación y disponibilidad
-- [x] Ventas del proyecto
-- [x] Ticket promedio del proyecto
-
-**Commits:**
-- `feat: Implementar módulo completo de Reportes y Dashboard`
+| # | Modulo | Detalle | Esfuerzo |
+|---|--------|---------|----------|
+| 3.1 | Notificaciones por email | Confirmacion de venta, recordatorio de pago, vencimiento de apartado | 1 semana |
+| 3.2 | Reportes PDF | Contratos de venta, kardex de cliente, estado de cuenta | 1 semana |
+| 3.3 | Exportacion masiva | CSV/Excel de todos los terrenos, ventas, clientes | 3 dias |
+| 3.4 | Historial de cambios | Audit log visible en UI (quien cambio que y cuando) | 3 dias |
+| 3.5 | Panel de administracion | Gestion de usuarios, roles y permisos desde el frontend | 1 semana |
+| 3.6 | Busqueda global | Buscar en todos los modulos desde una barra de busqueda | 3 dias |
+| 3.7 | Mapa general | Vista de todos los proyectos en un mapa (Leaflet) con marcadores | 3 dias |
+| 3.8 | Apartados vencidos | Cron job que cambia estado de apartados vencidos automaticamente | 1 dia |
 
 ---
 
-## ✅ Fase 8: Gestión de Archivos (COMPLETADO)
+## Fase 4 — DevOps y Calidad
 
-### 8.1 Sistema de Archivos ✅
-- [x] Upload multipart (PDF, imágenes, DWG, documentos)
-- [x] Tipos: PLANO_PROYECTO, PLANO_TERRENO, IMAGEN_PROYECTO, IMAGEN_TERRENO, DOCUMENTO_PROYECTO, CONTRATO, ESCRITURA
-- [x] Versionamiento automático (v1, v2, v3...)
-- [x] Solo una versión activa por archivo
-- [x] Validación de tamaño (10MB max) y extensiones
-- [x] Almacenamiento local con nombres UUID
-- [x] Download con seguridad multi-tenant
-- [x] Galería de imágenes por proyecto
-- [x] Historial de versiones
-- [x] Eliminación lógica (soft delete)
+*Para que el proyecto sea desplegable y mantenible.*
 
-**Base de Datos:**
-- Migración V8: archivos
-
-**Commits:**
-- `feat: Implementar gestión completa de archivos con versionamiento`
+| # | Tarea | Detalle | Esfuerzo |
+|---|-------|---------|----------|
+| 4.1 | CI/CD pipeline | GitHub Actions: build + test en cada PR, deploy automatico en merge a main | 2 dias |
+| 4.2 | Frontend en Docker | Agregar servicio `frontend` al docker-compose | 1 dia |
+| 4.3 | Redis | Cache de sesiones, rate limiting, colas de trabajo | 2 dias |
+| 4.4 | Logging centralizado | Structured logging en backend, ELK o Loki | 3 dias |
+| 4.5 | Monitoreo | Metricas con Micrometer + Prometheus, health checks detallados | 2 dias |
+| 4.6 | SSL/HTTPS | Certificados Let's Encrypt via nginx reverse proxy | 1 dia |
+| 4.7 | Backup automatico | pg_dump cron + almacenamiento en S3 | 1 dia |
+| 4.8 | Documentacion API | Verificar Swagger/OpenAPI este completo y actualizado | 2 dias |
 
 ---
 
-## ✅ Fase 9: Plano Interactivo (COMPLETADO)
+## Fase 5 — Escalabilidad y SaaS
 
-### 9.1 Visualización de Plano ✅
-- [x] Endpoint GET /proyectos/{id}/plano-interactivo
-- [x] Retorna imagen de plano + terrenos con coordenadas
-- [x] Coordenadas como polígonos JSONB
-- [x] Color automático según estado:
-  - Verde (#4CAF50) = DISPONIBLE
-  - Amarillo (#FFC107) = APARTADO
-  - Rojo (#F44336) = VENDIDO
-  - Azul (#2196F3) = RESERVADO
-- [x] Estadísticas del proyecto
-- [x] Datos completos de cada terreno
-- [x] Integración con sistema de archivos
-- [x] Soporte para terrenos sin coordenadas
+*Para convertirlo en un producto multi-tenant real.*
 
-### 9.2 Gestión de Coordenadas ✅
-- [x] Campo coordenadasPlano en CreateTerrenoRequest
-- [x] Campo coordenadasPlano en UpdateTerrenoRequest
-- [x] Conversión automática JSON ↔ objeto en TerrenoMapper
-- [x] Validación de estructura de coordenadas
-
-**Entidades Creadas:**
-- Terreno.java (JPA entity con JSONB)
-- Proyecto.java (JPA entity)
-- Fase.java (JPA entity)
-
-**Commits:**
-- `feat: Implementar sistema de plano interactivo con coordenadas de terrenos`
+| # | Tarea | Detalle | Esfuerzo |
+|---|-------|---------|----------|
+| 5.1 | Onboarding de tenants | Wizard de primer uso: crear empresa, subir logo, configurar moneda | 1 semana |
+| 5.2 | Planes de suscripcion | Free / Pro / Enterprise con limites de proyectos, terrenos, usuarios | 2 semanas |
+| 5.3 | Facturacion | Integracion con pasarela de pago (Stripe/MercadoPago) | 1 semana |
+| 5.4 | Personalizacion de marca | Cada tenant sube su logo, colores, dominio personalizado | 3 dias |
+| 5.5 | API publica | Endpoints documentados para integraciones externas (CRM, contabilidad) | 1 semana |
+| 5.6 | Webhooks | Eventos push: nueva venta, pago recibido, apartado vencido | 3 dias |
+| 5.7 | Multi-idioma | i18n en frontend (espanol + ingles minimo) | 1 semana |
 
 ---
 
-## ⏳ Fase 10: Gestión de Clientes (PENDIENTE)
+## Fase 6 — Inteligencia de Negocio
 
-### 10.1 Módulo de Clientes/Compradores 🔜
-- [ ] Entidad Cliente con datos completos
-- [ ] CRUD de clientes
-- [ ] Relación con cotizaciones, apartados, ventas
-- [ ] Historial de transacciones por cliente
-- [ ] Búsqueda avanzada de clientes
-- [ ] Exportación de datos de clientes
-- [ ] Notas y seguimiento de clientes
+*Valor anadido con datos.*
 
-**Prioridad:** Alta
-**Tiempo Estimado:** 1-2 días
-
-**Base de Datos:**
-- Migración V9: clientes
-- Actualizar V6: agregar cliente_id a cotizaciones, apartados, ventas
-
-### 10.2 CRM Básico 🔜
-- [ ] Pipeline de ventas
-- [ ] Actividades y seguimiento
-- [ ] Recordatorios y tareas
-- [ ] Comunicación (email/SMS tracking)
-
-**Prioridad:** Media
-**Tiempo Estimado:** 2-3 días
+| # | Tarea | Detalle | Esfuerzo |
+|---|-------|---------|----------|
+| 6.1 | Prediccion de ventas | Modelo simple basado en historial (tendencia, estacionalidad) | 2 semanas |
+| 6.2 | Analisis de precios | Sugerencia automatica de precio basado en zona, area, tendencia | 1 semana |
+| 6.3 | Deteccion de fraudes | Alertas por patrones inusuales en pagos o apartados | 1 semana |
+| 6.4 | Chatbot integrado | Asistente virtual para preguntas frecuentes del cliente | 2 semanas |
+| 6.5 | OCR mejorado | Entrenar modelo personalizado para planos del cliente | 2 semanas |
 
 ---
 
-## ⏳ Fase 11: Gestión de Pagos (PENDIENTE)
-
-### 11.1 Sistema de Pagos y Amortizaciones 🔜
-- [ ] Entidad Plan de Pagos
-- [ ] Amortizaciones (cuotas)
-- [ ] Registro de pagos recibidos
-- [ ] Estados: PENDIENTE, PAGADO, VENCIDO, PARCIAL
-- [ ] Cálculo de intereses
-- [ ] Generación automática de calendario de pagos
-- [ ] Recordatorios de pagos próximos
-- [ ] Mora y cargos por retraso
-
-**Prioridad:** Alta
-**Tiempo Estimado:** 2-3 días
-
-**Base de Datos:**
-- Migración V10: planes_pago
-- Migración V11: amortizaciones
-- Migración V12: pagos
-
-### 11.2 Reportes Financieros 🔜
-- [ ] Estado de cuenta por venta
-- [ ] Reporte de cobranza
-- [ ] Pagos pendientes
-- [ ] Proyección de ingresos
-- [ ] Análisis de morosidad
-
-**Prioridad:** Media
-**Tiempo Estimado:** 1-2 días
-
----
-
-## 🎯 Fase 12: Mejoras y Optimizaciones (FUTURO)
-
-### 12.1 Performance 🔮
-- [ ] Caché con Redis para dashboard
-- [ ] Paginación en todos los listados
-- [ ] Índices adicionales basados en uso real
-- [ ] Query optimization con EXPLAIN ANALYZE
-- [ ] Lazy loading de relaciones JPA
-
-### 12.2 Auditoría 🔮
-- [ ] Tabla de auditoría centralizada
-- [ ] Log de cambios en entidades críticas
-- [ ] Quién hizo qué y cuándo
-- [ ] Restauración de versiones anteriores
-
-### 12.3 Notificaciones 🔮
-- [ ] Email notifications (venta, apartado, vencimientos)
-- [ ] SMS notifications
-- [ ] Push notifications
-- [ ] Plantillas de emails personalizables
-- [ ] Queue con RabbitMQ/Kafka
-
-### 12.4 Integraciones 🔮
-- [ ] Pasarela de pagos (Stripe, PayPal, Conekta)
-- [ ] Firma electrónica (DocuSign, Adobe Sign)
-- [ ] WhatsApp Business API
-- [ ] Google Maps API para ubicaciones
-- [ ] Almacenamiento en cloud (S3, Google Cloud Storage)
-
-### 12.5 Multi-idioma 🔮
-- [ ] i18n support (español, inglés)
-- [ ] Mensajes de error localizados
-- [ ] Documentación en inglés
-
----
-
-## 🚀 Fase 13: Frontend (PRÓXIMO GRAN PASO)
-
-### 13.1 Tecnologías Sugeridas
-- **Framework:** React 18 + TypeScript o Next.js 14
-- **UI Library:** Material-UI, Ant Design, o Tailwind CSS + Shadcn/UI
-- **State Management:** React Query + Zustand
-- **Forms:** React Hook Form + Zod
-- **Charts:** Recharts o Chart.js
-- **Maps/Plano:** Konva.js, Fabric.js, o SVG nativo
-
-### 13.2 Módulos Frontend 🔮
-- [ ] Login y registro
-- [ ] Dashboard con gráficas
-- [ ] Gestión de proyectos (CRUD)
-- [ ] Gestión de terrenos (CRUD)
-- [ ] **Plano interactivo con SVG/Canvas**
-  - [ ] Renderizar imagen de fondo
-  - [ ] Dibujar polígonos sobre terrenos
-  - [ ] Colorear según estado
-  - [ ] Click para ver detalles
-  - [ ] Tooltip on hover
-  - [ ] Editor de coordenadas (arrastrar puntos)
-- [ ] Proceso de venta (cotización → apartado → venta)
-- [ ] Gestión de archivos (upload, gallery, versiones)
-- [ ] Reportes y gráficas
-- [ ] Gestión de usuarios y permisos
-
-**Tiempo Estimado:** 4-6 semanas
-
----
-
-## 📊 Métricas de Progreso
-
-### Backend
-| Módulo | Estado | Progreso | Archivos | Endpoints |
-|--------|--------|----------|----------|-----------|
-| Autenticación | ✅ | 100% | 15+ | 3 |
-| Proyectos | ✅ | 100% | 8 | 6 |
-| Terrenos | ✅ | 100% | 8 | 7 |
-| Fases | ✅ | 100% | 7 | 5 |
-| Cotizaciones | ✅ | 100% | 5 | 4 |
-| Apartados | ✅ | 100% | 5 | 5 |
-| Ventas | ✅ | 100% | 6 | 5 |
-| Reportes | ✅ | 100% | 4 | 3 |
-| Archivos | ✅ | 100% | 9 | 7 |
-| Plano Interactivo | ✅ | 100% | 7 | 1 |
-| Clientes | ⏳ | 0% | 0 | 0 |
-| Pagos | ⏳ | 0% | 0 | 0 |
-
-**Total:** 74+ archivos Java, 41+ endpoints REST
-
-### Base de Datos
-| Tabla | Estado | Relaciones | Índices |
-|-------|--------|------------|---------|
-| tenants | ✅ | - | 1 |
-| usuarios | ✅ | tenant, roles | 3 |
-| roles | ✅ | permisos | 2 |
-| permisos | ✅ | - | 1 |
-| proyectos | ✅ | tenant | 4 |
-| fases | ✅ | tenant, proyecto | 3 |
-| terrenos | ✅ | tenant, proyecto, fase | 6 (+ GIN) |
-| cotizaciones | ✅ | tenant, terreno | 4 |
-| apartados | ✅ | tenant, terreno, cotizacion | 5 |
-| ventas | ✅ | tenant, terreno, apartado | 5 |
-| archivos | ✅ | tenant, proyecto, terreno, venta | 7 |
-| clientes | ⏳ | - | - |
-| planes_pago | ⏳ | - | - |
-| amortizaciones | ⏳ | - | - |
-| pagos | ⏳ | - | - |
-
-**Total:** 11/15 tablas (73%)
-
----
-
-## 🎯 Objetivos a Corto Plazo (1-2 semanas)
-
-1. **Gestión de Clientes** ⭐⭐⭐
-   - Crear entidad Cliente
-   - CRUD completo
-   - Relación con transacciones
-
-2. **Sistema de Pagos** ⭐⭐⭐
-   - Planes de pago
-   - Amortizaciones
-   - Registro de pagos
-
-3. **Testing** ⭐⭐
-   - Unit tests para servicios críticos
-   - Integration tests para endpoints principales
-   - Cobertura mínima 60%
-
-4. **Documentación** ⭐
-   - Completar Swagger descriptions
-   - Diagramas de flujo
-   - Guía de deployment
-
----
-
-## 🎯 Objetivos a Medio Plazo (1-2 meses)
-
-1. **Frontend React** ⭐⭐⭐
-   - Setup inicial con TypeScript
-   - Integración con API
-   - Plano interactivo funcional
-   - Dashboard con gráficas
-
-2. **Notificaciones** ⭐⭐
-   - Email para eventos importantes
-   - SMS para recordatorios
-
-3. **Integraciones** ⭐⭐
-   - Pasarela de pagos
-   - Firma electrónica
-
-4. **Performance** ⭐
-   - Caché
-   - Optimización de queries
-
----
-
-## 🎯 Objetivos a Largo Plazo (3-6 meses)
-
-1. **Mobile App** 🔮
-   - React Native o Flutter
-   - Features básicos para vendedores en campo
-
-2. **Analytics Avanzado** 🔮
-   - ML para predicción de ventas
-   - Análisis de tendencias
-
-3. **Marketplace** 🔮
-   - Portal público para compradores
-   - Búsqueda de terrenos disponibles
-
----
-
-## 📈 Línea de Tiempo
+## Linea de Tiempo
 
 ```
-Enero 2025
-├─ Semana 3 ✅ Backend Core (Auth, Proyectos, Terrenos, Fases)
-└─ Semana 4 ✅ Transacciones, Reportes, Archivos, Plano Interactivo
-
-Febrero 2025
-├─ Semana 1 🔜 Clientes y Pagos
-├─ Semana 2 🔜 Testing y Documentación
-├─ Semana 3 🔮 Frontend Setup
-└─ Semana 4 🔮 Frontend Dashboard y Proyectos
-
-Marzo 2025
-├─ Semana 1-2 🔮 Frontend Plano Interactivo
-├─ Semana 3-4 🔮 Frontend Transacciones
-
-Abril 2025
-├─ Semana 1-2 🔮 Notificaciones e Integraciones
-└─ Semana 3-4 🔮 Beta Testing y Ajustes
+Fase 0 (Estabilizacion)          1 semana
+  |
+Fase 1 (Calidad y Tests)         2 semanas
+  |
+Fase 2 (Frontend Pulido)         3 semanas
+  |
+Fase 3 (Funcionalidades Nuevas)  4 semanas
+  |
+Fase 4 (DevOps)                  2 semanas
+  |
+Fase 5 (SaaS)                    Continuo
+  |
+Fase 6 (IA)                      Futuro
 ```
 
----
-
-## 🔑 Siguientes Pasos Inmediatos
-
-### Esta Semana:
-1. ✅ ~~Implementar Plano Interactivo~~ (COMPLETADO)
-2. 🔜 Crear módulo de Clientes
-3. 🔜 Implementar sistema de Pagos
-
-### Próxima Semana:
-1. 🔜 Tests unitarios
-2. 🔜 Completar documentación Swagger
-3. 🔜 Preparar ambiente de staging
+**Tiempo total estimado hasta Fase 4:** ~12 semanas
 
 ---
 
-## 📝 Notas Importantes
+## Metricas del Proyecto
+
+### Backend (14 Controllers, ~55 Endpoints)
+
+| Modulo | Estado | Endpoints | Archivos Java |
+|--------|--------|-----------|---------------|
+| Autenticacion | OK | 3 | 8 |
+| Proyectos | OK | 7 | 8 |
+| Terrenos | OK | 7 | 8 |
+| Fases | OK | 5 | 7 |
+| Cotizaciones | OK | 4 | 5 |
+| Apartados | OK | 5 | 5 |
+| Ventas | OK | 5 | 6 |
+| Clientes | OK | 6 | 5 |
+| Planes de Pago | OK | 7 | 6 |
+| Pagos | OK | 1 | 3 |
+| Reportes | OK | 3 | 4 |
+| Archivos | OK | 6 | 9 |
+| Auditoria | OK | 6 | 8 |
+| Plano Ingesta | OK | 3 | 5 |
+
+### Frontend (24 Paginas, 12 Servicios, 8 Stores)
+
+| Pagina | Estado |
+|--------|--------|
+| Login, Register | OK |
+| Dashboard | OK |
+| Proyectos (List, Form, Plano) | OK |
+| PlanoValidator | OK |
+| Terrenos (List, Form, Detail) | OK |
+| Clientes (List, Form) | OK |
+| Cotizaciones (List, Form, Detail) | OK |
+| Apartados (List, Form, Detail) | OK |
+| Ventas (List, Form, Detail) | OK |
+| Pagos (Form) | OK |
+| Planes de Pago (List, Detail) | OK |
+
+### Base de Datos (10 Migraciones, 15+ Tablas)
+
+| Migracion | Tablas |
+|-----------|--------|
+| V1 | tenants |
+| V2 | usuarios, roles, permisos, usuarios_roles |
+| V3 | proyectos |
+| V4 | terrenos (coordenadas_plano JSONB + GIN index) |
+| V5 | cotizaciones, apartados, ventas, descuentos |
+| V6 | audit_log_simple, audit_log_critica, audit_log_archive |
+| V7 | datos iniciales (INSERT) |
+| V8 | archivos |
+| V9 | clientes |
+| V10 | planes_pago, amortizaciones, pagos |
+
+---
+
+## Decisiones Tecnicas Pendientes
+
+| Decision | Opciones | Recomendacion |
+|----------|----------|---------------|
+| CSS Framework | Tailwind, Material UI, CSS modules | Mantener CSS modules (ya implementado) |
+| Testing backend | JUnit+Mockito, Testcontainers | JUnit+Mockito para unit, Testcontainers para integracion |
+| Testing frontend | Vitest, Jest | Vitest (mas rapido con Vite) |
+| Email transaccional | SMTP directo, SendGrid, AWS SES | SMTP para MVP, SendGrid para produccion |
+| Pagos | Stripe, MercadoPago, Conekta | MercadoPago (enfoque Latam) |
+| Cache | Redis, Caffeine | Redis para multi-instancia |
+| Monitoring | Prometheus+Grafana, Datadog | Prometheus+Grafana (open source) |
+
+---
+
+## Notas Importantes
 
 - **Multi-tenancy:** Validar siempre tenant_id en todas las operaciones
-- **Soft Delete:** Nunca eliminar físicamente, siempre usar deleted=true
-- **Auditoría:** Agregar created_by y updated_by en futuras migraciones
-- **Seguridad:** Revisar permisos antes de deploy a producción
-- **Performance:** Monitorear queries lentas con pg_stat_statements
+- **Soft Delete:** Nunca eliminar fisicamente, siempre usar deleted=true
+- **JSONB:** Usar GIN indexes para busquedas en coordenadas_plano y caracteristicas
+- **CV Engine:** Requiere Tesseract con paquete de idioma español instalado
+- **Frontend:** Corre en puerto 5173 (Vite dev), se comunica con backend en 8080
+- **Docker:** Backend y CV Engine comparten volume `uploads/` para imagenes
 
 ---
 
-## 🤝 Contribuciones
-
-### Archivos Clave para Nuevos Desarrolladores:
-1. `claude.md` - Documentación técnica completa
-2. `ROADMAP.md` - Este archivo
-3. `api-examples.http` - Ejemplos de uso de todos los endpoints
-4. `README.md` - Información general del proyecto
-5. `DISEÑO_SISTEMA_SAAS_TERRENOS.md` - Diseño del sistema
-
-### Proceso de Desarrollo:
-1. Crear feature branch desde `main`
-2. Implementar feature siguiendo arquitectura hexagonal
-3. Agregar tests
-4. Actualizar `api-examples.http`
-5. Crear Pull Request
-6. Code review
-7. Merge a `main`
-
----
-
-**Última Actualización:** 2025-01-18
-**Versión:** 1.0.0-beta
-**Próxima Revisión:** 2025-02-01
+**Ultima Actualizacion:** 2026-07-12
+**Version:** 1.1.0-beta
+**Autor:** Kevin
