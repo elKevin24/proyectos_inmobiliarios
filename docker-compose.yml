@@ -48,3 +48,39 @@ volumes:
 networks:
   terrenos-network:
     driver: bridge
+
+  # Backend Java Spring Boot
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: terrenos-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/terrenos_db
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+      - SPRING_PROFILES_ACTIVE=dev
+      - CV_ENGINE_URL=http://cv-engine:8000
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - terrenos-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Microservicio Computer Vision (Python)
+  cv-engine:
+    build:
+      context: ./cv-engine
+      dockerfile: Dockerfile
+    container_name: terrenos-cv-engine
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - terrenos-network
+

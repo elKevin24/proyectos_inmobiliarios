@@ -1,0 +1,278 @@
+.plano-validator {
+  display: flex;
+  gap: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.validator-canvas-container {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.validator-canvas {
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+  background-color: #f5f5f5;
+}
+
+.validator-sidebar {
+  width: 320px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #eee;
+  max-height: 700px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.lote-count {
+  background: #ecf0f1;
+  color: #7f8c8d;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lote-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.lote-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  margin-bottom: 4px;
+}
+
+.lote-item:hover {
+  background-color: #f8f9fa;
+}
+
+.lote-item.selected {
+  background-color: #e3f2fd;
+  border-color: #2196F3;
+}
+
+.lote-item.confirmed {
+  background-color: #e8f5e9;
+}
+
+.lote-item.deleted {
+  opacity: 0.5;
+  background-color: #ffebee;
+  text-decoration: line-through;
+}
+
+.lote-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lote-number {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.lote-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.lote-badge.confirmed {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.lote-badge.deleted {
+  background-color: #F44336;
+  color: white;
+}
+
+.lote-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  color: #7f8c8d;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+}
+
+.btn-icon.btn-delete:hover {
+  background-color: #ffebee;
+  color: #e74c3c;
+}
+
+.btn-icon.btn-undelete:hover {
+  background-color: #e8f5e9;
+  color: #27ae60;
+}
+
+.btn-icon.btn-confirm {
+  color: #4CAF50;
+}
+
+.btn-icon.btn-confirm:hover {
+  background-color: #e8f5e9;
+}
+
+.lote-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.lote-edit-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 2px solid #2196F3;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+.lote-edit-input:focus {
+  border-color: #1565C0;
+}
+
+.lote-detail {
+  padding: 12px 20px;
+  border-top: 1px solid #eee;
+  background-color: #fafafa;
+}
+
+.lote-detail h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.detail-row span {
+  color: #7f8c8d;
+}
+
+.detail-row strong {
+  color: #2c3e50;
+}
+
+.deleted-info {
+  padding: 8px 20px;
+  background-color: #fff3e0;
+  color: #e65100;
+  font-size: 12px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.sidebar-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+}
+
+.sidebar-actions .btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.sidebar-actions .btn-primary {
+  background-color: #2196F3;
+  color: white;
+}
+
+.sidebar-actions .btn-primary:hover:not(:disabled) {
+  background-color: #1565C0;
+}
+
+.sidebar-actions .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar-actions .btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.sidebar-actions .btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+@media (max-width: 900px) {
+  .plano-validator {
+    flex-direction: column;
+  }
+
+  .validator-sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-left: none;
+    border-top: 1px solid #eee;
+    max-height: 400px;
+  }
+}

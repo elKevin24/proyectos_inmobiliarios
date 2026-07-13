@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaRobot } from 'react-icons/fa';
 import useProyectoStore from '../store/proyectoStore';
 import useTerrenoStore from '../store/terrenoStore';
 import PlanoViewer from '../components/PlanoViewer';
@@ -54,7 +54,15 @@ function ProyectoPlano() {
             <FaArrowLeft /> Volver
           </button>
           <h1>Plano: {selectedProyecto.nombre}</h1>
-          <p>Visualización de terrenos en el plano del proyecto</p>
+          <p>Visualizacion de terrenos en el plano del proyecto</p>
+        </div>
+        <div className="page-actions">
+          <button
+            onClick={() => navigate(`/proyectos/${id}/validar-plano`)}
+            className="btn btn-primary"
+          >
+            <FaRobot /> Validar Plano con OCR
+          </button>
         </div>
       </div>
 
@@ -69,12 +77,20 @@ function ProyectoPlano() {
           ) : (
             <div className="no-plano">
               <p>Este proyecto no tiene un plano cargado</p>
-              <button
-                onClick={() => navigate(`/proyectos/${id}/editar`)}
-                className="btn btn-primary"
-              >
-                Subir Plano
-              </button>
+              <div className="no-plano-actions">
+                <button
+                  onClick={() => navigate(`/proyectos/${id}/validar-plano`)}
+                  className="btn btn-primary"
+                >
+                  <FaRobot /> Subir y Validar Plano
+                </button>
+                <button
+                  onClick={() => navigate(`/proyectos/${id}/editar`)}
+                  className="btn btn-secondary"
+                >
+                  Subir Plano (Manual)
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -84,7 +100,7 @@ function ProyectoPlano() {
             <h3>Detalles del Terreno</h3>
             <div className="detail-grid">
               <div className="detail-item">
-                <span className="detail-label">Número:</span>
+                <span className="detail-label">Numero:</span>
                 <span className="detail-value">{selectedTerreno.numero}</span>
               </div>
               <div className="detail-item">
@@ -98,8 +114,8 @@ function ProyectoPlano() {
                 </span>
               </div>
               <div className="detail-item">
-                <span className="detail-label">Área:</span>
-                <span className="detail-value">{selectedTerreno.area} m²</span>
+                <span className="detail-label">Area:</span>
+                <span className="detail-value">{selectedTerreno.area} m2</span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Precio Base:</span>

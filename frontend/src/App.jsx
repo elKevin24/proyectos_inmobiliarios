@@ -22,6 +22,7 @@ import PagoForm from './pages/PagoForm';
 import ProyectosList from './pages/ProyectosList';
 import ProyectoForm from './pages/ProyectoForm';
 import ProyectoPlano from './pages/ProyectoPlano';
+import PlanoValidatorPage from './pages/PlanoValidatorPage';
 import ClientesList from './pages/ClientesList';
 import ClienteForm from './pages/ClienteForm';
 import ApartadosList from './pages/ApartadosList';
@@ -66,6 +67,7 @@ function App() {
           <Route path="proyectos/nuevo" element={<ProyectoForm />} />
           <Route path="proyectos/:id/editar" element={<ProyectoForm />} />
           <Route path="proyectos/:id/plano" element={<ProyectoPlano />} />
+          <Route path="proyectos/:id/validar-plano" element={<PlanoValidatorPage />} />
 
           {/* Terrenos */}
           <Route path="terrenos" element={<TerrenosList />} />

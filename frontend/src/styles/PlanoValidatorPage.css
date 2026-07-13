@@ -1,0 +1,257 @@
+.validator-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 24px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.4;
+  transition: all 0.3s;
+}
+
+.step.active {
+  opacity: 1;
+}
+
+.step.done {
+  opacity: 0.7;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #ecf0f1;
+  color: #7f8c8d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.step.active .step-number {
+  background-color: #2196F3;
+  color: white;
+}
+
+.step.done .step-number {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.step-label {
+  font-size: 13px;
+  color: #7f8c8d;
+  font-weight: 600;
+}
+
+.step.active .step-label {
+  color: #2c3e50;
+}
+
+.step-connector {
+  width: 60px;
+  height: 2px;
+  background-color: #ecf0f1;
+  margin: 0 12px;
+  margin-bottom: 22px;
+}
+
+.validator-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background-color: #fff3e0;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  color: #e65100;
+  margin-bottom: 20px;
+}
+
+.validator-error svg {
+  flex-shrink: 0;
+}
+
+.validator-error span {
+  flex: 1;
+  font-size: 14px;
+}
+
+.btn-close-error {
+  background: none;
+  border: none;
+  color: #e65100;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.btn-close-error:hover {
+  background-color: rgba(230, 81, 0, 0.1);
+}
+
+.validator-content {
+  min-height: 400px;
+}
+
+.upload-section {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.processing-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.processing-animation {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.processing-icon {
+  color: #2196F3;
+  opacity: 0.3;
+}
+
+.spinner-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #2196F3;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.processing-section h3 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.processing-section p {
+  margin: 0 0 20px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.processing-bar {
+  width: 300px;
+  height: 4px;
+  background-color: #ecf0f1;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.processing-bar-fill {
+  height: 100%;
+  background-color: #2196F3;
+  border-radius: 2px;
+  animation: processing 2s ease-in-out infinite;
+}
+
+@keyframes processing {
+  0% { width: 0%; margin-left: 0; }
+  50% { width: 60%; margin-left: 20%; }
+  100% { width: 0%; margin-left: 100%; }
+}
+
+.complete-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.complete-icon {
+  color: #4CAF50;
+  margin-bottom: 20px;
+}
+
+.complete-section h3 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.complete-section p {
+  margin: 0 0 24px 0;
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.complete-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.complete-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.complete-actions .btn-primary {
+  background-color: #2196F3;
+  color: white;
+}
+
+.complete-actions .btn-primary:hover {
+  background-color: #1565C0;
+}
+
+.complete-actions .btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.complete-actions .btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+@media (max-width: 768px) {
+  .validator-steps {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .step-connector {
+    width: 2px;
+    height: 20px;
+    margin: 0;
+  }
+
+  .complete-actions {
+    flex-direction: column;
+  }
+}
