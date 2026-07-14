@@ -78,7 +78,7 @@ class TerrenoServiceTest {
         terrenoResponse = new TerrenoResponse();
         terrenoResponse.setId(400L);
         terrenoResponse.setNumeroLote("Lote 1");
-        terrenoResponse.setEstado("DISPONIBLE");
+        terrenoResponse.setEstado(EstadoTerreno.DISPONIBLE);
     }
 
     @AfterEach

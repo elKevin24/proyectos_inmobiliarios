@@ -61,7 +61,7 @@ class ProyectoServiceTest {
         proyectoResponse = new ProyectoResponse();
         proyectoResponse.setId(100L);
         proyectoResponse.setNombre("Proyecto Residencial");
-        proyectoResponse.setEstadoProyecto("PLANIFICACION");
+        proyectoResponse.setEstadoProyecto(EstadoProyecto.PLANIFICACION);
     }
 
     @AfterEach

@@ -89,7 +89,7 @@ class ApartadoServiceTest {
         apartadoResponse = new ApartadoResponse();
         apartadoResponse.setId(500L);
         apartadoResponse.setTerrenoId(terrenoId);
-        apartadoResponse.setEstado("ACTIVO");
+        apartadoResponse.setEstado(EstadoApartado.ACTIVO);
     }
 
     @AfterEach
