@@ -209,9 +209,9 @@ public class TerrenoService {
             throw new BusinessException("No se puede eliminar un terreno vendido", HttpStatus.CONFLICT);
         }
 
-        // Validar que no esté en venta o apartado
-        if (terreno.getEstado() == EstadoTerreno.EN_VENTA || terreno.getEstado() == EstadoTerreno.APARTADO) {
-            throw new BusinessException("No se puede eliminar un terreno que está en venta o apartado", HttpStatus.CONFLICT);
+        // Validar que no esté disponible o apartado
+        if (terreno.getEstado() == EstadoTerreno.DISPONIBLE || terreno.getEstado() == EstadoTerreno.APARTADO) {
+            throw new BusinessException("No se puede eliminar un terreno que está disponible o apartado", HttpStatus.CONFLICT);
         }
 
         // Soft delete

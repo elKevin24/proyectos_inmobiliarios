@@ -59,13 +59,13 @@ public class AuditService {
     @Transactional
     public void registrarAccionSimple(TipoAccionAudit tipoAccion, String descripcion, Map<String, Object> metadata) {
         Long tenantId = getTenantId();
-        String usuarioEmail = SecurityUtils.getCurrentUser();
+        String usuarioEmail = SecurityUtils.getCurrentUsername().orElse("SYSTEM");
 
         HttpServletRequest request = getCurrentRequest();
         String ipAddress = request != null ? getClientIp(request) : null;
         String userAgent = request != null ? request.getHeader("User-Agent") : null;
 
-        AuditLogSimple log = AuditLogSimple.builder()
+        AuditLogSimple auditLog = AuditLogSimple.builder()
                 .tenantId(tenantId)
                 .usuarioEmail(usuarioEmail)
                 .tipoAccion(tipoAccion)
@@ -75,7 +75,7 @@ public class AuditService {
                 .metadata(metadata)
                 .build();
 
-        auditLogSimpleRepository.save(log);
+        auditLogSimpleRepository.save(auditLog);
         log.debug("Auditoría simple registrada: {}", tipoAccion);
     }
 
@@ -142,10 +142,10 @@ public class AuditService {
     @Transactional
     public void registrarLogout() {
         Long tenantId = getTenantId();
-        String usuarioEmail = SecurityUtils.getCurrentUser();
+        String usuarioEmail = SecurityUtils.getCurrentUsername().orElse("SYSTEM");
         HttpServletRequest request = getCurrentRequest();
 
-        AuditLogSimple log = AuditLogSimple.builder()
+        AuditLogSimple auditLog = AuditLogSimple.builder()
                 .tenantId(tenantId)
                 .usuarioEmail(usuarioEmail)
                 .tipoAccion(TipoAccionAudit.LOGOUT)
@@ -154,7 +154,7 @@ public class AuditService {
                 .userAgent(request != null ? request.getHeader("User-Agent") : null)
                 .build();
 
-        auditLogSimpleRepository.save(log);
+        auditLogSimpleRepository.save(auditLog);
     }
 
     // ==================== AUDITORÍA CRÍTICA ====================
@@ -167,10 +167,10 @@ public class AuditService {
                                         String valorAnterior, String valorNuevo,
                                         TipoOperacionAudit operacion, String motivo) {
         Long tenantId = getTenantId();
-        String usuarioEmail = SecurityUtils.getCurrentUser();
+        String usuarioEmail = SecurityUtils.getCurrentUsername().orElse("SYSTEM");
         HttpServletRequest request = getCurrentRequest();
 
-        AuditLogCritica log = AuditLogCritica.builder()
+        AuditLogCritica criticaLog = AuditLogCritica.builder()
                 .tenantId(tenantId)
                 .usuarioEmail(usuarioEmail)
                 .tabla(tabla)
@@ -184,8 +184,8 @@ public class AuditService {
                 .build();
 
         // Solo guardar si realmente hubo un cambio
-        if (log.hasChange()) {
-            auditLogCriticaRepository.save(log);
+        if (criticaLog.hasChange()) {
+            auditLogCriticaRepository.save(criticaLog);
             log.debug("Auditoría crítica registrada: {} - {} #{}", tabla, campo, registroId);
         }
     }

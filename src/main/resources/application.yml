@@ -2,6 +2,10 @@ spring:
   application:
     name: terrenos-saas-backend
 
+  threads:
+    virtual:
+      enabled: true
+
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
@@ -47,7 +51,12 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
-  # Jackson configuración
+  # Usar Jackson 2 (bridge) en vez de Jackson 3 para compat con springdoc/swagger-core
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+
+  # Jackson 2 configuración
   jackson:
     serialization:
       write-dates-as-timestamps: false

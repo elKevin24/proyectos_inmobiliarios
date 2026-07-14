@@ -101,6 +101,11 @@ public interface TerrenoRepository extends JpaRepository<Terreno, Long> {
     long countByTenantIdAndFaseIdAndDeletedFalse(Long tenantId, Long faseId);
 
     /**
+     * Cuenta terrenos por fase y estado
+     */
+    long countByTenantIdAndFaseIdAndEstadoAndDeletedFalse(Long tenantId, Long faseId, EstadoTerreno estado);
+
+    /**
      * Cuenta terrenos por proyecto y estado
      */
     long countByTenantIdAndProyectoIdAndEstadoAndDeletedFalse(Long tenantId, Long proyectoId, EstadoTerreno estado);

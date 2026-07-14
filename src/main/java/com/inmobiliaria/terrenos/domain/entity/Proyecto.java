@@ -4,7 +4,7 @@ import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
 import com.inmobiliaria.terrenos.domain.enums.TipoPrecio;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 
@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class Proyecto {
 
     @Id

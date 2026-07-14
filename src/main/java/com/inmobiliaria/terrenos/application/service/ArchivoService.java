@@ -125,7 +125,6 @@ public class ArchivoService {
 
         // Guardar metadata en BD
         Archivo archivo = Archivo.builder()
-                .tenantId(tenantId)
                 .proyectoId(proyectoId)
                 .terrenoId(terrenoId)
                 .tipo(tipo)
@@ -139,6 +138,7 @@ public class ArchivoService {
                 .descripcion(descripcion)
                 .esActivo(true)
                 .build();
+        archivo.setTenantId(tenantId);
 
         Archivo archivoGuardado = archivoRepository.save(archivo);
         log.info("Archivo guardado con id: {} (versión {})", archivoGuardado.getId(), version);

@@ -105,11 +105,11 @@ public class VentaService {
             Apartado apartado = apartadoRepository.findByIdAndTenantIdAndDeletedFalse(request.getApartadoId(), tenantId)
                     .orElseThrow(() -> new ResourceNotFoundException("Apartado no encontrado con id: " + request.getApartadoId()));
 
-            if (apartado.getEstado() != EstadoApartado.VIGENTE) {
+            if (apartado.getEstado() != EstadoApartado.ACTIVO) {
                 throw new BusinessException("El apartado debe estar vigente para convertirlo en venta", HttpStatus.CONFLICT);
             }
 
-            apartado.setEstado(EstadoApartado.CONVERTIDO);
+            apartado.setEstado(EstadoApartado.COMPLETADO);
             apartadoRepository.save(apartado);
         }
 
@@ -150,7 +150,7 @@ public class VentaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada con id: " + id));
 
         // Solo se pueden eliminar ventas canceladas
-        if (venta.getEstado() != EstadoVenta.CANCELADO) {
+        if (venta.getEstado() != EstadoVenta.CANCELADA) {
             throw new BusinessException("Solo se pueden eliminar ventas canceladas", HttpStatus.CONFLICT);
         }
 

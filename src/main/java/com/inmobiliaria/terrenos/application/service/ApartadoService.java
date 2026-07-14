@@ -104,7 +104,7 @@ public class ApartadoService {
         apartado.setTenantId(tenantId);
         apartado.setFechaApartado(LocalDate.now());
         apartado.setFechaVencimiento(LocalDate.now().plusDays(request.getDuracionDias()));
-        apartado.setEstado(EstadoApartado.VIGENTE);
+        apartado.setEstado(EstadoApartado.ACTIVO);
 
         // Cambiar estado del terreno a APARTADO
         terreno.setEstado(EstadoTerreno.APARTADO);
@@ -127,7 +127,7 @@ public class ApartadoService {
         Apartado apartado = apartadoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Apartado no encontrado con id: " + id));
 
-        if (apartado.getEstado() != EstadoApartado.VIGENTE) {
+        if (apartado.getEstado() != EstadoApartado.ACTIVO) {
             throw new BusinessException("Solo se pueden cancelar apartados vigentes. Estado actual: " + apartado.getEstado(),
                     HttpStatus.CONFLICT);
         }
@@ -163,7 +163,7 @@ public class ApartadoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Apartado no encontrado con id: " + id));
 
         // Solo se pueden eliminar apartados cancelados o vencidos
-        if (apartado.getEstado() == EstadoApartado.VIGENTE) {
+        if (apartado.getEstado() == EstadoApartado.ACTIVO) {
             throw new BusinessException("No se puede eliminar un apartado vigente. Primero debe cancelarlo.",
                     HttpStatus.CONFLICT);
         }

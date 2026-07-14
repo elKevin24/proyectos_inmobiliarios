@@ -2,11 +2,11 @@ package com.inmobiliaria.terrenos.domain.entity;
 
 import com.inmobiliaria.terrenos.domain.enums.EstadoCliente;
 import com.inmobiliaria.terrenos.domain.enums.OrigenCliente;
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class Cliente {
 
     @Id
@@ -91,7 +91,7 @@ public class Cliente {
     private String notas;
 
     // Preferencias del cliente (presupuesto, ubicación, tamaño, etc.)
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String preferencias;
 

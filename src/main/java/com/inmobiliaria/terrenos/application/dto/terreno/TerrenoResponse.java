@@ -64,7 +64,7 @@ public class TerrenoResponse {
      * Verifica si el terreno está en proceso de venta
      */
     public boolean isEnProceso() {
-        return estado == EstadoTerreno.APARTADO || estado == EstadoTerreno.EN_VENTA;
+        return estado == EstadoTerreno.APARTADO;
     }
 
     /**

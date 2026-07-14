@@ -4,7 +4,7 @@ import com.inmobiliaria.terrenos.domain.enums.FrecuenciaPago;
 import com.inmobiliaria.terrenos.domain.enums.TipoPlanPago;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class PlanPago {
 
     @Id

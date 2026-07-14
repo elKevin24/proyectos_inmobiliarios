@@ -87,8 +87,8 @@ public class ProyectoService {
         proyecto.setTenantId(tenantId);
 
         // Establecer valores por defecto si no se proporcionaron
-        if (proyecto.getEstado() == null) {
-            proyecto.setEstado(EstadoProyecto.PLANIFICACION);
+        if (proyecto.getEstadoProyecto() == null) {
+            proyecto.setEstadoProyecto(EstadoProyecto.PLANIFICACION);
         }
 
         if (proyecto.getTotalTerrenos() == null) {
@@ -218,9 +218,9 @@ public class ProyectoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + id));
 
         // Validaciones de transición de estado
-        validarTransicionEstado(proyecto.getEstado(), nuevoEstado, proyecto);
+        validarTransicionEstado(proyecto.getEstadoProyecto(), nuevoEstado, proyecto);
 
-        proyecto.setEstado(nuevoEstado);
+        proyecto.setEstadoProyecto(nuevoEstado);
         Proyecto proyectoActualizado = proyectoRepository.save(proyecto);
 
         log.info("Estado del proyecto {} cambiado a {}", id, nuevoEstado);
@@ -238,7 +238,7 @@ public class ProyectoService {
         }
 
         // No se puede finalizar si hay terrenos apartados
-        if (nuevoEstado == EstadoProyecto.FINALIZADO &&
+        if (nuevoEstado == EstadoProyecto.AGOTADO &&
                 proyecto.getTerrenosApartados() != null && proyecto.getTerrenosApartados() > 0) {
             throw new BusinessException("No se puede finalizar el proyecto con terrenos apartados", HttpStatus.BAD_REQUEST);
         }

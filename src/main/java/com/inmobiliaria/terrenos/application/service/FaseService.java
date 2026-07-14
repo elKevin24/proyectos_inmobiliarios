@@ -119,12 +119,7 @@ public class FaseService {
         if (fase.getTerrenosDisponibles() == null) {
             fase.setTerrenosDisponibles(0);
         }
-        if (fase.getTerrenosApartados() == null) {
-            fase.setTerrenosApartados(0);
-        }
-        if (fase.getTerrenosVendidos() == null) {
-            fase.setTerrenosVendidos(0);
-        }
+
 
         Fase faseGuardada = faseRepository.save(fase);
         log.info("Fase creada con id: {}", faseGuardada.getId());
@@ -173,10 +168,12 @@ public class FaseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Fase no encontrada con id: " + id));
 
         // Validar que no tenga terrenos vendidos o apartados
-        if (fase.getTerrenosVendidos() != null && fase.getTerrenosVendidos() > 0) {
+        long vendidos = terrenoRepository.countByTenantIdAndFaseIdAndEstadoAndDeletedFalse(tenantId, id, EstadoTerreno.VENDIDO);
+        if (vendidos > 0) {
             throw new BusinessException("No se puede eliminar la fase porque tiene terrenos vendidos", HttpStatus.CONFLICT);
         }
-        if (fase.getTerrenosApartados() != null && fase.getTerrenosApartados() > 0) {
+        long apartados = terrenoRepository.countByTenantIdAndFaseIdAndEstadoAndDeletedFalse(tenantId, id, EstadoTerreno.APARTADO);
+        if (apartados > 0) {
             throw new BusinessException("No se puede eliminar la fase porque tiene terrenos apartados", HttpStatus.CONFLICT);
         }
 
@@ -194,17 +191,11 @@ public class FaseService {
 
         Long tenantId = fase.getTenantId();
         long totalTerrenos = terrenoRepository.countByTenantIdAndFaseIdAndDeletedFalse(tenantId, faseId);
-        long disponibles = terrenoRepository.countByTenantIdAndProyectoIdAndEstadoAndDeletedFalse(
-                tenantId, fase.getProyectoId(), EstadoTerreno.DISPONIBLE);
-        long apartados = terrenoRepository.countByTenantIdAndProyectoIdAndEstadoAndDeletedFalse(
-                tenantId, fase.getProyectoId(), EstadoTerreno.APARTADO);
-        long vendidos = terrenoRepository.countByTenantIdAndProyectoIdAndEstadoAndDeletedFalse(
-                tenantId, fase.getProyectoId(), EstadoTerreno.VENDIDO);
+        long disponibles = terrenoRepository.countByTenantIdAndFaseIdAndEstadoAndDeletedFalse(
+                tenantId, faseId, EstadoTerreno.DISPONIBLE);
 
         fase.setTotalTerrenos((int) totalTerrenos);
         fase.setTerrenosDisponibles((int) disponibles);
-        fase.setTerrenosApartados((int) apartados);
-        fase.setTerrenosVendidos((int) vendidos);
 
         faseRepository.save(fase);
         log.debug("Contadores de fase {} actualizados", faseId);

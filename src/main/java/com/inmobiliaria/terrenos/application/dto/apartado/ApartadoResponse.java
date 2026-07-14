@@ -70,7 +70,7 @@ public class ApartadoResponse {
      * Verifica si el apartado está vigente
      */
     public boolean isVigente() {
-        return estado == EstadoApartado.VIGENTE &&
+        return estado == EstadoApartado.ACTIVO &&
                fechaVencimiento != null &&
                !fechaVencimiento.isBefore(LocalDate.now());
     }
@@ -81,7 +81,7 @@ public class ApartadoResponse {
     public boolean isVencido() {
         return fechaVencimiento != null &&
                fechaVencimiento.isBefore(LocalDate.now()) &&
-               estado == EstadoApartado.VIGENTE;
+               estado == EstadoApartado.ACTIVO;
     }
 
     /**

@@ -74,8 +74,8 @@ public class PagoService {
         PlanPago planPago = planPagoMapper.toEntity(request);
         planPago.setTenantId(tenantId);
         planPago.setClienteId(venta.getClienteId());
-        planPago.setCreatedBy(SecurityUtils.getCurrentUser());
-        planPago.setUpdatedBy(SecurityUtils.getCurrentUser());
+        planPago.setCreatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
 
         // Calcular fecha del último pago
         LocalDate fechaUltimoPago = calcularFechaUltimoPago(
@@ -126,7 +126,7 @@ public class PagoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Plan de pago no encontrado"));
 
         planPagoMapper.updateEntityFromRequest(request, planPago);
-        planPago.setUpdatedBy(SecurityUtils.getCurrentUser());
+        planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
 
         PlanPago actualizado = planPagoRepository.save(planPago);
         log.info("Plan de pago actualizado: {}", id);
@@ -268,8 +268,8 @@ public class PagoService {
         pago.setMontoAInteres(BigDecimal.ZERO);
         pago.setMontoAMora(BigDecimal.ZERO);
         pago.setUsuarioId(1L); // TODO: Obtener del contexto de seguridad
-        pago.setCreatedBy(SecurityUtils.getCurrentUser());
-        pago.setUpdatedBy(SecurityUtils.getCurrentUser());
+        pago.setCreatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
 
         BigDecimal montoRestante = request.getMontoPagado();
 

@@ -1,12 +1,13 @@
 package com.inmobiliaria.terrenos.domain.entity.audit;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
+// Type import removed
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class AuditLogArchive {
     @Column(nullable = false, length = 20)
     private String tipo; // "SIMPLE" o "CRITICA"
 
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false, columnDefinition = "jsonb")
     private Map<String, Object> datos;
 

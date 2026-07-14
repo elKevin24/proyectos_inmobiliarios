@@ -3,7 +3,7 @@ package com.inmobiliaria.terrenos.domain.entity;
 import com.inmobiliaria.terrenos.domain.enums.EstadoApartado;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class Apartado {
 
     @Id
@@ -71,7 +71,7 @@ public class Apartado {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private EstadoApartado estado = EstadoApartado.VIGENTE;
+    private EstadoApartado estado = EstadoApartado.ACTIVO;
 
     @Column(columnDefinition = "TEXT")
     private String observaciones;

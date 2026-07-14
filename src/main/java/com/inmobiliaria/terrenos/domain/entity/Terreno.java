@@ -1,11 +1,11 @@
 package com.inmobiliaria.terrenos.domain.entity;
 
 import com.inmobiliaria.terrenos.domain.enums.EstadoTerreno;
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class Terreno {
 
     @Id
@@ -61,11 +61,11 @@ public class Terreno {
     private BigDecimal fondo;
 
     // Coordenadas en el plano (JSONB)
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "coordenadas_plano", columnDefinition = "jsonb")
     private String coordenadasPlano;
 
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String poligono;
 
@@ -94,7 +94,7 @@ public class Terreno {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String caracteristicas;
 

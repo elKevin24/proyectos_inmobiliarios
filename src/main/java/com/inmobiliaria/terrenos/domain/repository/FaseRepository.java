@@ -33,6 +33,8 @@ public interface FaseRepository extends JpaRepository<Fase, Long> {
      */
     List<Fase> findByTenantIdAndProyectoIdAndDeletedFalseOrderByNumeroFaseAsc(Long tenantId, Long proyectoId);
 
+    List<Fase> findByTenantIdAndProyectoIdAndDeletedFalse(Long tenantId, Long proyectoId);
+
     /**
      * Busca fases activas por proyecto
      */

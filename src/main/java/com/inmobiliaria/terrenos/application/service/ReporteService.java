@@ -56,10 +56,10 @@ public class ReporteService {
         List<Proyecto> proyectos = proyectoRepository.findByTenantIdAndDeletedFalse(tenantId);
         long totalProyectos = proyectos.size();
         long proyectosActivos = proyectos.stream()
-                .filter(p -> p.getEstado() == EstadoProyecto.EN_VENTA)
+                .filter(p -> p.getEstadoProyecto() == EstadoProyecto.EN_VENTA)
                 .count();
         long proyectosFinalizados = proyectos.stream()
-                .filter(p -> p.getEstado() == EstadoProyecto.FINALIZADO)
+                .filter(p -> p.getEstadoProyecto() == EstadoProyecto.AGOTADO)
                 .count();
 
         // Estadísticas de terrenos
@@ -87,7 +87,7 @@ public class ReporteService {
 
         // Estadísticas de apartados
         long totalApartados = apartadoRepository.countByTenantIdAndEstadoAndDeletedFalse(
-                tenantId, EstadoApartado.VIGENTE);
+                tenantId, EstadoApartado.ACTIVO);
         long apartadosVigentes = apartadoRepository
                 .findApartadosVigentes(tenantId, java.time.LocalDate.now()).size();
         long apartadosVencidos = apartadoRepository
