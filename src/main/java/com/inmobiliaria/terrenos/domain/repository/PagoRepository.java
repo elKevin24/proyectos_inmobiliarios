@@ -103,9 +103,9 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
      */
     @Query("SELECT p FROM Pago p WHERE p.tenantId = :tenantId " +
            "AND p.deleted = false " +
-           "AND p.createdAt >= CURRENT_DATE - :dias " +
+           "AND p.createdAt >= :fechaLimite " +
            "ORDER BY p.createdAt DESC")
-    List<Pago> findPagosRecientes(@Param("tenantId") Long tenantId, @Param("dias") Integer dias);
+    List<Pago> findPagosRecientes(@Param("tenantId") Long tenantId, @Param("fechaLimite") java.time.LocalDateTime fechaLimite);
 
     /**
      * Busca pagos por usuario que los registró

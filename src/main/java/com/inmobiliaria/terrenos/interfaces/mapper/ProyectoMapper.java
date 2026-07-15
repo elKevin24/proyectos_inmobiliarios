@@ -36,7 +36,7 @@ public interface ProyectoMapper {
     /**
      * Convierte entidad Proyecto a ProyectoResponse
      */
-    @Mapping(target = "estadoProyecto", source = "estado")
+    @Mapping(target = "estadoProyecto", source = "estadoProyecto")
     ProyectoResponse toResponse(Proyecto proyecto);
 
     /**

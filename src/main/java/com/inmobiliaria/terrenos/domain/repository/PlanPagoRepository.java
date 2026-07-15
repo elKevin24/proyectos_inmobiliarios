@@ -121,7 +121,7 @@ public interface PlanPagoRepository extends JpaRepository<PlanPago, Long> {
      */
     @Query("SELECT pp FROM PlanPago pp WHERE pp.tenantId = :tenantId " +
            "AND pp.deleted = false " +
-           "AND pp.createdAt >= CURRENT_DATE - :dias " +
+           "AND pp.createdAt >= :fechaLimite " +
            "ORDER BY pp.createdAt DESC")
-    List<PlanPago> findPlanesRecientes(@Param("tenantId") Long tenantId, @Param("dias") Integer dias);
+    List<PlanPago> findPlanesRecientes(@Param("tenantId") Long tenantId, @Param("fechaLimite") java.time.LocalDateTime fechaLimite);
 }

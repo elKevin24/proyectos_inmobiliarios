@@ -169,22 +169,21 @@ public interface AmortizacionRepository extends JpaRepository<Amortizacion, Long
            "AND a.deleted = false")
     BigDecimal sumarMoraAcumulada(@Param("tenantId") Long tenantId, @Param("planPagoId") Long planPagoId);
 
-    /**
-     * Busca amortizaciones que vencen en los próximos N días (para notificaciones)
-     */
     @Query("SELECT a FROM Amortizacion a WHERE a.tenantId = :tenantId " +
            "AND a.estado = 'PENDIENTE' " +
-           "AND a.fechaVencimiento BETWEEN CURRENT_DATE AND CURRENT_DATE + :dias " +
+           "AND a.fechaVencimiento BETWEEN :fechaInicio AND :fechaFin " +
            "AND a.deleted = false " +
            "ORDER BY a.fechaVencimiento ASC")
-    List<Amortizacion> findProximasAVencer(@Param("tenantId") Long tenantId, @Param("dias") Integer dias);
+    List<Amortizacion> findProximasAVencer(@Param("tenantId") Long tenantId,
+                                           @Param("fechaInicio") LocalDate fechaInicio,
+                                           @Param("fechaFin") LocalDate fechaFin);
 
     /**
      * Busca todas las amortizaciones vencidas de un tenant (para proceso batch)
      */
     @Query("SELECT a FROM Amortizacion a WHERE a.tenantId = :tenantId " +
-           "AND a.fechaVencimiento < CURRENT_DATE " +
+           "AND a.fechaVencimiento < :fecha " +
            "AND a.estado IN ('PENDIENTE', 'PARCIALMENTE_PAGADO') " +
            "AND a.deleted = false")
-    List<Amortizacion> findTodasVencidas(@Param("tenantId") Long tenantId);
+    List<Amortizacion> findTodasVencidas(@Param("tenantId") Long tenantId, @Param("fecha") LocalDate fecha);
 }

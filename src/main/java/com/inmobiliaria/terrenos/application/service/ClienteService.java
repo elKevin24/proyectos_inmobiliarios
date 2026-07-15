@@ -145,7 +145,8 @@ public class ClienteService {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             clienteRepository.findByTenantIdAndEmailAndDeletedFalse(tenantId, request.getEmail())
                     .ifPresent(c -> {
-                        throw new BusinessException("Ya existe un cliente con el email: " + request.getEmail());
+                        throw new BusinessException("Ya existe un cliente con el email: " + request.getEmail(),
+                                "DUPLICATE_EMAIL", HttpStatus.CONFLICT);
                     });
         }
 
@@ -153,12 +154,16 @@ public class ClienteService {
         if (request.getRfc() != null && !request.getRfc().isBlank()) {
             clienteRepository.findByTenantIdAndRfcAndDeletedFalse(tenantId, request.getRfc())
                     .ifPresent(c -> {
-                        throw new BusinessException("Ya existe un cliente con el RFC: " + request.getRfc());
+                        throw new BusinessException("Ya existe un cliente con el RFC: " + request.getRfc(),
+                                "DUPLICATE_RFC", HttpStatus.CONFLICT);
                     });
         }
 
         Cliente cliente = clienteMapper.toEntity(request);
         cliente.setTenantId(tenantId);
+        if (cliente.getEstadoCliente() == null) {
+            cliente.setEstadoCliente(com.inmobiliaria.terrenos.domain.enums.EstadoCliente.PROSPECTO);
+        }
 
         Cliente savedCliente = clienteRepository.save(cliente);
         log.info("Cliente creado exitosamente con id: {}", savedCliente.getId());

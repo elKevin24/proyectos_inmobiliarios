@@ -51,20 +51,7 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
-  # Usar Jackson 2 (bridge) en vez de Jackson 3 para compat con springdoc/swagger-core
-  http:
-    converters:
-      preferred-json-mapper: jackson2
 
-  # Jackson 2 configuración
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-      fail-on-empty-beans: false
-    deserialization:
-      fail-on-unknown-properties: false
-    default-property-inclusion: non_null
-    time-zone: America/Mexico_City
 
   # Actuator
   management:

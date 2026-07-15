@@ -1,0 +1,67 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  flyway:
+    enabled: false
+
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  threads:
+    virtual:
+      enabled: false
+
+app:
+  security:
+    jwt:
+      secret: test-secret-key-for-e2e-tests-must-be-at-least-256-bits-long!!
+      expiration: 86400000
+      refresh-expiration: 604800000
+
+  cors:
+    allowed-origins: http://localhost:3000
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: "*"
+    exposed-headers: Authorization
+    allow-credentials: true
+    max-age: 3600
+
+logging:
+  level:
+    root: WARN
+    com.inmobiliaria.terrenos: INFO
+    org.springframework.security: WARN
+
+springdoc:
+  swagger-ui:
+    enabled: false
+
+file:
+  storage:
+    upload-dir: test-uploads
+    max-file-size: 10485760
+    allowed-extensions:
+      - pdf
+      - png
+      - jpg

@@ -110,9 +110,9 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
      */
     @Query("SELECT c FROM Cliente c WHERE c.tenantId = :tenantId " +
            "AND c.deleted = false " +
-           "AND c.createdAt >= CURRENT_DATE - :dias " +
+           "AND c.createdAt >= :fechaLimite " +
            "ORDER BY c.createdAt DESC")
-    List<Cliente> findClientesRecientes(@Param("tenantId") Long tenantId, @Param("dias") Integer dias);
+    List<Cliente> findClientesRecientes(@Param("tenantId") Long tenantId, @Param("fechaLimite") java.time.LocalDateTime fechaLimite);
 
     /**
      * Cuenta total de clientes por tenant

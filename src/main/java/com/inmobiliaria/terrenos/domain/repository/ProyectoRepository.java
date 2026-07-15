@@ -57,7 +57,7 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long> {
      * Busca proyectos activos (en venta)
      */
     @Query("SELECT p FROM Proyecto p WHERE p.tenantId = :tenantId " +
-           "AND p.estado = com.inmobiliaria.terrenos.domain.enums.EstadoProyecto.EN_VENTA " +
+           "AND p.estadoProyecto = com.inmobiliaria.terrenos.domain.enums.EstadoProyecto.EN_VENTA " +
            "AND p.deleted = false " +
            "ORDER BY p.createdAt DESC")
     List<Proyecto> findProyectosActivos(@Param("tenantId") Long tenantId);

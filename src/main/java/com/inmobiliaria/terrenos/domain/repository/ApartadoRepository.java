@@ -32,7 +32,7 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
      * Busca apartados vigentes
      */
     @Query("SELECT a FROM Apartado a WHERE a.tenantId = :tenantId " +
-           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.VIGENTE " +
+           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.ACTIVO " +
            "AND a.fechaVencimiento >= :fecha " +
            "AND a.deleted = false " +
            "ORDER BY a.fechaVencimiento ASC")
@@ -42,7 +42,7 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
      * Busca apartados vencidos
      */
     @Query("SELECT a FROM Apartado a WHERE a.tenantId = :tenantId " +
-           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.VIGENTE " +
+           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.ACTIVO " +
            "AND a.fechaVencimiento < :fecha " +
            "AND a.deleted = false " +
            "ORDER BY a.fechaVencimiento ASC")
@@ -51,8 +51,8 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
     /**
      * Busca apartados por cliente
      */
-    @Query("SELECT a FROM Apartado a WHERE a.tenantId = :tenantId " +
-           "AND LOWER(a.clienteNombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+    @Query("SELECT a FROM Apartado a, Cliente c WHERE a.clienteId = c.id AND a.tenantId = :tenantId " +
+           "AND (LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) OR LOWER(c.apellido) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
            "AND a.deleted = false " +
            "ORDER BY a.createdAt DESC")
     List<Apartado> findByClienteNombre(@Param("tenantId") Long tenantId, @Param("nombre") String nombre);
@@ -69,7 +69,7 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
      * Cuenta apartados vigentes de un cliente
      */
     @Query("SELECT COUNT(a) FROM Apartado a WHERE a.clienteId = :clienteId " +
-           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.VIGENTE " +
+           "AND a.estado = com.inmobiliaria.terrenos.domain.enums.EstadoApartado.ACTIVO " +
            "AND a.deleted = false")
     Long countByClienteIdAndEstadoVigente(@Param("clienteId") Long clienteId);
 

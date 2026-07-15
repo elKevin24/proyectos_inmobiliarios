@@ -29,7 +29,6 @@ import java.util.Base64;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class TenantFilter extends OncePerRequestFilter {
 
     @Value("${app.security.jwt.secret}")
