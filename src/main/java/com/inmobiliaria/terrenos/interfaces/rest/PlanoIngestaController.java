@@ -1,3 +1,5 @@
+package com.inmobiliaria.terrenos.interfaces.rest;
+
 import com.inmobiliaria.terrenos.application.dto.plano.ConfirmarIngestaRequest;
 import com.inmobiliaria.terrenos.application.service.PlanoIngestaService;
 import com.inmobiliaria.terrenos.infrastructure.cv.PlanoStatusStore;
