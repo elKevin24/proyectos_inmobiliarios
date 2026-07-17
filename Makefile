@@ -2,7 +2,7 @@
 # Makefile - Terrenos SaaS
 # ====================================
 
-.PHONY: help backend-build backend-run backend-test backend-clean docker-up docker-down docker-logs db-connect
+.PHONY: help backend-build backend-run backend-test backend-clean docker-up docker-down docker-logs docker-test db-connect
 
 # Colores para output
 GREEN  := \033[0;32m
@@ -10,7 +10,7 @@ YELLOW := \033[0;33m
 NC     := \033[0m # No Color
 
 # Variables
-DOCKER_COMPOSE := docker-compose
+DOCKER_COMPOSE := docker compose
 
 ##@ General
 
@@ -73,6 +73,10 @@ docker-clean: ## Limpiar volúmenes de Docker
 docker-restart: ## Reiniciar servicios Docker
 	@echo "$(GREEN)🔄 Reiniciando servicios Docker...$(NC)"
 	$(DOCKER_COMPOSE) restart
+
+docker-test: ## Ejecutar tests unitarios en Docker
+	@echo "$(GREEN)🧪 Ejecutando tests en Docker...$(NC)"
+	$(DOCKER_COMPOSE) run --rm backend-test
 
 ##@ Database
 

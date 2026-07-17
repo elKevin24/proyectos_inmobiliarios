@@ -39,6 +39,18 @@ services:
     depends_on:
       - postgres
 
+  # Tests del backend (unit tests)
+  backend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    container_name: terrenos-backend-test
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+    working_dir: /app
+    command: ["mvn", "test", "-B"]
+
   # Backend Java Spring Boot
   backend:
     build:
