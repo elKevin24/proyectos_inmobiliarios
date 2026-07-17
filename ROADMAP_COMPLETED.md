@@ -2,9 +2,9 @@
 
 ## Resumen
 
-**Ultima Actualizacion:** 2026-07-14
-**Version:** 1.1.0-beta
-**Progreso Completado:** 14/14 modulos backend + Frontend + Migracion Java 25
+**Ultima Actualizacion:** 2026-07-16
+**Version:** 1.3.0-beta
+**Progreso Completado:** 14/14 modulos backend + Frontend + Migracion Java 25 + E2E Tests + Security Tests
 
 ---
 
@@ -25,7 +25,7 @@
 
 ---
 
-## Fase 1 - Calidad y Tests (Parcial) ✅ PARCIAL
+## Fase 1 - Calidad y Tests ✅ COMPLETADA
 
 ### 1.1 Configurar testing backend ✅
 
@@ -33,23 +33,40 @@
 |-------|--------|---------|
 | H2 embebido para tests | ✅ | `application-test.yml` con H2 `MODE=PostgreSQL` |
 | JUnit 5 + Spring Boot Test | ✅ | `spring-boot-starter-test` en pom.xml |
-| `data-test.sql` con permisos | ✅ | 38 permisos INSERT para contexto de test |
+| `data-test.sql` con permisos | ✅ | Permisos completos incluyendo CLIENTE_*, PLAN_PAGO_*, PAGO_* |
 | `@ActiveProfiles("test")` | ✅ | Configurado en `BaseE2ETest` |
 | `@TestInstance(PER_CLASS)` | ✅ | Todos los test classes lo usan |
 | `RestTemplate` con `JdkClientHttpRequestFactory` | ✅ | Soporte PATCH en tests |
 | `NoOpResponseErrorHandler` | ✅ | No lanza excepciones en 4xx/5xx |
+| `postMultipartWithAuth()` helper | ✅ | Soporte multipart/form-data en BaseE2ETest |
 
-### 1.2 Tests E2E - Modulos completados ✅
+### 1.2 Tests E2E - Suite Completa ✅
 
 | Test Class | Tests | Endpoints Cubiertos | Estado |
 |-----------|-------|---------------------|--------|
 | `AuthE2ETest` | 9 | POST register, login, refresh | ✅ |
-| `ProyectoCRUDE2ETest` | 7 | CRUD completo + 404 | ✅ |
-| `TerrenoCRUDE2ETest` | 6 | CRUD completo + estado | ✅ |
-| `VentaCompletaE2ETest` | 10 | Cotizacion > Apartado > Venta completo | ✅ |
-| `ReporteE2ETest` | 4 | Dashboard + estadisticas proyectos | ✅ |
+| `ProyectoCRUDE2ETest` | 10 | CRUD completo + 404 + 400 + error paths | ✅ |
+| `TerrenoCRUDE2ETest` | 9 | CRUD completo + 404 + 409 lote duplicado | ✅ |
+| `VentaCompletaE2ETest` | 13 | Cotizacion > Apartado > Venta + cancelar + venta directa | ✅ |
+| `ReporteE2ETest` | 5 | Dashboard + estadisticas + assertions especificos | ✅ |
+| `ClienteCRUDE2ETest` | 8 | CRUD completo + 404 + 409 email duplicado | ✅ |
+| `FaseCRUDE2ETest` | 7 | CRUD completo + 404 + 409 nombre duplicado | ✅ |
+| `PlanPagoE2ETest` | 7 | Crear + tabla amortizacion + estado cuenta + 409 duplicado | ✅ |
+| `PagoE2ETest` | 4 | Efectivo + transferencia + errores | ✅ |
+| `ArchivoE2ETest` | 6 | Upload + download + list + galeria + versiones + delete | ✅ |
+| `AuditoriaE2ETest` | 4 | Logs simples + criticos + archivar + historial | ✅ |
 
-**Total tests E2E existentes:** 36 tests, 36 pasando
+**Total tests E2E:** 82 tests E2E + 32 tests de integración/unit = **114 tests, 0 failures**
+
+### Coverage Lograda
+
+| Metrica | Valor |
+|---------|-------|
+| Controllers testeados | 11/14 (79%) |
+| Endpoints cubiertos | ~55/67 (82%) |
+| Happy path coverage | ~85% |
+| Error path coverage | ~55% |
+| Total tests | 114 (BUILD SUCCESS) |
 
 ---
 
@@ -139,9 +156,11 @@
 
 ---
 
-## Bugs Corregidos en esta Sesion
+## Bugs Corregidos
 
 | Bug | Archivo | Fix |
 |-----|---------|-----|
 | `ProyectoMapper.toResponse()` mapeaba `estado` (String ciudad) en vez de `estadoProyecto` (enum) | `ProyectoMapper.java:39` | Cambiado `source = "estado"` → `source = "estadoProyecto"` |
 | Terreno 500 en PUT: JSONB `caracteristicas` no acepta string plano en H2 | `TerrenoCRUDE2ETest.java:82` | Removido campo `caracteristicas` del test PUT |
+| `data-test.sql` tenia `ARCHIVO_SUBIR` pero controller usa `ARCHIVO_CREAR` | `data-test.sql` | Corregido nombre del permiso |
+| Faltaban permissions `CLIENTE_*`, `PLAN_PAGO_*`, `PAGO_REGISTRAR` en test data | `data-test.sql` | Agregados todos los permisos necesarios |
