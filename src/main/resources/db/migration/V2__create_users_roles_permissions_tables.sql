@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS permisos (
     modulo VARCHAR(100),
     
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMP
 );
 
 -- Tabla de Roles
@@ -25,6 +27,8 @@ CREATE TABLE IF NOT EXISTS roles (
     
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMP,
     
     CONSTRAINT uk_roles_tenant_nombre UNIQUE (tenant_id, nombre)
 );
@@ -50,11 +54,15 @@ CREATE TABLE IF NOT EXISTS usuarios (
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ultimo_acceso TIMESTAMP,
+    password_reset_token VARCHAR(255),
+    password_reset_expiry TIMESTAMP,
     
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
     updated_by VARCHAR(255),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMP,
     
     CONSTRAINT uk_usuarios_tenant_email UNIQUE (tenant_id, email)
 );
@@ -68,11 +76,14 @@ CREATE TABLE IF NOT EXISTS usuario_rol (
 );
 
 -- Índices
+CREATE INDEX idx_permisos_deleted ON permisos(deleted);
 CREATE INDEX idx_roles_tenant_id ON roles(tenant_id);
 CREATE INDEX idx_roles_activo ON roles(activo);
+CREATE INDEX idx_roles_deleted ON roles(deleted);
 CREATE INDEX idx_usuarios_tenant_id ON usuarios(tenant_id);
 CREATE INDEX idx_usuarios_email ON usuarios(email);
 CREATE INDEX idx_usuarios_activo ON usuarios(activo);
+CREATE INDEX idx_usuarios_deleted ON usuarios(deleted);
 
 -- Comentarios
 COMMENT ON TABLE permisos IS 'Catálogo de permisos del sistema';

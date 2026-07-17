@@ -24,7 +24,7 @@ LABEL version="1.0.0"
 LABEL description="Backend SaaS Multi-tenant Gestión de Terrenos"
 
 # Crear usuario no-root para seguridad
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd -r spring && useradd -r -g spring spring
 
 WORKDIR /app
 
@@ -34,6 +34,9 @@ COPY --from=build /app/target/*.jar app.jar
 # Cambiar ownership
 RUN chown -R spring:spring /app
 
+# Instalar curl para el healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Cambiar a usuario no-root
 USER spring:spring
 
@@ -42,7 +45,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+  CMD curl --fail http://localhost:8080/actuator/health || exit 1
 
 # Variables de entorno por defecto
 ENV SPRING_PROFILES_ACTIVE=prod
