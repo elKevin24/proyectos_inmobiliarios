@@ -9,9 +9,13 @@ import {
   FaBookmark,
   FaFileInvoiceDollar,
   FaCheckCircle,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaClock,
+  FaArrowRight
 } from 'react-icons/fa';
 import reporteService from '../services/reporteService';
+import ventaService from '../services/ventaService';
+import apartadoService from '../services/apartadoService';
 import StatCard from '../components/StatCard';
 import '../styles/Dashboard.css';
 
@@ -19,6 +23,8 @@ function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [ventasRecientes, setVentasRecientes] = useState([]);
+  const [apartadosPorVencer, setApartadosPorVencer] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -28,6 +34,30 @@ function Dashboard() {
     try {
       const data = await reporteService.getDashboard();
       setDashboardData(data);
+
+      // Load recent sales and expiring apartados in parallel
+      const [ventasData, apartadosData] = await Promise.allSettled([
+        ventaService.getAll(),
+        apartadoService.getAll(),
+      ]);
+
+      if (ventasData.status === 'fulfilled') {
+        const ventas = Array.isArray(ventasData.value) ? ventasData.value : [];
+        setVentasRecientes(ventas.slice(0, 5));
+      }
+
+      if (apartadosData.status === 'fulfilled') {
+        const apartados = Array.isArray(apartadosData.value) ? apartadosData.value : [];
+        const now = new Date();
+        const threeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const porVencer = apartados.filter(a =>
+          a.estado === 'VIGENTE' &&
+          a.fechaLimite &&
+          new Date(a.fechaLimite) <= threeDays &&
+          new Date(a.fechaLimite) >= now
+        );
+        setApartadosPorVencer(porVencer);
+      }
     } catch (error) {
       console.error('Error loading dashboard:', error);
       setError('Error al cargar estadísticas');
@@ -206,6 +236,79 @@ function Dashboard() {
           />
         </div>
       </div>
+
+      {/* Alertas de Apartados por Vencer */}
+      {apartadosPorVencer.length > 0 && (
+        <div className="dashboard-alerts">
+          <h2 className="section-title">
+            <FaExclamationTriangle /> Alertas - Apartados por Vencer
+          </h2>
+          <div className="alerts-list">
+            {apartadosPorVencer.map(a => (
+              <div key={a.id} className="alert-card alert-warning">
+                <FaClock className="alert-icon" />
+                <div className="alert-content">
+                  <span className="alert-title">
+                    Apartado #{a.id} — {a.clienteNombre || 'Cliente'}
+                  </span>
+                  <span className="alert-subtitle">
+                    Vence: {new Date(a.fechaLimite).toLocaleDateString('es-MX')} — {a.terrenoNumeroLote || 'Terreno'}
+                  </span>
+                </div>
+                <Link to={`/apartados/${a.id}`} className="btn btn-sm btn-secondary">
+                  Ver <FaArrowRight />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Ventas Recientes */}
+      {ventasRecientes.length > 0 && (
+        <div className="dashboard-section">
+          <h2 className="section-title">
+            <FaMoneyBillWave /> Últimas Ventas
+          </h2>
+          <div className="recent-table-container">
+            <table className="recent-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Proyecto</th>
+                  <th>Terreno</th>
+                  <th>Monto</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ventasRecientes.map(venta => (
+                  <tr key={venta.id}>
+                    <td>
+                      <Link to={`/ventas/${venta.id}`}>#{venta.id}</Link>
+                    </td>
+                    <td>{venta.proyectoNombre || 'N/A'}</td>
+                    <td>{venta.terrenoNumeroLote || 'N/A'}</td>
+                    <td className="monto-cell">{formatCurrency(venta.montoTotal)}</td>
+                    <td>
+                      <span className={`badge badge-${venta.estado?.toLowerCase() || 'default'}`}>
+                        {venta.estado}
+                      </span>
+                    </td>
+                    <td>{venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleDateString('es-MX') : 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="section-footer">
+            <Link to="/ventas" className="link-more">
+              Ver todas las ventas <FaArrowRight />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Acciones Rápidas */}
       <div className="quick-actions">

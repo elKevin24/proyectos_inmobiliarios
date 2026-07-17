@@ -51,6 +51,8 @@ const useAuthStore = create((set, get) => ({
           email: decoded.sub,
           tenantId: decoded.tenant_id,
           roles: decoded.roles || [],
+          nombre: response.user_info?.nombre || '',
+          tenantNombre: response.user_info?.tenantNombre || '',
         },
         isLoading: false,
         error: null,

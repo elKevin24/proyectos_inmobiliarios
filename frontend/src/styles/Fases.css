@@ -1,0 +1,241 @@
+/* =================================================================
+   FASES - Estilos para el módulo de fases de proyectos
+   ================================================================= */
+
+.fases-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #7f8c8d;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: #3498db; }
+
+/* ─── Fases Grid ─────────────────────────────────────────────────────── */
+.fases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
+}
+
+/* ─── Fase Card ──────────────────────────────────────────────────────── */
+.fase-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.fase-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.fase-card.fase-inactiva {
+  opacity: 0.65;
+  border-style: dashed;
+}
+
+.fase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fase-numero {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3498db;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fase-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.badge-activa {
+  background: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+}
+
+.badge-inactiva {
+  background: rgba(149, 165, 166, 0.15);
+  color: #7f8c8d;
+}
+
+.fase-nombre {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.fase-descripcion {
+  margin: 0 0 16px 0;
+  color: #7f8c8d;
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Fase Stats ─────────────────────────────────────────────────────── */
+.fase-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.fase-stat {
+  text-align: center;
+}
+
+.fase-stat-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fase-stat-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-top: 2px;
+}
+
+.text-green { color: #27ae60; }
+.text-orange { color: #f39c12; }
+.text-purple { color: #9b59b6; }
+
+/* ─── Progress Bar ───────────────────────────────────────────────────── */
+.fase-progress {
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  display: block;
+  text-align: right;
+  font-size: 11px;
+  color: #95a5a6;
+  margin-top: 4px;
+}
+
+/* ─── Fase Dates ─────────────────────────────────────────────────────── */
+.fase-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.fase-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #95a5a6;
+}
+
+/* ─── Fase Actions ───────────────────────────────────────────────────── */
+.fase-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ─── Toggle Label ───────────────────────────────────────────────────── */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #7f8c8d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3498db;
+}
+
+/* ─── Fase Form ──────────────────────────────────────────────────────── */
+.fase-form-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3498db;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .fases-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fase-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+}
