@@ -39,16 +39,6 @@ services:
     depends_on:
       - postgres
 
-volumes:
-  postgres_data:
-    driver: local
-  pgadmin_data:
-    driver: local
-
-networks:
-  terrenos-network:
-    driver: bridge
-
   # Backend Java Spring Boot
   backend:
     build:
@@ -84,3 +74,12 @@ networks:
     networks:
       - terrenos-network
 
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  terrenos-network:
+    driver: bridge
