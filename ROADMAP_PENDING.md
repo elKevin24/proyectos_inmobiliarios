@@ -32,6 +32,15 @@
 **Archivos creados:** 1 (`ProyectoDetail.jsx`)
 **Archivos modificados:** 6 (`App.jsx`, `PagoForm.jsx`, `ventaService.js`, `FasesList.jsx`, `FaseForm.jsx`, `Layout.jsx`)
 
+### Fase 7 - Frontend Avanzado
+
+| # | Mejora | Fix | Estado |
+|---|--------|-----|--------|
+| 1 | Gráficos en Dashboard | Integrado `recharts` con 4 gráficos interactivos (ventas mensuales, distribución general, estados de lotes por proyecto, ticket promedio) | ✅ |
+| 2 | Notificaciones toast uniformes | Reemplazado alerts con `react-hot-toast` | ✅ |
+| 3 | Paginación client-side y spinners | Implementado en ClientesList, TerrenosList y VentasList | ✅ |
+| 4 | Tema Oscuro y Responsive | Añadido botón sol/luna y menú hamburguesa colapsable off-canvas en cabecera móvil | ✅ |
+
 ---
 
 ## Fase 6 - Testing Docker/Testcontainers (PENDIENTE)
@@ -57,7 +66,7 @@ Reemplazar H2 por PostgreSQL via Testcontainers para:
 
 ---
 
-## Fase 7 - Frontend Avanzado (PENDIENTE)
+## Fase 7 - Frontend Avanzado (COMPLETADO)
 
 ### 7.1 Charts y Graficas
 
