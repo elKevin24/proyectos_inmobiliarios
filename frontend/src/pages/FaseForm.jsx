@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaSave, FaArrowLeft, FaCalendar } from 'react-icons/fa';
+import { FaSave, FaArrowLeft } from 'react-icons/fa';
 import useFaseStore from '../store/faseStore';
 import '../styles/Fases.css';
 

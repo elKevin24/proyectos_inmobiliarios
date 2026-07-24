@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  FaPlus, FaEdit, FaTrash, FaEye, FaEyeSlash,
-  FaCalendar, FaMap, FaArrowLeft
+  FaPlus, FaEdit, FaTrash,
+  FaCalendar, FaArrowLeft
 } from 'react-icons/fa';
 import useFaseStore from '../store/faseStore';
 import useProyectoStore from '../store/proyectoStore';

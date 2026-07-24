@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   FaHome, FaMap, FaUsers, FaMoneyBillWave, FaSignOutAlt,
   FaBuilding, FaBookmark, FaFileInvoiceDollar, FaCalculator,
-  FaLayerGroup, FaShieldAlt, FaChevronDown, FaChevronRight,
+  FaShieldAlt, FaChevronDown, FaChevronRight,
   FaBell
 } from 'react-icons/fa';
 import { useState, useEffect } from 'react';

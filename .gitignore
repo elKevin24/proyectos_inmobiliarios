@@ -115,4 +115,6 @@ ENV/
 /test-uploads/
 /uploads/
 .antigravity/
+.graphify-cache/
+.graphify-out/
 

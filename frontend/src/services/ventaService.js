@@ -19,9 +19,19 @@ const ventaService = {
     return response.data;
   },
 
-  // Actualizar una venta
+  // Actualizar una venta (alias para compatibilidad con stores)
   update: async (id, ventaData) => {
-    const response = await api.put(`/ventas/${id}`, ventaData);
+    const response = await api.patch(`/ventas/${id}/estado`, null, {
+      params: { estado: ventaData.estado || 'PENDIENTE' }
+    });
+    return response.data;
+  },
+
+  // Cambiar estado de una venta (PATCH /{id}/estado)
+  updateEstado: async (id, estado) => {
+    const response = await api.patch(`/ventas/${id}/estado`, null, {
+      params: { estado }
+    });
     return response.data;
   },
 
