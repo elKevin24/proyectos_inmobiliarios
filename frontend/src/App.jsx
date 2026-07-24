@@ -39,6 +39,7 @@ import FasesList from './pages/FasesList';
 import FaseForm from './pages/FaseForm';
 import AuditoriaPage from './pages/AuditoriaPage';
 
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 
 function App() {
@@ -47,10 +48,15 @@ function App() {
   useEffect(() => {
     // Initialize auth state from localStorage
     initialize();
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
   }, [initialize]);
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />

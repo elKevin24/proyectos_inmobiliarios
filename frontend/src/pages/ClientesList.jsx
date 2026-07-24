@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaPhone, FaEnvelope, FaFilePdf, FaFileExcel } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import clienteStore from '../store/clienteStore';
 import { generarReporteClientes } from '../utils/pdfGenerator';
 import { exportarClientesExcel } from '../utils/excelGenerator';
@@ -10,25 +11,37 @@ function ClientesList() {
   const { clientes, isLoading, error, fetchClientes, deleteCliente } = clienteStore();
   const [filter, setFilter] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     loadClientes();
   }, [estadoFilter]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, estadoFilter]);
 
   const loadClientes = async () => {
     const params = {};
     if (estadoFilter) {
       params.estado = estadoFilter;
     }
-    await fetchClientes(params);
+    try {
+      await fetchClientes(params);
+    } catch (err) {
+      toast.error('Error al cargar clientes');
+    }
   };
 
   const handleDelete = async (id, nombre) => {
     if (window.confirm(`¿Está seguro de eliminar al cliente "${nombre}"?`)) {
       try {
         await deleteCliente(id);
-      } catch (error) {
-        alert('Error al eliminar el cliente');
+        toast.success(`Cliente "${nombre}" eliminado con éxito`);
+      } catch (err) {
+        toast.error(err.message || 'Error al eliminar el cliente');
       }
     }
   };
@@ -38,6 +51,12 @@ function ClientesList() {
     cliente.apellidos?.toLowerCase().includes(filter.toLowerCase()) ||
     cliente.email?.toLowerCase().includes(filter.toLowerCase()) ||
     cliente.telefono?.includes(filter)
+  );
+
+  const totalPages = Math.ceil(filteredClientes.length / ITEMS_PER_PAGE);
+  const paginatedClientes = filteredClientes.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   const getEstadoBadge = (estado) => {
@@ -113,77 +132,113 @@ function ClientesList() {
       </div>
 
       {isLoading ? (
-        <div className="loading">Cargando clientes...</div>
-      ) : (
-        <div className="clientes-grid">
-          {filteredClientes.length === 0 ? (
-            <div className="empty-state">
-              <p>No se encontraron clientes</p>
-              <Link to="/clientes/nuevo" className="btn btn-primary">
-                Crear primer cliente
-              </Link>
-            </div>
-          ) : (
-            filteredClientes.map((cliente) => (
-              <div key={cliente.id} className="cliente-card">
-                <div className="cliente-header">
-                  <div className="cliente-avatar">
-                    {cliente.nombre?.charAt(0)}{cliente.apellidos?.charAt(0)}
-                  </div>
-                  <div className="cliente-name">
-                    <h3>{cliente.nombre} {cliente.apellidos}</h3>
-                    <span className={`badge ${getEstadoBadge(cliente.estado)}`}>
-                      {getEstadoLabel(cliente.estado)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="cliente-info">
-                  {cliente.email && (
-                    <div className="info-item">
-                      <FaEnvelope />
-                      <span>{cliente.email}</span>
-                    </div>
-                  )}
-                  {cliente.telefono && (
-                    <div className="info-item">
-                      <FaPhone />
-                      <span>{cliente.telefono}</span>
-                    </div>
-                  )}
-                  {cliente.rfc && (
-                    <div className="info-row">
-                      <span className="label">RFC:</span>
-                      <span className="value">{cliente.rfc}</span>
-                    </div>
-                  )}
-                  {cliente.curp && (
-                    <div className="info-row">
-                      <span className="label">CURP:</span>
-                      <span className="value">{cliente.curp}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="cliente-actions">
-                  <Link to={`/clientes/${cliente.id}`} className="btn-icon" title="Ver detalles">
-                    <FaEye />
-                  </Link>
-                  <Link to={`/clientes/${cliente.id}/editar`} className="btn-icon" title="Editar">
-                    <FaEdit />
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(cliente.id, `${cliente.nombre} ${cliente.apellidos}`)}
-                    className="btn-icon btn-danger"
-                    title="Eliminar"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Cargando clientes...</p>
         </div>
+      ) : (
+        <>
+          <div className="clientes-grid">
+            {paginatedClientes.length === 0 ? (
+              <div className="empty-state">
+                <p>No se encontraron clientes</p>
+                <Link to="/clientes/nuevo" className="btn btn-primary">
+                  Crear primer cliente
+                </Link>
+              </div>
+            ) : (
+              paginatedClientes.map((cliente) => (
+                <div key={cliente.id} className="cliente-card">
+                  <div className="cliente-header">
+                    <div className="cliente-avatar">
+                      {cliente.nombre?.charAt(0)}{cliente.apellidos?.charAt(0)}
+                    </div>
+                    <div className="cliente-name">
+                      <h3>{cliente.nombre} {cliente.apellidos}</h3>
+                      <span className={`badge ${getEstadoBadge(cliente.estado)}`}>
+                        {getEstadoLabel(cliente.estado)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="cliente-info">
+                    {cliente.email && (
+                      <div className="info-item">
+                        <FaEnvelope />
+                        <span>{cliente.email}</span>
+                      </div>
+                    )}
+                    {cliente.telefono && (
+                      <div className="info-item">
+                        <FaPhone />
+                        <span>{cliente.telefono}</span>
+                      </div>
+                    )}
+                    {cliente.rfc && (
+                      <div className="info-row">
+                        <span className="label">RFC:</span>
+                        <span className="value">{cliente.rfc}</span>
+                      </div>
+                    )}
+                    {cliente.curp && (
+                      <div className="info-row">
+                        <span className="label">CURP:</span>
+                        <span className="value">{cliente.curp}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="cliente-actions">
+                    <Link to={`/clientes/${cliente.id}`} className="btn-icon" title="Ver detalles">
+                      <FaEye />
+                    </Link>
+                    <Link to={`/clientes/${cliente.id}/editar`} className="btn-icon" title="Editar">
+                      <FaEdit />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(cliente.id, `${cliente.nombre} ${cliente.apellidos}`)}
+                      className="btn-icon btn-danger"
+                      title="Eliminar"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </button>
+              <div className="pagination-pages">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    className={`pagination-page ${currentPage === page ? 'active' : ''}`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

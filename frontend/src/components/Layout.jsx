@@ -3,7 +3,7 @@ import {
   FaHome, FaMap, FaUsers, FaMoneyBillWave, FaSignOutAlt,
   FaBuilding, FaBookmark, FaFileInvoiceDollar, FaCalculator,
   FaShieldAlt, FaChevronDown, FaChevronRight,
-  FaBell
+  FaBell, FaSun, FaMoon, FaBars, FaTimes
 } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
@@ -52,6 +52,8 @@ function Layout() {
   const { user, logout } = useAuthStore();
   const [collapsed, setCollapsed] = useState({});
   const [notificaciones, setNotificaciones] = useState({ apartadosVencidos: 0 });
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     loadNotificaciones();
@@ -76,6 +78,13 @@ function Layout() {
     navigate('/login');
   };
 
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+  };
+
   const toggleGroup = (label) =>
     setCollapsed(prev => ({ ...prev, [label]: !prev[label] }));
 
@@ -88,7 +97,21 @@ function Layout() {
 
   return (
     <div className="layout">
-      <nav className="sidebar">
+      {/* Mobile Top Navbar */}
+      <header className="mobile-header">
+        <button className="menu-toggle" onClick={() => setMobileOpen(!mobileOpen)} title="Menu">
+          {mobileOpen ? <FaTimes /> : <FaBars />}
+        </button>
+        <span className="mobile-brand">Inmobiliaria</span>
+        <button className="theme-toggle-btn" onClick={toggleTheme} title="Cambiar tema">
+          {theme === 'light' ? <FaMoon /> : <FaSun />}
+        </button>
+      </header>
+
+      {/* Sidebar Overlay for Mobile */}
+      {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)}></div>}
+
+      <nav className={`sidebar ${mobileOpen ? 'sidebar--open' : ''}`}>
         {/* Header */}
         <div className="sidebar-header">
           <div className="sidebar-brand">
@@ -97,6 +120,10 @@ function Layout() {
               <h2>Inmobiliaria</h2>
               <span className="tenant-name">{tenantName}</span>
             </div>
+            {/* Desktop Theme Toggle */}
+            <button className="theme-toggle-btn desktop-theme-toggle" onClick={toggleTheme} title="Cambiar tema">
+              {theme === 'light' ? <FaMoon /> : <FaSun />}
+            </button>
           </div>
           <div className="user-badge">
             <div className="user-avatar">{initials}</div>
@@ -105,7 +132,7 @@ function Layout() {
               <span className="user-email">{user?.email}</span>
             </div>
             {notificaciones.apartadosVencidos > 0 && (
-              <NavLink to="/apartados" className="notification-badge" title="Apartados vencidos">
+              <NavLink to="/apartados" className="notification-badge" title="Apartados vencidos" onClick={() => setMobileOpen(false)}>
                 <FaBell />
                 <span className="notification-count">{notificaciones.apartadosVencidos}</span>
               </NavLink>
@@ -138,6 +165,7 @@ function Layout() {
                             className={({ isActive }) =>
                               `nav-link${isActive ? ' nav-link--active' : ''}`
                             }
+                            onClick={() => setMobileOpen(false)}
                           >
                             <span className="nav-icon">{item.icon}</span>
                             <span>{item.label}</span>
@@ -157,6 +185,7 @@ function Layout() {
                         className={({ isActive }) =>
                           `nav-link${isActive ? ' nav-link--active' : ''}`
                         }
+                        onClick={() => setMobileOpen(false)}
                       >
                         <span className="nav-icon">{item.icon}</span>
                         <span>{item.label}</span>
