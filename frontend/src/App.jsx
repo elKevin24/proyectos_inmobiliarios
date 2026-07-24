@@ -21,6 +21,7 @@ import VentaDetail from './pages/VentaDetail';
 import PagoForm from './pages/PagoForm';
 import ProyectosList from './pages/ProyectosList';
 import ProyectoForm from './pages/ProyectoForm';
+import ProyectoDetail from './pages/ProyectoDetail';
 import ProyectoPlano from './pages/ProyectoPlano';
 import PlanoValidatorPage from './pages/PlanoValidatorPage';
 import ClientesList from './pages/ClientesList';
@@ -69,6 +70,7 @@ function App() {
           {/* Proyectos */}
           <Route path="proyectos" element={<ProyectosList />} />
           <Route path="proyectos/nuevo" element={<ProyectoForm />} />
+          <Route path="proyectos/:id" element={<ProyectoDetail />} />
           <Route path="proyectos/:id/editar" element={<ProyectoForm />} />
           <Route path="proyectos/:id/plano" element={<ProyectoPlano />} />
           <Route path="proyectos/:id/validar-plano" element={<PlanoValidatorPage />} />
@@ -89,7 +91,7 @@ function App() {
           <Route path="ventas" element={<VentasList />} />
           <Route path="ventas/nueva" element={<VentaForm />} />
           <Route path="ventas/:id" element={<VentaDetail />} />
-          <Route path="ventas/:id/pagos/nuevo" element={<PagoForm />} />
+          <Route path="ventas/:ventaId/pagos/nuevo" element={<PagoForm />} />
 
           {/* Apartados */}
           <Route path="apartados" element={<ApartadosList />} />

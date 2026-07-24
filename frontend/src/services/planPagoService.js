@@ -23,7 +23,7 @@ const planPagoService = {
    * @param {number} id - ID del plan
    */
   getAmortizaciones: async (id) => {
-    const response = await api.get(`/planes-pago/${id}/amortizaciones`);
+    const response = await api.get(`/planes-pago/${id}/tabla-amortizacion`);
     return response.data;
   },
 

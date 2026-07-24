@@ -33,7 +33,7 @@ const terrenoService = {
 
   // Filtrar terrenos por proyecto
   getByProyecto: async (proyectoId) => {
-    const response = await api.get(`/terrenos/proyecto/${proyectoId}`);
+    const response = await api.get('/terrenos', { params: { proyectoId } });
     return response.data;
   },
 

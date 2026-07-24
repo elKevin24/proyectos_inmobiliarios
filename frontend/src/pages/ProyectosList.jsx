@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaMap, FaFileExcel } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaMap, FaFileExcel, FaLayerGroup } from 'react-icons/fa';
 import useProyectoStore from '../store/proyectoStore';
 import { exportarProyectosExcel } from '../utils/excelGenerator';
 import '../styles/Proyectos.css';
@@ -142,6 +142,9 @@ function ProyectosList() {
                 <div className="proyecto-actions">
                   <Link to={`/proyectos/${proyecto.id}`} className="btn-icon" title="Ver detalles">
                     <FaEye />
+                  </Link>
+                  <Link to={`/proyectos/${proyecto.id}/fases`} className="btn-icon" title="Gestionar Fases">
+                    <FaLayerGroup />
                   </Link>
                   <Link to={`/proyectos/${proyecto.id}/plano`} className="btn-icon" title="Ver plano">
                     <FaMap />

@@ -33,6 +33,7 @@ function VentasList() {
       PENDIENTE: 'badge-pendiente',
       PAGADO: 'badge-pagado',
       CANCELADO: 'badge-cancelado',
+      CANCELADA: 'badge-cancelado',
     };
     return badges[estado] || 'badge-default';
   };
@@ -108,7 +109,7 @@ function VentasList() {
                     <td>#{venta.id}</td>
                     <td>{formatDate(venta.fechaVenta)}</td>
                     <td>{venta.clienteNombre || 'N/A'}</td>
-                    <td>{venta.terrenoNumero || 'N/A'}</td>
+                    <td>{venta.terrenoNumeroLote || 'N/A'}</td>
                     <td className="monto">
                       ${Number(venta.montoTotal).toLocaleString('es-MX', {
                         minimumFractionDigits: 2,

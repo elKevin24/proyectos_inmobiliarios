@@ -32,8 +32,10 @@ const ventaService = {
   },
 
   // Cancelar una venta
-  cancelar: async (id, motivo) => {
-    const response = await api.post(`/ventas/${id}/cancelar`, { motivo });
+  cancelar: async (id) => {
+    const response = await api.patch(`/ventas/${id}/estado`, null, {
+      params: { estado: 'CANCELADA' }
+    });
     return response.data;
   },
 };

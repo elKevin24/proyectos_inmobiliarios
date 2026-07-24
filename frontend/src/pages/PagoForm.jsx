@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import pagoService from '../services/pagoService';
+import useVentaStore from '../store/ventaStore';
 import '../styles/Ventas.css';
 
 function PagoForm() {
@@ -9,16 +10,30 @@ function PagoForm() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isLoading, setIsLoading] = useState(false);
+  const { selectedVenta, fetchVentaById } = useVentaStore();
+
+  useEffect(() => {
+    if (ventaId) {
+      fetchVentaById(ventaId).catch(err => {
+        console.error('Error fetching venta:', err);
+      });
+    }
+  }, [ventaId, fetchVentaById]);
 
   const onSubmit = async (data) => {
+    if (!selectedVenta?.planPago?.id) {
+      alert('Esta venta no tiene un plan de pagos configurado.');
+      return;
+    }
+
     try {
       setIsLoading(true);
       const pagoData = {
-        ventaId: parseInt(ventaId),
-        monto: parseFloat(data.monto),
+        planPagoId: selectedVenta.planPago.id,
+        montoPagado: parseFloat(data.monto),
         metodoPago: data.metodoPago,
         fechaPago: data.fechaPago,
-        referencia: data.referencia || null,
+        referenciaPago: data.referencia || null,
         observaciones: data.observaciones || null,
       };
 
@@ -89,13 +104,21 @@ function PagoForm() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="referencia">Referencia/Folio</label>
+            <label htmlFor="referencia">Referencia/Folio *</label>
             <input
               id="referencia"
               type="text"
-              {...register('referencia')}
+              {...register('referencia', {
+                validate: (value, formValues) => {
+                  if ((formValues.metodoPago === 'TRANSFERENCIA' || formValues.metodoPago === 'CHEQUE') && (!value || !value.trim())) {
+                    return 'La referencia es obligatoria para transferencias y cheques';
+                  }
+                  return true;
+                }
+              })}
               placeholder="Número de referencia o folio"
             />
+            {errors.referencia && <span className="error-message">{errors.referencia.message}</span>}
           </div>
         </div>
 

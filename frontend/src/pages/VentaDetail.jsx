@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft, FaMoneyBillWave, FaBan } from 'react-icons/fa';
 import useVentaStore from '../store/ventaStore';
-import pagoService from '../services/pagoService';
+import planPagoService from '../services/planPagoService';
 import '../styles/Ventas.css';
 
 function VentaDetail() {
@@ -14,23 +14,27 @@ function VentaDetail() {
 
   useEffect(() => {
     loadVenta();
-    loadPagos();
   }, [id]);
 
   const loadVenta = async () => {
     try {
-      await fetchVentaById(id);
+      const venta = await fetchVentaById(id);
+      if (venta?.planPago?.id) {
+        loadPagos(venta.planPago.id);
+      }
     } catch (error) {
       console.error('Error loading venta:', error);
       alert('Error al cargar la venta');
     }
   };
 
-  const loadPagos = async () => {
+  const loadPagos = async (planPagoId) => {
+    const targetPlanPagoId = planPagoId || selectedVenta?.planPago?.id;
+    if (!targetPlanPagoId) return;
     try {
       setLoadingPagos(true);
-      const data = await pagoService.getByVenta(id);
-      setPagos(data);
+      const data = await planPagoService.getEstadoCuenta(targetPlanPagoId);
+      setPagos(data.pagos || []);
     } catch (error) {
       console.error('Error loading pagos:', error);
     } finally {
@@ -39,12 +43,9 @@ function VentaDetail() {
   };
 
   const handleCancelar = async () => {
-    const motivo = prompt('Ingrese el motivo de cancelación:');
-    if (!motivo) return;
-
     if (window.confirm('¿Está seguro de cancelar esta venta?')) {
       try {
-        await cancelarVenta(id, motivo);
+        await cancelarVenta(id);
         alert('Venta cancelada exitosamente');
         loadVenta();
       } catch (error) {
@@ -58,6 +59,7 @@ function VentaDetail() {
       PENDIENTE: 'badge-pendiente',
       PAGADO: 'badge-pagado',
       CANCELADO: 'badge-cancelado',
+      CANCELADA: 'badge-cancelado',
     };
     return badges[estado] || 'badge-default';
   };
@@ -102,7 +104,7 @@ function VentaDetail() {
           <p>Detalles de la transacción</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {selectedVenta.estado !== 'CANCELADO' && (
+          {selectedVenta.estado !== 'CANCELADO' && selectedVenta.estado !== 'CANCELADA' && (
             <>
               <Link to={`/ventas/${id}/pagos/nuevo`} className="btn btn-primary">
                 <FaMoneyBillWave /> Registrar Pago
@@ -220,7 +222,7 @@ function VentaDetail() {
             ) : pagos.length === 0 ? (
               <div className="empty-state-small">
                 <p>No hay pagos registrados</p>
-                {selectedVenta.estado !== 'CANCELADO' && (
+                {selectedVenta.estado !== 'CANCELADO' && selectedVenta.estado !== 'CANCELADA' && (
                   <Link to={`/ventas/${id}/pagos/nuevo`} className="btn btn-primary">
                     Registrar Primer Pago
                   </Link>

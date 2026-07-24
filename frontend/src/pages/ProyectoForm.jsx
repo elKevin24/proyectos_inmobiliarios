@@ -58,7 +58,7 @@ function ProyectoForm() {
         codigoPostal: data.codigoPostal,
         precioBaseM2: parseFloat(data.precioBaseM2 || 0),
         areaTotal: parseFloat(data.areaTotal || 0),
-        estado: data.estadoProyecto,
+        estadoProyecto: data.estadoProyecto,
         archivoPlanoId: uploadedFile?.id || null,
       };
 

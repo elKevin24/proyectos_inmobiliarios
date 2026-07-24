@@ -33,7 +33,7 @@ const proyectoService = {
 
   // Obtener estadísticas de un proyecto
   getEstadisticas: async (id) => {
-    const response = await api.get(`/proyectos/${id}/estadisticas`);
+    const response = await api.get(`/reportes/proyectos/${id}`);
     return response.data;
   },
 };

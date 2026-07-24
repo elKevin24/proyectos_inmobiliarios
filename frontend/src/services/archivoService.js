@@ -30,10 +30,7 @@ const archivoService = {
     return response.data;
   },
 
-  getById: async (archivoId) => {
-    const response = await api.get(`/archivos/${archivoId}`);
-    return response.data;
-  },
+
 
   list: async (params = {}) => {
     const response = await api.get('/archivos', { params });
