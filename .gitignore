@@ -115,6 +115,8 @@ ENV/
 /test-uploads/
 /uploads/
 .antigravity/
-.graphify-cache/
-.graphify-out/
+graphify-cache/*
+graphify-out/*
+.bloop/
+.metals/
 
