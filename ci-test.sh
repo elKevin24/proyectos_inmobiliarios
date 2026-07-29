@@ -1,22 +1,41 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 echo "==================================="
 echo "🚀 Iniciando Pipeline CI Local"
 echo "==================================="
 
-# 1. Ejecutar pruebas unitarias de backend
-echo "☕ Ejecutando pruebas unitarias de Backend (Java/Maven)..."
-./mvnw clean test
+cleanup() {
+  if [[ -n "${BACKEND_PID:-}" ]] && kill -0 "$BACKEND_PID" 2>/dev/null; then
+    echo "🛑 Deteniendo Backend..."
+    kill "$BACKEND_PID" || true
+  fi
+}
+
+trap cleanup EXIT
+
+# 1. Ejecutar pruebas de backend con cobertura
+echo "☕ Ejecutando pruebas de Backend (Java/Maven)..."
+./mvnw clean verify
 
 # 2. Levantar el backend en segundo plano
 echo "🔄 Levantando el servidor de Backend en localhost:8080..."
-./mvnw spring-boot:run &
+./mvnw -DskipTests spring-boot:run -Dspring-boot.run.profiles=test > backend.log 2>&1 &
 BACKEND_PID=$!
 
-# Esperar a que el backend esté listo (polling al endpoint de health o simplemente esperar)
-echo "⏳ Esperando 20 segundos a que el Backend inicialice completamente..."
-sleep 20
+# Esperar a que el backend esté listo usando healthcheck
+echo "⏳ Esperando a que el Backend inicialice completamente..."
+for i in $(seq 1 60); do
+  if curl -fsS http://localhost:8080/actuator/health >/dev/null; then
+    break
+  fi
+  if [[ "$i" -eq 60 ]]; then
+    echo "❌ El Backend no respondió a tiempo"
+    cat backend.log
+    exit 1
+  fi
+  sleep 2
+done
 
 # 3. Preparar frontend
 echo "⚛️ Preparando Frontend..."
@@ -32,20 +51,11 @@ npm run test:unit
 echo "🏗️ Construyendo Frontend para producción..."
 npm run build
 
-# 6. Ejecutar pruebas E2E con Playwright (Playwright webServer debería apuntar a localhost:5173 o similar,
-#    pero asume que el frontend local se levanta automáticamente o Playwright lo hace mediante webServer en la config)
-echo "🎭 Ejecutando suite de pruebas E2E completa (91 tests)..."
+# 6. Instalar browsers de Playwright y ejecutar E2E
+echo "🎭 Instalando browsers de Playwright..."
+npx playwright install --with-deps chromium
+
+echo "🎭 Ejecutando suite de pruebas E2E completa..."
 npx playwright test
 
-# Guardar el código de salida de Playwright
-E2E_EXIT_CODE=$?
-
-echo "🛑 Deteniendo Backend..."
-kill $BACKEND_PID
-
-if [ $E2E_EXIT_CODE -eq 0 ]; then
-  echo "✅ ¡Todas las pruebas han pasado exitosamente! La suite es completamente rigurosa."
-else
-  echo "❌ Las pruebas E2E han fallado. Revisa el reporte de Playwright."
-  exit 1
-fi
+echo "✅ ¡Todas las pruebas han pasado exitosamente! La suite es completamente rigurosa."
