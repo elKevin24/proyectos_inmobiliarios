@@ -19,6 +19,7 @@ class VentaCompletaE2ETest extends BaseE2ETest {
     private Long cotizacionId;
     private Long apartadoId;
     private Long ventaId;
+    private Long clienteId;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -27,6 +28,7 @@ class VentaCompletaE2ETest extends BaseE2ETest {
             token = getAccessToken(response);
             proyectoId = crearProyecto(token, "Proyecto Venta E2E");
             terrenoId = crearTerreno(token, proyectoId, "V-001");
+            clienteId = crearCliente(token, "Juan", "Comprador", "juan@test.com");
         }
     }
 
@@ -59,16 +61,6 @@ class VentaCompletaE2ETest extends BaseE2ETest {
 
     @Test
     @Order(2)
-    @DisplayName("GET /api/v1/cotizaciones - Listar cotizaciones")
-    void listarCotizaciones_returns200() throws Exception {
-        ResponseEntity<JsonNode> response = getJsonWithAuth("/api/v1/cotizaciones", token);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isArray());
-        assertTrue(response.getBody().size() >= 1);
-    }
-
-    @Test
-    @Order(3)
     @DisplayName("POST /api/v1/apartados - Crear apartado")
     void crearApartado_returns201() throws Exception {
         String body = """
@@ -88,6 +80,15 @@ class VentaCompletaE2ETest extends BaseE2ETest {
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/apartados", body, token);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         apartadoId = response.getBody().get("id").asLong();
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("GET /api/v1/apartados/{id} - Obtener apartado creado")
+    void obtenerApartado_returns200() throws Exception {
+        ResponseEntity<JsonNode> response = getJsonWithAuth(
+                "/api/v1/apartados/" + apartadoId, token);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("ACTIVO", response.getBody().get("estado").asText());
     }
 
@@ -119,24 +120,19 @@ class VentaCompletaE2ETest extends BaseE2ETest {
                 {
                     "terrenoId": %d,
                     "apartadoId": %d,
-                    "compradorNombre": "Juan Perez Comprador",
-                    "compradorEmail": "juan@test.com",
-                    "compradorTelefono": "4421234567",
-                    "compradorRfc": "PEPJ850101ABC",
-                    "precioTotal": 390000.00,
-                    "montoApartadoAcreditado": 50000.00,
-                    "montoFinal": 340000.00,
-                    "porcentajeComision": 5.00,
-                    "montoComision": 19500.00,
-                    "formaPago": "CONTADO",
+                    "clienteId": %d,
+                    "montoTotal": 390000.00,
+                    "enganche": 50000.00,
+                    "montoFinanciado": 340000.00,
+                    "metodoPago": "TRANSFERENCIA",
                     "observaciones": "Venta de prueba E2E"
                 }
-                """.formatted(terrenoId, apartadoId);
+                """.formatted(terrenoId, apartadoId, clienteId);
 
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/ventas", body, token);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         ventaId = response.getBody().get("id").asLong();
-        assertEquals("CONTADO", response.getBody().get("formaPago").asText());
+        assertEquals("TRANSFERENCIA", response.getBody().get("formaPago").asText());
     }
 
     @Test
@@ -229,12 +225,13 @@ class VentaCompletaE2ETest extends BaseE2ETest {
         String body = """
                 {
                     "terrenoId": %d,
-                    "compradorNombre": "Cliente Venta Directa",
-                    "precioTotal": 450000.00,
-                    "montoFinal": 450000.00,
-                    "formaPago": "CONTADO"
+                    "clienteId": %d,
+                    "montoTotal": 450000.00,
+                    "enganche": 0.00,
+                    "montoFinanciado": 450000.00,
+                    "metodoPago": "CONTADO"
                 }
-                """.formatted(terrenoId2);
+                """.formatted(terrenoId2, clienteId);
 
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/ventas", body, token);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());

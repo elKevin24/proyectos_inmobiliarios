@@ -134,6 +134,34 @@ public class PagoService {
         return convertirAPlanPagoResponse(actualizado);
     }
 
+    @Transactional
+    public void eliminarPlanPago(Long id) {
+        Long tenantId = getTenantId();
+        log.info("Eliminando plan de pago {} para tenant: {}", id, tenantId);
+
+        PlanPago planPago = planPagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan de pago no encontrado"));
+
+        List<Pago> pagos = pagoRepository.findByPlanPagoId(tenantId, id);
+        for (Pago pago : pagos) {
+            pago.setDeleted(true);
+            pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+            pagoRepository.save(pago);
+        }
+
+        List<Amortizacion> amortizaciones = amortizacionRepository.findByPlanPagoId(tenantId, id);
+        for (Amortizacion amortizacion : amortizaciones) {
+            amortizacion.setDeleted(true);
+            amortizacionRepository.save(amortizacion);
+        }
+
+        planPago.setDeleted(true);
+        planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        planPagoRepository.save(planPago);
+
+        log.info("Plan de pago {} eliminado exitosamente", id);
+    }
+
     // ==================== GENERACIÓN DE AMORTIZACIONES ====================
 
     @Transactional

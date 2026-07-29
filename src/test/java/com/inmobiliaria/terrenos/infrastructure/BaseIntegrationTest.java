@@ -40,26 +40,42 @@ public abstract class BaseIntegrationTest {
     @org.junit.jupiter.api.BeforeEach
     protected void setupPermisos() {
         if (permisoRepository.count() == 0) {
-            permisoRepository.save(com.inmobiliaria.terrenos.domain.entity.Permiso.builder()
-                    .codigo("PROYECTO_CREAR")
-                    .nombre("Crear Proyecto")
-                    .modulo("PROYECTO")
-                    .build());
-            permisoRepository.save(com.inmobiliaria.terrenos.domain.entity.Permiso.builder()
-                    .codigo("PROYECTO_VER")
-                    .nombre("Ver Proyecto")
-                    .modulo("PROYECTO")
-                    .build());
-            permisoRepository.save(com.inmobiliaria.terrenos.domain.entity.Permiso.builder()
-                    .codigo("PROYECTO_EDITAR")
-                    .nombre("Editar Proyecto")
-                    .modulo("PROYECTO")
-                    .build());
-            permisoRepository.save(com.inmobiliaria.terrenos.domain.entity.Permiso.builder()
-                    .codigo("PROYECTO_ELIMINAR")
-                    .nombre("Eliminar Proyecto")
-                    .modulo("PROYECTO")
-                    .build());
+            java.util.List.of(
+                    // Proyectos
+                    "PROYECTO_CREAR", "PROYECTO_VER", "PROYECTO_EDITAR", "PROYECTO_ELIMINAR",
+                    // Terrenos
+                    "TERRENO_CREAR", "TERRENO_VER", "TERRENO_EDITAR", "TERRENO_ELIMINAR",
+                    // Cotizaciones
+                    "COTIZACION_CREAR", "COTIZACION_VER", "COTIZACION_ELIMINAR",
+                    // Apartados
+                    "APARTADO_CREAR", "APARTADO_EDITAR", "APARTADO_CANCELAR", "APARTADO_VER",
+                    // Ventas
+                    "VENTA_CREAR", "VENTA_EDITAR", "VENTA_CANCELAR", "VENTA_VER",
+                    // Usuarios
+                    "USUARIO_CREAR", "USUARIO_EDITAR", "USUARIO_ELIMINAR", "USUARIO_VER", "USUARIO_ASIGNAR_ROLES",
+                    // Reportes
+                    "REPORTE_VER", "REPORTE_VENTAS", "REPORTE_DISPONIBILIDAD", "REPORTE_RENTABILIDAD", "REPORTE_COMISIONES",
+                    "REPORTE_APARTADOS", "REPORTE_INGRESOS", "REPORTE_ACTIVIDAD", "REPORTE_PRECIOS",
+                    // Auditoria
+                    "AUDITORIA_VER", "AUDITORIA_EXPORTAR",
+                    // Configuracion
+                    "CONFIG_EMPRESA", "CONFIG_PRECIOS", "CONFIG_SISTEMA",
+                    // Clientes
+                    "CLIENTE_VER", "CLIENTE_CREAR", "CLIENTE_EDITAR", "CLIENTE_ELIMINAR",
+                    // Planes de pago
+                    "PLAN_PAGO_VER", "PLAN_PAGO_CREAR", "PLAN_PAGO_EDITAR", "PLAN_PAGO_ELIMINAR",
+                    // Pagos
+                    "PAGO_REGISTRAR",
+                    // Archivos
+                    "ARCHIVO_CREAR",
+                    // Admin (special authority for audit endpoints)
+                    "ADMIN"
+            ).forEach(codigo -> permisoRepository.save(
+                    com.inmobiliaria.terrenos.domain.entity.Permiso.builder()
+                            .codigo(codigo)
+                            .nombre(codigo)
+                            .modulo(codigo.split("_")[0])
+                            .build()));
         }
     }
 }

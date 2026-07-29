@@ -54,11 +54,11 @@ function ProyectoForm() {
         ubicacion: data.ubicacion,
         direccion: data.direccion,
         ciudad: data.ciudad,
-        estado: data.estado,
+        estadoProvincia: data.estado, // Se renombra para evitar colisión con el estado del proyecto
         codigoPostal: data.codigoPostal,
         precioBaseM2: parseFloat(data.precioBaseM2 || 0),
         areaTotal: parseFloat(data.areaTotal || 0),
-        estado: data.estadoProyecto,
+        estado: data.estadoProyecto, // estado = PLANIFICACION, EN_VENTA, etc.
         archivoPlanoId: uploadedFile?.id || null,
       };
 
@@ -95,7 +95,7 @@ function ProyectoForm() {
               {...register('nombre', { required: 'El nombre es requerido' })}
               placeholder="Residencial Las Palmas"
             />
-            {errors.nombre && <span className="error-message">{errors.nombre.message}</span>}
+            {errors.nombre && <span data-testid="error-nombre" className="error-message">{errors.nombre.message}</span>}
           </div>
 
           <div className="form-group">
@@ -181,7 +181,7 @@ function ProyectoForm() {
               })}
               placeholder="01234"
             />
-            {errors.codigoPostal && <span className="error-message">{errors.codigoPostal.message}</span>}
+            {errors.codigoPostal && <span data-testid="error-codigo-postal" className="error-message">{errors.codigoPostal.message}</span>}
           </div>
         </div>
 

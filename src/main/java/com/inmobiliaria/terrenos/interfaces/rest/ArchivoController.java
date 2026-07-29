@@ -111,6 +111,25 @@ public class ArchivoController {
                 .body(resource);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ARCHIVO_VER', 'ADMIN')")
+    @Operation(
+            summary = "Obtener archivo por ID",
+            description = "Obtiene los metadatos de un archivo por su ID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Archivo encontrado",
+                    content = @Content(schema = @Schema(implementation = ArchivoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Archivo no encontrado")
+    })
+    public ResponseEntity<ArchivoResponse> obtenerArchivo(
+            @Parameter(description = "ID del archivo", required = true)
+            @PathVariable Long id
+    ) {
+        log.info("GET /api/v1/archivos/{}", id);
+        return ResponseEntity.ok(archivoService.obtenerArchivo(id));
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ARCHIVO_VER', 'ADMIN')")
     @Operation(

@@ -84,7 +84,7 @@ function ClienteForm() {
               {...register('nombre', { required: 'El nombre es requerido' })}
               placeholder="Juan"
             />
-            {errors.nombre && <span className="error-message">{errors.nombre.message}</span>}
+            {errors.nombre && <span data-testid="error-nombre" className="error-message">{errors.nombre.message}</span>}
           </div>
 
           <div className="form-group">
@@ -112,7 +112,7 @@ function ClienteForm() {
               })}
               placeholder="juan.perez@email.com"
             />
-            {errors.email && <span className="error-message">{errors.email.message}</span>}
+            {errors.email && <span data-testid="error-email" className="error-message">{errors.email.message}</span>}
           </div>
 
           <div className="form-group">
@@ -129,7 +129,7 @@ function ClienteForm() {
               })}
               placeholder="5512345678"
             />
-            {errors.telefono && <span className="error-message">{errors.telefono.message}</span>}
+            {errors.telefono && <span data-testid="error-telefono" className="error-message">{errors.telefono.message}</span>}
           </div>
 
           <div className="form-group">

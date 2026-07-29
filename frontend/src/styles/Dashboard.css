@@ -8,15 +8,52 @@
 }
 
 .dashboard-header {
-  margin-bottom: 35px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 42px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
 }
 
 .dashboard-header h1 {
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   font-size: 32px;
   font-weight: 800;
   font-family: var(--font-heading);
   letter-spacing: -0.03em;
+}
+
+.dashboard-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dashboard-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 4px var(--color-success-bg);
 }
 
 .dashboard-header p {
@@ -40,7 +77,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-glass);
 }
 
@@ -62,11 +99,11 @@
   backdrop-filter: blur(var(--blur-glass));
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px;
   display: flex;
   align-items: center;
   gap: 20px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
   transition: all var(--transition-normal);
   overflow: hidden;
   position: relative;
@@ -360,6 +397,13 @@
    ================================================================= */
 
 @media (max-width: 768px) {
+  .dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+
   .dashboard-header h1 {
     font-size: 26px;
   }

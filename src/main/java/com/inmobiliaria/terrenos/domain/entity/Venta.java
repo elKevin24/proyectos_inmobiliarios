@@ -78,8 +78,14 @@ public class Venta {
     @Column(name = "comprador_curp", length = 18)
     private String compradorCurp;
 
+    @Column(name = "folio", nullable = false, length = 50)
+    private String folio;
+
     @Column(name = "fecha_venta", nullable = false)
     private LocalDate fechaVenta;
+
+    @Column(name = "fecha_escrituracion")
+    private LocalDate fechaEscrituracion;
 
     @Column(name = "precio_total", nullable = false, precision = 12, scale = 2)
     private BigDecimal precioTotal;

@@ -71,8 +71,12 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p>Resumen general del sistema inmobiliario</p>
+        <div>
+          <span className="eyebrow">Resumen ejecutivo</span>
+          <h1>Buenos días, equipo</h1>
+          <p>Una vista clara del rendimiento de tu operación inmobiliaria.</p>
+        </div>
+        <div className="dashboard-status"><span /> Datos actualizados</div>
       </div>
 
       {/* Proyectos */}
@@ -84,7 +88,7 @@ function Dashboard() {
           <StatCard
             title="Total Proyectos"
             value={dashboardData?.totalProyectos || 0}
-            icon="🏢"
+            icon={<FaBuilding />}
             color="blue"
             subtitle={`${dashboardData?.proyectosActivos || 0} activos`}
           />
@@ -100,27 +104,27 @@ function Dashboard() {
           <StatCard
             title="Total Terrenos"
             value={dashboardData?.totalTerrenos || 0}
-            icon="📍"
+            icon={<FaMap />}
             color="blue"
           />
           <StatCard
             title="Disponibles"
             value={dashboardData?.terrenosDisponibles || 0}
-            icon="✅"
+            icon={<FaCheckCircle />}
             color="green"
             subtitle="Listos para venta"
           />
           <StatCard
             title="Apartados"
             value={dashboardData?.terrenosApartados || 0}
-            icon="🔖"
+            icon={<FaBookmark />}
             color="orange"
             subtitle="En reserva"
           />
           <StatCard
             title="Vendidos"
             value={dashboardData?.terrenosVendidos || 0}
-            icon="💰"
+            icon={<FaMoneyBillWave />}
             color="purple"
             subtitle="Transacciones completadas"
           />
@@ -136,7 +140,7 @@ function Dashboard() {
           <StatCard
             title="Total Clientes"
             value={dashboardData?.totalClientes || 0}
-            icon="👥"
+            icon={<FaUsers />}
             color="teal"
             subtitle={`${dashboardData?.clientesActivos || 0} activos`}
           />
@@ -152,26 +156,26 @@ function Dashboard() {
           <StatCard
             title="Total Ventas"
             value={dashboardData?.totalVentas || 0}
-            icon="💵"
+            icon={<FaMoneyBillWave />}
             color="green"
             subtitle={`${dashboardData?.ventasPagadas || 0} pagadas`}
           />
           <StatCard
             title="Monto Total Ventas"
             value={formatCurrency(dashboardData?.montoTotalVentas || 0)}
-            icon="💰"
+            icon={<FaMoneyBillWave />}
             color="purple"
           />
           <StatCard
             title="Comisiones Generadas"
             value={formatCurrency(dashboardData?.montoComisiones || 0)}
-            icon="📊"
+            icon={<FaChartLine />}
             color="blue"
           />
           <StatCard
             title="Avance de Ventas"
             value={`${(dashboardData?.porcentajeAvanceVentas || 0).toFixed(1)}%`}
-            icon="📈"
+            icon={<FaChartLine />}
             color="green"
             subtitle="Del inventario total"
           />
@@ -187,7 +191,7 @@ function Dashboard() {
           <StatCard
             title="Total Apartados"
             value={dashboardData?.totalApartados || 0}
-            icon="🔖"
+            icon={<FaBookmark />}
             color="orange"
           />
           <StatCard

@@ -27,53 +27,54 @@ class PlanPagoE2ETest extends BaseE2ETest {
             token = getAccessToken(response);
             proyectoId = crearProyecto(token, "Proyecto PlanPago E2E");
             terrenoId = crearTerreno(token, proyectoId, "PP-001");
-            crearCotizacion();
-            crearApartado();
-            crearVenta();
+            Long clienteId = crearCliente(token, "Cliente", "Plan", "plan@test.com");
+            crearCotizacion(terrenoId);
+            apartadoId = crearApartado(terrenoId);
+            ventaId = crearVenta(terrenoId, apartadoId, clienteId);
         }
     }
 
-    private void crearCotizacion() throws Exception {
+    private void crearCotizacion(Long terrenoId) throws Exception {
         String body = """
                 {
                     "terrenoId": %d,
-                    "clienteNombre": "Cliente PlanPago",
-                    "precioBase": 400000.00,
-                    "precioFinal": 400000.00,
+                    "clienteNombre": "Cliente Plan Pago",
+                    "precioBase": 500000.00,
+                    "precioFinal": 500000.00,
                     "fechaVigencia": "%s"
                 }
                 """.formatted(terrenoId, LocalDate.now().plusDays(30));
         postJsonWithAuth("/api/v1/cotizaciones", body, token);
     }
 
-    private void crearApartado() throws Exception {
+    private Long crearApartado(Long terrenoId) throws Exception {
         String body = """
                 {
                     "terrenoId": %d,
-                    "clienteNombre": "Cliente PlanPago",
+                    "clienteNombre": "Cliente Plan Pago",
                     "montoApartado": 50000.00,
-                    "precioTotal": 400000.00,
+                    "precioTotal": 500000.00,
                     "duracionDias": 30
                 }
                 """.formatted(terrenoId);
         ResponseEntity<JsonNode> resp = postJsonWithAuth("/api/v1/apartados", body, token);
-        apartadoId = resp.getBody().get("id").asLong();
+        return resp.getBody().get("id").asLong();
     }
 
-    private void crearVenta() throws Exception {
+    private Long crearVenta(Long terrenoId, Long apartadoId, Long clienteId) throws Exception {
         String body = """
                 {
                     "terrenoId": %d,
                     "apartadoId": %d,
-                    "compradorNombre": "Cliente PlanPago",
-                    "precioTotal": 400000.00,
-                    "montoApartadoAcreditado": 50000.00,
-                    "montoFinal": 350000.00,
-                    "formaPago": "CREDITO_BANCARIO"
+                    "clienteId": %d,
+                    "montoTotal": 500000.00,
+                    "enganche": 50000.00,
+                    "montoFinanciado": 450000.00,
+                    "metodoPago": "CREDITO_DIRECTO"
                 }
-                """.formatted(terrenoId, apartadoId);
+                """.formatted(terrenoId, apartadoId, clienteId);
         ResponseEntity<JsonNode> resp = postJsonWithAuth("/api/v1/ventas", body, token);
-        ventaId = resp.getBody().get("id").asLong();
+        return resp.getBody().get("id").asLong();
     }
 
     @Test

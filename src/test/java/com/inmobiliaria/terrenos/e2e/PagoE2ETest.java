@@ -23,9 +23,10 @@ class PagoE2ETest extends BaseE2ETest {
             token = getAccessToken(response);
             Long proyectoId = crearProyecto(token, "Proyecto Pago E2E");
             Long terrenoId = crearTerreno(token, proyectoId, "PG-001");
+            Long clienteId = crearCliente(token, "Cliente", "Pago", "pago@test.com");
             crearCotizacion(terrenoId);
             Long apartadoId = crearApartado(terrenoId);
-            Long ventaId = crearVenta(terrenoId, apartadoId);
+            Long ventaId = crearVenta(terrenoId, apartadoId, clienteId);
             crearPlanPago(ventaId);
         }
     }
@@ -57,18 +58,18 @@ class PagoE2ETest extends BaseE2ETest {
         return resp.getBody().get("id").asLong();
     }
 
-    private Long crearVenta(Long terrenoId, Long apartadoId) throws Exception {
+    private Long crearVenta(Long terrenoId, Long apartadoId, Long clienteId) throws Exception {
         String body = """
                 {
                     "terrenoId": %d,
                     "apartadoId": %d,
-                    "compradorNombre": "Cliente Pago",
-                    "precioTotal": 400000.00,
-                    "montoApartadoAcreditado": 50000.00,
-                    "montoFinal": 350000.00,
-                    "formaPago": "CREDITO_BANCARIO"
+                    "clienteId": %d,
+                    "montoTotal": 400000.00,
+                    "enganche": 50000.00,
+                    "montoFinanciado": 350000.00,
+                    "metodoPago": "CREDITO_BANCARIO"
                 }
-                """.formatted(terrenoId, apartadoId);
+                """.formatted(terrenoId, apartadoId, clienteId);
         ResponseEntity<JsonNode> resp = postJsonWithAuth("/api/v1/ventas", body, token);
         return resp.getBody().get("id").asLong();
     }

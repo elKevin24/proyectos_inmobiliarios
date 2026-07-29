@@ -85,12 +85,14 @@ function TerrenosList() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="search-input"
+          data-testid="terrenos-search"
         />
 
         <select
           value={estadoFilter}
           onChange={(e) => setEstadoFilter(e.target.value)}
           className="filter-select"
+          data-testid="terrenos-status-filter"
         >
           <option value="">Todos los estados</option>
           <option value="DISPONIBLE">Disponible</option>

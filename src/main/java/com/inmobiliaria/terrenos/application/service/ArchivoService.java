@@ -173,6 +173,20 @@ public class ArchivoService {
     }
 
     /**
+     * Obtiene los metadatos de un archivo por ID.
+     */
+    @Transactional(readOnly = true)
+    public ArchivoResponse obtenerArchivo(Long id) {
+        Long tenantId = getTenantId();
+        log.debug("Obteniendo archivo {} para tenant: {}", id, tenantId);
+
+        Archivo archivo = archivoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Archivo no encontrado con id: " + id));
+
+        return archivoMapper.toResponse(archivo);
+    }
+
+    /**
      * Lista archivos
      */
     @Transactional(readOnly = true)

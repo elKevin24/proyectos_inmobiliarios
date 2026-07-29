@@ -248,4 +248,17 @@ public abstract class BaseE2ETest {
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/terrenos", body, token);
         return response.getBody().get("id").asLong();
     }
+
+    protected Long crearCliente(String token, String nombre, String apellido, String email) throws Exception {
+        String body = """
+                {
+                    "nombre": "%s",
+                    "apellido": "%s",
+                    "email": "%s",
+                    "telefono": "5551234567"
+                }
+                """.formatted(nombre, apellido, email);
+        ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/clientes", body, token);
+        return response.getBody().get("id").asLong();
+    }
 }

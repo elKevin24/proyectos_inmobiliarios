@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '../services/api';
+import api from '../services/api.js';
 
 const clienteStore = create((set, get) => ({
   clientes: [],
