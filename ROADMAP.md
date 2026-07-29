@@ -90,6 +90,58 @@ Responsable de Arquitectura, Seguridad, Integraciones Complejas (PDF, Pagos, CV 
 
 ---
 
+### Prioridades Por Sprint
+
+**Sprint QA 1 - Base de confianza**
+- [ ] Definir matriz de riesgos por modulo y flujos criticos
+- [ ] Fijar umbrales minimos de cobertura por capa
+- [ ] Estandarizar fixtures, builders y seeds
+- [ ] Consolidar ejecucion local y en CI de unit tests e integration tests
+
+**Sprint QA 2 - Regresion y seguridad**
+- [ ] Cubrir servicios criticos con tests unitarios adicionales
+- [ ] Validar RBAC por rol y por tenant
+- [ ] Agregar pruebas de acceso denegado y cross-tenant
+- [ ] Crear smoke suite para PRs
+
+**Sprint QA 3 - E2E y performance**
+- [ ] Automatizar flujos criticos de negocio
+- [ ] Ejecutar regresion E2E antes de releases
+- [ ] Medir tiempos de respuesta y estabilidad bajo carga
+- [ ] Identificar endpoints y queries lentas
+
+**Sprint QA 4 - Quality gates**
+- [ ] Bloquear merge si fallan checks obligatorios
+- [ ] Publicar reportes de cobertura y ejecucion
+- [ ] Integrar estado de tests en PRs
+- [ ] Establecer criterio de release quality
+
+---
+
+### Criterios De Salida
+
+- [ ] Cobertura unitaria e integracion visible por modulo y por capa
+- [ ] Suite E2E critica estable y reproducible
+- [ ] RBAC validado con casos positivos y negativos
+- [ ] Performance baseline definido para endpoints clave
+- [ ] Pipeline CI/CD con gates obligatorios activos
+- [ ] Datos de prueba estandarizados y reseteables
+
+---
+
+### Checklist De Aceptacion Por Modulo
+
+| Modulo | Cobertura Minima | Integracion | E2E | Seguridad | Observaciones |
+|--------|------------------|------------|-----|-----------|---------------|
+| Auth / JWT | Alta | Si | Si | Si | Incluye refresh, logout y acceso denegado |
+| Proyectos | Media | Si | Si | Si | Validar multi-tenant |
+| Terrenos / Fases | Media | Si | Si | Si | Incluir validaciones y filtros |
+| Cotizaciones / Apartados / Ventas | Alta | Si | Si | Si | Flujos criticos de negocio |
+| Pagos / Amortizaciones | Alta | Si | Si | Si | Validar estados y transiciones |
+| Reportes / Dashboard | Media | Si | Parcial | No | Priorizar integridad de datos |
+| Archivos / CV Engine | Media | Si | Parcial | Si | Dependencia de infraestructura |
+| Auditoria | Media | Si | No | Si | Validar trazabilidad y acceso admin |
+
 ## Fase 2 — Frontend: Pulir y Completar
 
 *En desarrollo paralelo.*

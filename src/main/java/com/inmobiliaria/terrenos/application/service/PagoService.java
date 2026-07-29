@@ -273,6 +273,49 @@ public class PagoService {
         return fechaPrimerPago.plusDays((long) (numeroPagos - 1) * frecuencia.getDias());
     }
 
+    // ==================== CONSULTAS DE PAGOS ====================
+
+    @Transactional(readOnly = true)
+    public PagoResponse obtenerPago(Long id) {
+        Long tenantId = getTenantId();
+        log.debug("Obteniendo pago {} para tenant: {}", id, tenantId);
+
+        Pago pago = pagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + id));
+
+        return convertirAPagoResponse(pago);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PagoResponse> listarPagosPorVenta(Long ventaId) {
+        Long tenantId = getTenantId();
+        log.debug("Listando pagos para venta: {}", ventaId);
+
+        PlanPago planPago = planPagoRepository.findByTenantIdAndVentaIdAndDeletedFalse(tenantId, ventaId)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró plan de pago para esta venta"));
+
+        List<Pago> pagos = pagoRepository.findByPlanPagoId(tenantId, planPago.getId());
+
+        return pagos.stream()
+                .map(this::convertirAPagoResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void eliminarPago(Long id) {
+        Long tenantId = getTenantId();
+        log.info("Eliminando pago {} para tenant: {}", id, tenantId);
+
+        Pago pago = pagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + id));
+
+        pago.setDeleted(true);
+        pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        pagoRepository.save(pago);
+
+        log.info("Pago {} eliminado exitosamente", id);
+    }
+
     // ==================== APLICACIÓN DE PAGOS ====================
 
     @Transactional

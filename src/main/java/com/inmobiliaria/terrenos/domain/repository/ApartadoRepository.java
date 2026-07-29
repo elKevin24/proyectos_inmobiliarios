@@ -2,6 +2,8 @@ package com.inmobiliaria.terrenos.domain.repository;
 
 import com.inmobiliaria.terrenos.domain.entity.Apartado;
 import com.inmobiliaria.terrenos.domain.enums.EstadoApartado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +23,8 @@ import java.util.Optional;
 public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
 
     List<Apartado> findByTenantIdAndDeletedFalse(Long tenantId);
+
+    Page<Apartado> findByTenantIdAndDeletedFalse(Long tenantId, Pageable pageable);
 
     Optional<Apartado> findByIdAndTenantIdAndDeletedFalse(Long id, Long tenantId);
 

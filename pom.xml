@@ -133,6 +133,13 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
+        <!-- Generación de PDFs -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
         <!-- Jackson 2 bridge (Boot 4 default es Jackson 3, bridge para compat con springdoc/swagger-core) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

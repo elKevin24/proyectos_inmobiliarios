@@ -1,6 +1,8 @@
 package com.inmobiliaria.terrenos.domain.repository;
 
 import com.inmobiliaria.terrenos.domain.entity.Cotizacion;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +22,8 @@ import java.util.Optional;
 public interface CotizacionRepository extends JpaRepository<Cotizacion, Long> {
 
     List<Cotizacion> findByTenantIdAndDeletedFalse(Long tenantId);
+
+    Page<Cotizacion> findByTenantIdAndDeletedFalse(Long tenantId, Pageable pageable);
 
     Optional<Cotizacion> findByIdAndTenantIdAndDeletedFalse(Long id, Long tenantId);
 
