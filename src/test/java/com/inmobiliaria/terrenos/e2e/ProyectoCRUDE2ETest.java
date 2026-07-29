@@ -67,8 +67,9 @@ class ProyectoCRUDE2ETest extends BaseE2ETest {
     void listarProyectos_returns200WithList() throws Exception {
         ResponseEntity<JsonNode> response = getJsonWithAuth("/api/v1/proyectos", token);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isArray());
-        assertTrue(response.getBody().size() >= 1);
+        assertTrue(response.getBody().has("content"));
+        assertTrue(response.getBody().get("content").isArray());
+        assertTrue(response.getBody().get("content").size() >= 1);
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.inmobiliaria.terrenos.application.dto.cliente.CreateClienteRequest;
 import com.inmobiliaria.terrenos.application.dto.cliente.UpdateClienteRequest;
 import com.inmobiliaria.terrenos.application.service.ClienteService;
 import com.inmobiliaria.terrenos.domain.enums.EstadoCliente;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -87,6 +89,25 @@ public class ClienteController {
         }
 
         return ResponseEntity.ok(clientes);
+    }
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyAuthority('CLIENTE_VER', 'ADMIN')")
+    @Operation(summary = "Listar clientes paginado", description = "Obtiene la lista paginada de clientes con filtros opcionales")
+    public ResponseEntity<PagedResponse<ClienteResponse>> listarClientesPaginado(
+            @Parameter(description = "Filtrar por estado del cliente")
+            @RequestParam(required = false) EstadoCliente estado,
+            Pageable pageable) {
+        log.info("GET /api/v1/clientes/paged - estado: {}, page: {}, size: {}",
+                estado, pageable.getPageNumber(), pageable.getPageSize());
+
+        PagedResponse<ClienteResponse> result;
+        if (estado != null) {
+            result = clienteService.listarClientesPorEstadoPaginado(estado, pageable);
+        } else {
+            result = clienteService.listarClientesPaginado(pageable);
+        }
+        return ResponseEntity.ok(result);
     }
 
     /**

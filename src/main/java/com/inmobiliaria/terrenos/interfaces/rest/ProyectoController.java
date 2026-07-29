@@ -7,6 +7,7 @@ import com.inmobiliaria.terrenos.application.dto.proyecto.UpdateProyectoRequest;
 import com.inmobiliaria.terrenos.application.service.PlanoService;
 import com.inmobiliaria.terrenos.application.service.ProyectoService;
 import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -19,10 +20,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 
 import java.util.List;
 
@@ -58,13 +63,13 @@ public class ProyectoController {
                     description = "Lista de proyectos obtenida exitosamente",
                     content = @Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = ProyectoResponse.class))
+                            schema = @Schema(implementation = PagedResponse.class)
                     )
             ),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
-    public ResponseEntity<List<ProyectoResponse>> listarProyectos(
+    public ResponseEntity<PagedResponse<ProyectoResponse>> listarProyectos(
             @Parameter(description = "Filtrar por estado del proyecto")
             @RequestParam(required = false) EstadoProyecto estado,
 
@@ -72,24 +77,18 @@ public class ProyectoController {
             @RequestParam(required = false, defaultValue = "false") Boolean disponibles,
 
             @Parameter(description = "Solo proyectos activos (en venta)")
-            @RequestParam(required = false, defaultValue = "false") Boolean activos
+            @RequestParam(required = false, defaultValue = "false") Boolean activos,
+
+            @Parameter(description = "Parámetros de paginación (page, size, sort)")
+            @PageableDefault(size = 20) Pageable pageable
     ) {
-        log.info("GET /api/v1/proyectos - estado: {}, disponibles: {}, activos: {}", estado, disponibles, activos);
-
-        List<ProyectoResponse> proyectos;
-
-        if (activos) {
-            proyectos = proyectoService.listarProyectosActivos();
-        } else if (disponibles) {
-            proyectos = proyectoService.listarProyectosConTerrenosDisponibles();
-        } else if (estado != null) {
-            proyectos = proyectoService.listarProyectosPorEstado(estado);
-        } else {
-            proyectos = proyectoService.listarProyectos();
-        }
-
-        return ResponseEntity.ok(proyectos);
+        log.info("GET /api/v1/proyectos - estado: {}, disponibles: {}, activos: {}, pageable: {}", estado, disponibles, activos, pageable);
+        
+        PagedResponse<ProyectoResponse> response = proyectoService.listarProyectosPaginado(estado, disponibles, activos, pageable);
+        return ResponseEntity.ok(response);
     }
+
+
 
     /**
      * Obtiene un proyecto por ID

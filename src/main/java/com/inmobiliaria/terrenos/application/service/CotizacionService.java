@@ -8,10 +8,13 @@ import com.inmobiliaria.terrenos.domain.repository.CotizacionRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.CotizacionMapper;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,23 @@ public class CotizacionService {
     private final CotizacionRepository cotizacionRepository;
     private final TerrenoRepository terrenoRepository;
     private final CotizacionMapper cotizacionMapper;
+
+    @Transactional(readOnly = true)
+    public PagedResponse<CotizacionResponse> listarCotizacionesPaginado(Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Cotizacion> cotizacionesPage = cotizacionRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        List<CotizacionResponse> content = cotizacionMapper.toResponseList(cotizacionesPage.getContent());
+        return new PagedResponse<>(
+                content,
+                cotizacionesPage.getNumber(),
+                cotizacionesPage.getSize(),
+                cotizacionesPage.getTotalElements(),
+                cotizacionesPage.getTotalPages(),
+                cotizacionesPage.isFirst(),
+                cotizacionesPage.isLast(),
+                cotizacionesPage.isEmpty()
+        );
+    }
 
     private Long getTenantId() {
         Long tenantId = TenantContext.getTenantId();

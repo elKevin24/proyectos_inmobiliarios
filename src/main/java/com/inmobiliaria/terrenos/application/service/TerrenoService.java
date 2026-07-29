@@ -10,10 +10,13 @@ import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.TerrenoMapper;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +38,59 @@ public class TerrenoService {
     private final TerrenoRepository terrenoRepository;
     private final ProyectoRepository proyectoRepository;
     private final TerrenoMapper terrenoMapper;
+
+    @Transactional(readOnly = true)
+    public PagedResponse<TerrenoResponse> listarTerrenosPaginado(Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Terreno> terrenosPage = terrenoRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        List<TerrenoResponse> content = terrenoMapper.toResponseList(terrenosPage.getContent());
+        return new PagedResponse<>(
+                content,
+                terrenosPage.getNumber(),
+                terrenosPage.getSize(),
+                terrenosPage.getTotalElements(),
+                terrenosPage.getTotalPages(),
+                terrenosPage.isFirst(),
+                terrenosPage.isLast(),
+                terrenosPage.isEmpty()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<TerrenoResponse> listarTerrenosPorProyectoPaginado(Long proyectoId, Pageable pageable) {
+        Long tenantId = getTenantId();
+        proyectoRepository.findByIdAndTenantIdAndDeletedFalse(proyectoId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
+        Page<Terreno> terrenosPage = terrenoRepository.findByTenantIdAndProyectoIdAndDeletedFalseOrderByNumeroLoteAsc(tenantId, proyectoId, pageable);
+        List<TerrenoResponse> content = terrenoMapper.toResponseList(terrenosPage.getContent());
+        return new PagedResponse<>(
+                content,
+                terrenosPage.getNumber(),
+                terrenosPage.getSize(),
+                terrenosPage.getTotalElements(),
+                terrenosPage.getTotalPages(),
+                terrenosPage.isFirst(),
+                terrenosPage.isLast(),
+                terrenosPage.isEmpty()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<TerrenoResponse> listarTerrenosPorEstadoPaginado(EstadoTerreno estado, Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Terreno> terrenosPage = terrenoRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado, pageable);
+        List<TerrenoResponse> content = terrenoMapper.toResponseList(terrenosPage.getContent());
+        return new PagedResponse<>(
+                content,
+                terrenosPage.getNumber(),
+                terrenosPage.getSize(),
+                terrenosPage.getTotalElements(),
+                terrenosPage.getTotalPages(),
+                terrenosPage.isFirst(),
+                terrenosPage.isLast(),
+                terrenosPage.isEmpty()
+        );
+    }
 
     /**
      * Obtiene el tenant_id del contexto actual

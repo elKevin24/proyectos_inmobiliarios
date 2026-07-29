@@ -6,6 +6,7 @@ import com.inmobiliaria.terrenos.application.dto.venta.UpdateVentaRequest;
 import com.inmobiliaria.terrenos.application.dto.venta.VentaResponse;
 import com.inmobiliaria.terrenos.application.service.VentaService;
 import com.inmobiliaria.terrenos.domain.enums.EstadoVenta;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,6 +65,25 @@ public class VentaController {
         }
 
         return ResponseEntity.ok(ventas);
+    }
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyAuthority('VENTA_VER', 'ADMIN')")
+    @Operation(summary = "Listar ventas paginado", description = "Obtiene la lista paginada de ventas con filtros")
+    public ResponseEntity<PagedResponse<VentaResponse>> listarVentasPaginado(
+            @Parameter(description = "Filtrar por estado de venta")
+            @RequestParam(required = false) EstadoVenta estado,
+            Pageable pageable) {
+        log.info("GET /api/v1/ventas/paged - estado: {}, page: {}, size: {}",
+                estado, pageable.getPageNumber(), pageable.getPageSize());
+
+        PagedResponse<VentaResponse> result;
+        if (estado != null) {
+            result = ventaService.listarVentasPorEstadoPaginado(estado, pageable);
+        } else {
+            result = ventaService.listarVentasPaginado(pageable);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")

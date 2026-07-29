@@ -35,11 +35,23 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long> {
            "ORDER BY p.createdAt DESC")
     List<Proyecto> findProyectosConTerrenosDisponibles(@Param("tenantId") Long tenantId);
 
+    @Query(value = "SELECT p FROM Proyecto p WHERE p.tenantId = :tenantId " +
+           "AND p.terrenosDisponibles > 0 " +
+           "AND p.deleted = false",
+           countQuery = "SELECT COUNT(p) FROM Proyecto p WHERE p.tenantId = :tenantId AND p.terrenosDisponibles > 0 AND p.deleted = false")
+    Page<Proyecto> findProyectosConTerrenosDisponibles(@Param("tenantId") Long tenantId, Pageable pageable);
+
     @Query("SELECT p FROM Proyecto p WHERE p.tenantId = :tenantId " +
            "AND p.estadoProyecto = com.inmobiliaria.terrenos.domain.enums.EstadoProyecto.EN_VENTA " +
            "AND p.deleted = false " +
            "ORDER BY p.createdAt DESC")
     List<Proyecto> findProyectosActivos(@Param("tenantId") Long tenantId);
+
+    @Query(value = "SELECT p FROM Proyecto p WHERE p.tenantId = :tenantId " +
+           "AND p.estadoProyecto = com.inmobiliaria.terrenos.domain.enums.EstadoProyecto.EN_VENTA " +
+           "AND p.deleted = false",
+           countQuery = "SELECT COUNT(p) FROM Proyecto p WHERE p.tenantId = :tenantId AND p.estadoProyecto = com.inmobiliaria.terrenos.domain.enums.EstadoProyecto.EN_VENTA AND p.deleted = false")
+    Page<Proyecto> findProyectosActivos(@Param("tenantId") Long tenantId, Pageable pageable);
 
     long countByTenantIdAndDeletedFalse(Long tenantId);
 

@@ -3,6 +3,7 @@ package com.inmobiliaria.terrenos.interfaces.rest;
 import com.inmobiliaria.terrenos.application.dto.cotizacion.CotizacionResponse;
 import com.inmobiliaria.terrenos.application.dto.cotizacion.CreateCotizacionRequest;
 import com.inmobiliaria.terrenos.application.service.CotizacionService;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,6 +67,14 @@ public class CotizacionController {
         }
 
         return ResponseEntity.ok(cotizaciones);
+    }
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyAuthority('COTIZACION_VER', 'ADMIN')")
+    @Operation(summary = "Listar cotizaciones paginado", description = "Obtiene la lista paginada de cotizaciones")
+    public ResponseEntity<PagedResponse<CotizacionResponse>> listarCotizacionesPaginado(Pageable pageable) {
+        log.info("GET /api/v1/cotizaciones/paged - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(cotizacionService.listarCotizacionesPaginado(pageable));
     }
 
     @GetMapping("/{id}")

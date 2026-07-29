@@ -3,35 +3,31 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'frontend/**'
+      - 'pom.xml'
+      - 'ci-test.sh'
+      - '.github/workflows/ci.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'frontend/**'
+      - 'pom.xml'
+      - 'ci-test.sh'
+      - '.github/workflows/ci.yml'
 
 env:
   JAVA_VERSION: '25'
+  NODE_VERSION: '22'
   MAVEN_OPTS: '-Xmx1024m'
-  DOCKER_IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
-  # ==================== BUILD & TEST ====================
-  build:
-    name: Build & Test
+  backend:
+    name: Backend Build & Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: terrenos_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -44,82 +40,70 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Compile
-        run: mvn compile -B
+      - name: Build and test backend
+        run: ./mvnw -B clean verify
 
-      - name: Run unit tests
-        run: mvn test -B -Dspring.profiles.active=test
+      - name: Upload JUnit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
 
-      - name: Package (skip tests)
-        run: mvn package -DskipTests -B
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jacoco-report
+          path: target/site/jacoco/
 
-      - name: Upload JAR artifact
+      - name: Upload backend jar
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: target/*.jar
-          retention-days: 3
+          retention-days: 7
 
-  # ==================== SECURITY TESTS ====================
-  security:
-    name: Security Tests
+  frontend:
+    name: Frontend Quality
     runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 15
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: terrenos_security
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: temurin
-          cache: maven
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Run multi-tenancy isolation tests
-        run: mvn test -B -Dtest=SeguridadE2ETest -Dspring.profiles.active=test
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
 
-      - name: Run auth security tests
-        run: mvn test -B -Dtest=AuthE2ETest -Dspring.profiles.active=test
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
 
-  # ==================== E2E FULL SUITE ====================
+      - name: Run frontend unit tests
+        working-directory: frontend
+        run: npm run test:unit
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
   e2e:
-    name: E2E Full Suite
+    name: Frontend E2E
     runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 25
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: terrenos_e2e
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    timeout-minutes: 35
+    needs: [backend, frontend]
 
     steps:
       - name: Checkout
@@ -132,128 +116,53 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Run full E2E suite
-        run: mvn test -B -Dspring.profiles.active=test
-
-  # ==================== CODE QUALITY ====================
-  quality:
-    name: Code Quality
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: temurin
-          cache: maven
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Verify compilation
-        run: mvn compile -B
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-      - name: Check dependencies
-        run: mvn dependency:analyze -B -DfailOnWarning=false
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
 
-  # ==================== DOCKER BUILD ====================
-  docker:
-    name: Docker Build
-    runs-on: ubuntu-latest
-    needs: [build, security, e2e]
-    timeout-minutes: 15
-    if: github.event_name == 'push'
-
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download JAR
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: target/
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # ==================== DEPLOY STAGING ====================
-  deploy-staging:
-    name: Deploy Staging
-    runs-on: ubuntu-latest
-    needs: [build, security, e2e, docker]
-    timeout-minutes: 10
-    if: github.ref == 'refs/heads/develop'
-    environment:
-      name: staging
-      url: https://staging.terrenos.example.com
-
-    steps:
-      - name: Deploy to staging
-        env:
-          DB_HOST: ${{ secrets.STAGING_DB_HOST }}
-          DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-          JWT_SECRET: ${{ secrets.STAGING_JWT_SECRET }}
+      - name: Start backend
         run: |
-          echo "Deploying to staging environment..."
-          echo "Image: ${{ env.DOCKER_IMAGE }}:develop"
-          echo "DB Host: $DB_HOST"
-          # Add your deployment commands here (e.g., kubectl, SSH, etc.)
-          # kubectl set image deployment/terrenos-backend backend=${{ env.DOCKER_IMAGE }}:develop
+          ./mvnw -B -DskipTests spring-boot:run -Dspring-boot.run.profiles=test > backend.log 2>&1 &
+          echo $! > backend.pid
 
-  # ==================== DEPLOY PRODUCTION ====================
-  deploy-production:
-    name: Deploy Production
-    runs-on: ubuntu-latest
-    needs: [build, security, e2e, docker]
-    timeout-minutes: 10
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://terrenos.example.com
-
-    steps:
-      - name: Deploy to production
-        env:
-          DB_HOST: ${{ secrets.PRODUCTION_DB_HOST }}
-          DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
-          JWT_SECRET: ${{ secrets.PRODUCTION_JWT_SECRET }}
+      - name: Wait for backend
         run: |
-          echo "Deploying to production environment..."
-          echo "Image: ${{ env.DOCKER_IMAGE }}:main"
-          echo "DB Host: $DB_HOST"
-          # Add your deployment commands here
-          # kubectl set image deployment/terrenos-backend backend=${{ env.DOCKER_IMAGE }}:main
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/actuator/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not become ready in time"
+          cat backend.log
+          exit 1
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f backend.pid ]; then
+            kill "$(cat backend.pid)" || true
+          fi
+

@@ -25,10 +25,13 @@ import com.inmobiliaria.terrenos.domain.repository.ClienteRepository;
 import com.inmobiliaria.terrenos.infrastructure.security.SecurityUtils;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.VentaMapper;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +59,40 @@ public class VentaService {
     private final PagoRepository pagoRepository;
     private final ClienteRepository clienteRepository;
     private final VentaMapper ventaMapper;
+
+    @Transactional(readOnly = true)
+    public PagedResponse<VentaResponse> listarVentasPaginado(Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Venta> ventasPage = ventaRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        List<VentaResponse> content = ventaMapper.toResponseList(ventasPage.getContent());
+        return new PagedResponse<>(
+                content,
+                ventasPage.getNumber(),
+                ventasPage.getSize(),
+                ventasPage.getTotalElements(),
+                ventasPage.getTotalPages(),
+                ventasPage.isFirst(),
+                ventasPage.isLast(),
+                ventasPage.isEmpty()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<VentaResponse> listarVentasPorEstadoPaginado(EstadoVenta estado, Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Venta> ventasPage = ventaRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado, pageable);
+        List<VentaResponse> content = ventaMapper.toResponseList(ventasPage.getContent());
+        return new PagedResponse<>(
+                content,
+                ventasPage.getNumber(),
+                ventasPage.getSize(),
+                ventasPage.getTotalElements(),
+                ventasPage.getTotalPages(),
+                ventasPage.isFirst(),
+                ventasPage.isLast(),
+                ventasPage.isEmpty()
+        );
+    }
 
     private Long getTenantId() {
         Long tenantId = TenantContext.getTenantId();

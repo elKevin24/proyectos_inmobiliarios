@@ -59,9 +59,22 @@ public class ProyectoService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<ProyectoResponse> listarProyectosPaginado(Pageable pageable) {
+    public PagedResponse<ProyectoResponse> listarProyectosPaginado(EstadoProyecto estado, Boolean disponibles, Boolean activos, Pageable pageable) {
         Long tenantId = getTenantId();
-        Page<Proyecto> proyectosPage = proyectoRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        log.debug("Listando proyectos paginados para tenant: {} con estado: {}, disponibles: {}, activos: {}", tenantId, estado, disponibles, activos);
+
+        Page<Proyecto> proyectosPage;
+
+        if (Boolean.TRUE.equals(activos)) {
+            proyectosPage = proyectoRepository.findProyectosActivos(tenantId, pageable);
+        } else if (Boolean.TRUE.equals(disponibles)) {
+            proyectosPage = proyectoRepository.findProyectosConTerrenosDisponibles(tenantId, pageable);
+        } else if (estado != null) {
+            proyectosPage = proyectoRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado, pageable);
+        } else {
+            proyectosPage = proyectoRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        }
+
         List<ProyectoResponse> content = proyectoMapper.toResponseList(proyectosPage.getContent());
         return new PagedResponse<>(
                 content,

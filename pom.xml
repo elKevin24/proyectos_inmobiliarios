@@ -31,6 +31,8 @@
         <springdoc.version>3.0.3</springdoc.version>
         <hypersistence.version>3.15.4</hypersistence.version>
         <testcontainers.version>2.0.5</testcontainers.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <argLine></argLine>
     </properties>
 
     <dependencies>
@@ -127,6 +129,18 @@
             <version>${springdoc.version}</version>
         </dependency>
 
+        <!-- Email (notificaciones transaccionales) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Thymeleaf para templates de email HTML -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
         <!-- Utilidades -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -216,6 +230,28 @@
                 </configuration>
             </plugin>
 
+            <!-- JaCoCo para reportes de cobertura -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Compiler Plugin con MapStruct -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -253,7 +289,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
             </plugin>
 
@@ -263,7 +299,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
             </plugin>
         </plugins>
