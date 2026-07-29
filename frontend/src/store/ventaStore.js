@@ -79,10 +79,10 @@ const useVentaStore = create((set, get) => ({
   },
 
   // Cancelar una venta
-  cancelarVenta: async (id, motivo) => {
+  cancelarVenta: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const canceledVenta = await ventaService.cancelar(id, motivo);
+      const canceledVenta = await ventaService.cancelar(id);
       set((state) => ({
         ventas: state.ventas.map(v => v.id === id ? canceledVenta : v),
         selectedVenta: state.selectedVenta?.id === id ? canceledVenta : state.selectedVenta,

@@ -112,3 +112,15 @@ __pycache__/
 .venv/
 venv/
 ENV/
+
+# =====================================================
+# Temp & Uploads
+# =====================================================
+/test-uploads/
+/uploads/
+.antigravity/
+graphify-cache/*
+graphify-out/*
+.bloop/
+.metals/
+

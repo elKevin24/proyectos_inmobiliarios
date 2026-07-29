@@ -8,7 +8,7 @@
 
 **Estado Actual:** Backend + Frontend Funcional (v1.1.0-beta)
 **Progreso General:** █████████░ 92%
-**Última Actualización Real:** 2026-07-13
+**Última Actualización Real:** 2026-07-29
 
 ### Módulos Completados: 12/13
 - ✅ Autenticación y Autorización (JWT + multi-tenant)
@@ -23,7 +23,8 @@
 - ✅ **Gestión de Pagos y Amortizaciones** ← completado
 - ✅ **Frontend React completo** (todas las páginas y rutas)
 - ✅ **Módulo CV: Ingesta automática de planos** (OpenCV + Tesseract + SSE) ← nuevo
-- ⏳ Tests unitarios e integración (cobertura 0%)
+- ✅ **Tests unitarios e integración** (249/249)
+- ⏳ **QA automatizada ampliada**: E2E, regresión, RBAC, performance y CI/CD
 
 ---
 
@@ -47,87 +48,70 @@
 - [x] Frontend React 19 (24 paginas, 12 servicios, 8 stores Zustand)
 
 ### Problemas Conocidos (Bloqueantes)
-
-1. **3 entidades Java faltantes:** `Venta.java`, `Cotizacion.java`, `Apartado.java` no existen como archivos en `domain/entity/` aunque son importadas por repositories y services
-2. **Auth desubicado:** `AuthController.java`, `AuthService.java`, `UsuarioDTO.java` estan en `backend/src/main/java/` en vez de `src/main/java/` - Maven no los compila
-3. **Dependencia faltante:** `hibernate-types-60` no esta en pom.xml pero el codigo la importa
-4. **Typo en Proyecto.java:** Campo `itud` deberia ser `longitud` (Double)
+- ✅ **Resueltos:** Todas las entidades (`Venta.java`, `Cotizacion.java`, `Apartado.java`), Auth desubicado y typos en `Proyecto.java` fueron corregidos. 
+- ✅ **Compilación y Tests:** Backend compila al 100% y ejecuta **249/249 tests** pasando exitosamente.
 
 ---
 
-## Fase 0 — Estabilizacion (URGENTE)
+## 🎯 Asignación de Roles de Desarrollo
 
-*El backend no compila. Sin esto, nada mas funciona.*
-
-| # | Tarea | Archivos | Esfuerzo |
-|---|-------|----------|----------|
-| 0.1 | Crear entidad `Venta.java` en `domain/entity/` | 1 archivo nuevo | 20min |
-| 0.2 | Crear entidad `Cotizacion.java` en `domain/entity/` | 1 archivo nuevo | 20min |
-| 0.3 | Crear entidad `Apartado.java` en `domain/entity/` | 1 archivo nuevo | 20min |
-| 0.4 | Mover `AuthController.java` de `backend/` a `src/` | 1 archivo | 10min |
-| 0.5 | Mover `AuthService.java` de `backend/` a `src/` | 1 archivo | 10min |
-| 0.6 | Mover `UsuarioDTO.java` de `backend/` a `src/` | 1 archivo | 10min |
-| 0.7 | Agregar `hibernate-types-60` al `pom.xml` | 1 archivo | 5min |
-| 0.8 | Corregir typo `itud` a `longitud` en `Proyecto.java` | 1 linea | 2min |
-| 0.9 | Verificar `mvn clean compile` pase sin errores | - | 15min |
-| 0.10 | Verificar `docker-compose up` levante todos los servicios | - | 15min |
-
-**Resultado esperado:** Backend compila y levanta. Frontend se conecta correctamente.
+### 👨‍💻 Dev A (Lead Backend & Architect)
+Responsable de Arquitectura, Seguridad, Integraciones Complejas (PDF, Pagos, CV OCR) e Infraestructura (Redis, Schedulers, Docker, Webhooks).
 
 ---
 
-## Fase 1 — Calidad y Tests
+## Fase 0 — Estabilización (COMPLETADA ✅)
 
-*Proyecto funcional sin bugs, pero sin ninguna prueba.*
+*El backend compila sin errores y todas las entidades principales están en `src/main/java/`.*
 
-| # | Tarea | Detalle | Esfuerzo |
-|---|-------|---------|----------|
-| 1.1 | Configurar testing backend | H2 para tests unitarios, JUnit 5, Mockito | 2h |
-| 1.2 | Tests unitarios de servicios | ProyectoService, TerrenoService, VentaService, ApartadoService | 1 semana |
-| 1.3 | Tests de integracion | Flujos end-to-end: crear proyecto > terreno > cotizacion > venta | 1 semana |
-| 1.4 | Configurar testing frontend | Vitest + @testing-library/react | 2h |
-| 1.5 | Tests de componentes | ImageUploader, PlanoValidator, PlanoViewer | 3 dias |
-| 1.6 | Tests de servicios frontend | Mocks de axios, pruebas de auth flow | 2 dias |
-| 1.7 | Cobertura minima | Backend: 60%, Frontend: 40% | continua |
+---
+
+## Fase 1 — Calidad y Tests (COMPLETADA ✅)
+
+*249 tests unitarios y de integración pasando al 100%.*
+
+---
+
+## Fase 1.5 — QA, Automatización y Regresión
+
+*Capa transversal de QA para proteger entregas futuras y reducir regresiones.*
+
+| # | Actividad QA | Alcance | Herramientas / Enfoque | Estado |
+|---|--------------|---------|------------------------|--------|
+| Q.1 | Estrategia de cobertura | Definir matriz de riesgos por módulo, priorizar rutas críticas y fijar umbrales de cobertura | Unit tests, integration tests, criterios por impacto | ⏳ Pendiente |
+| Q.2 | Expansión de tests unitarios | Cubrir servicios, validaciones, mappers, utilidades y casos borde | JUnit, Mockito, parameterized tests | ⏳ Pendiente |
+| Q.3 | Tests de integración | Validar repositorios, transacciones, seguridad y consultas con contexto real | Spring Boot Test, Testcontainers, PostgreSQL | ⏳ Pendiente |
+| Q.4 | Suite E2E crítica | Automatizar flujos de negocio de extremo a extremo | Playwright/Cypress sobre login, CRUD, ventas, pagos | ⏳ Pendiente |
+| Q.5 | Regresión automatizada | Crear smoke/regression pack para PRs y releases | Runs selectivos por etiqueta o carpeta | ⏳ Pendiente |
+| Q.6 | Seguridad y RBAC | Probar permisos por rol, acceso cross-tenant y endpoints protegidos | MockMvc + matrices de roles/permisos | ⏳ Pendiente |
+| Q.7 | Rendimiento | Medir tiempos de respuesta, queries lentas y capacidad mínima del sistema | k6/JMeter, perfiles de carga | ⏳ Pendiente |
+| Q.8 | Quality gates en CI/CD | Bloquear merge si fallan tests, lint, coverage o checks de seguridad | GitHub Actions, reports de cobertura, badges | ⏳ Pendiente |
+| Q.9 | Datos y ambientes de prueba | Estandarizar seeds, fixtures y reset entre ejecuciones | Test data builders, seeders, Docker | ⏳ Pendiente |
 
 ---
 
 ## Fase 2 — Frontend: Pulir y Completar
 
-*La estructura existe, pero hay componentes incompletos y UX por mejorar.*
-
-| # | Tarea | Detalle | Esfuerzo |
-|---|-------|---------|----------|
-| 2.1 | `clienteService.js` | Crear service independiente (actualmente solo en store) | 1h |
-| 2.2 | Paginacion backend | Agregar paginacion real a todos los endpoints de listado | 3 dias |
-| 2.3 | Paginacion frontend | Agregar controles de paginacion en todas las listas | 2 dias |
-| 2.4 | Busqueda avanzada | Filtros por fecha, rango de precios, estado en proyectos/terrenos/ventas | 3 dias |
-| 2.5 | Formularios de edicion | Verificar que todos los forms de edicion carguen datos correctamente | 2 dias |
-| 2.6 | Dashboard con graficas | Agregar recharts o chart.js para metricas visuales | 3 dias |
-| 2.7 | Notificaciones toast | Reemplazar alerts nativos por react-hot-toast | 1 dia |
-| 2.8 | Responsive design | Verificar que funcione en mobile/tablet | 3 dias |
-| 2.9 | Dark mode | Opcional pero valorado | 2 dias |
+*En desarrollo paralelo.*
 
 ---
 
-## Fase 3 — Funcionalidades Nuevas
+## Fase 3 — Funcionalidades Backend & Integraciones [Dev A]
 
-*Nuevos modulos que agregan valor de negocio.*
+*Asignado a Dev A (Lead Backend & Architect).*
 
-| # | Modulo | Detalle | Esfuerzo |
-|---|--------|---------|----------|
-| 3.1 | Notificaciones por email | Confirmacion de venta, recordatorio de pago, vencimiento de apartado | 1 semana |
-| 3.2 | Reportes PDF | Contratos de venta, kardex de cliente, estado de cuenta | 1 semana |
-| 3.3 | Exportacion masiva | CSV/Excel de todos los terrenos, ventas, clientes | 3 dias |
-| 3.4 | Historial de cambios | Audit log visible en UI (quien cambio que y cuando) | 3 dias |
-| 3.5 | Panel de administracion | Gestion de usuarios, roles y permisos desde el frontend | 1 semana |
-| 3.6 | Busqueda global | Buscar en todos los modulos desde una barra de busqueda | 3 dias |
-| 3.7 | Mapa general | Vista de todos los proyectos en un mapa (Leaflet) con marcadores | 3 dias |
-| 3.8 | Apartados vencidos | Cron job que cambia estado de apartados vencidos automaticamente | 1 dia |
+| # | Tarea Dev A | Módulo / Detalle | Archivos Clave | Estado |
+|---|-------------|------------------|----------------|--------|
+| A.1 | **Cron Schedulers** | Expiración automática de apartados vencidos (`ApartadoScheduler`) y archivado nocturno de logs (`AuditArchiveScheduler`) | `infrastructure/scheduler/` | 🟡 En Desarrollo |
+| A.2 | **Generación de PDFs** | Engine de PDFs para Contrato de Compraventa, Estado de Cuenta y Tabla de Amortización | `application/service/PdfService.java` | ⏳ Pendiente |
+| A.3 | **Pasarela de Pagos (MercadoPago/Stripe)** | Integración de checkout y controller receptor de Webhooks para confirmación instantánea de pago | `interfaces/rest/PagoWebhookController.java` | ⏳ Pendiente |
+| A.4 | **Notificaciones por Email** | Servicio de correos transaccionales (confirmación venta, vencimiento apartado) | `infrastructure/notification/` | ⏳ Pendiente |
+| A.5 | **Caché y Performance (Redis)** | Configuración de Redis para caché de catálogos y terrenos (`@Cacheable`) | `config/RedisConfig.java` | ⏳ Pendiente |
+| A.6 | **Rate Limiting & Seguridad** | Limitador de peticiones por tenant/IP y auditoría AOP avanzada | `infrastructure/security/` | ⏳ Pendiente |
 
 ---
 
-## Fase 4 — DevOps y Calidad
+## Fase 4 — DevOps y Calidad [Dev A]
 
 *Para que el proyecto sea desplegable y mantenible.*
 
@@ -181,6 +165,8 @@ Fase 0 (Estabilizacion)          1 semana
   |
 Fase 1 (Calidad y Tests)         2 semanas
   |
+Fase 1.5 (QA y Automatizacion)    2 semanas
+  |
 Fase 2 (Frontend Pulido)         3 semanas
   |
 Fase 3 (Funcionalidades Nuevas)  4 semanas
@@ -192,7 +178,7 @@ Fase 5 (SaaS)                    Continuo
 Fase 6 (IA)                      Futuro
 ```
 
-**Tiempo total estimado hasta Fase 4:** ~12 semanas
+**Tiempo total estimado hasta Fase 4:** ~14 semanas
 
 ---
 
@@ -275,6 +261,6 @@ Fase 6 (IA)                      Futuro
 
 ---
 
-**Ultima Actualizacion:** 2026-07-12
+**Ultima Actualizacion:** 2026-07-29
 **Version:** 1.1.0-beta
 **Autor:** Kevin

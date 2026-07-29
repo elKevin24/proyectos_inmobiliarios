@@ -71,4 +71,16 @@ INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
 ('PAGO_REGISTRAR', 'Registrar Pagos', 'Permite registrar pagos', 'PAGOS', false);
 
 INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
-('ARCHIVO_CREAR', 'Crear Archivos', 'Permite subir archivos', 'ARCHIVOS', false);
+('ARCHIVO_CREAR', 'Crear Archivos', 'Permite subir archivos', 'ARCHIVOS', false),
+('ARCHIVO_VER', 'Ver Archivos', 'Permite ver archivos', 'ARCHIVOS', false),
+('ARCHIVO_ELIMINAR', 'Eliminar Archivos', 'Permite eliminar archivos', 'ARCHIVOS', false);
+
+INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
+('VENTA_ELIMINAR', 'Eliminar Ventas', 'Permite eliminar ventas', 'VENTAS', false),
+('APARTADO_ELIMINAR', 'Eliminar Apartados', 'Permite eliminar apartados', 'APARTADOS', false);
+
+INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
+('REPORTE_VER', 'Ver Reportes', 'Permite ver reportes y dashboard', 'REPORTES', false);
+
+INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
+('ADMIN', 'Administrador Total', 'Acceso total al sistema', 'ADMIN', false);

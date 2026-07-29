@@ -20,11 +20,13 @@ import VentaForm from './pages/VentaForm';
 import VentaDetail from './pages/VentaDetail';
 import PagoForm from './pages/PagoForm';
 import ProyectosList from './pages/ProyectosList';
+import ProyectoDetail from './pages/ProyectoDetail';
 import ProyectoForm from './pages/ProyectoForm';
 import ProyectoPlano from './pages/ProyectoPlano';
 import PlanoValidatorPage from './pages/PlanoValidatorPage';
 import ClientesList from './pages/ClientesList';
 import ClienteForm from './pages/ClienteForm';
+import ClienteDetail from './pages/ClienteDetail';
 import ApartadosList from './pages/ApartadosList';
 import ApartadoForm from './pages/ApartadoForm';
 import ApartadoDetail from './pages/ApartadoDetail';
@@ -33,7 +35,11 @@ import CotizacionForm from './pages/CotizacionForm';
 import CotizacionDetail from './pages/CotizacionDetail';
 import PlanesPagoList from './pages/PlanesPagoList';
 import PlanPagoDetail from './pages/PlanPagoDetail';
+import FasesList from './pages/FasesList';
+import FaseForm from './pages/FaseForm';
+import AuditoriaPage from './pages/AuditoriaPage';
 
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 
 function App() {
@@ -42,10 +48,15 @@ function App() {
   useEffect(() => {
     // Initialize auth state from localStorage
     initialize();
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
   }, [initialize]);
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
@@ -65,6 +76,7 @@ function App() {
           {/* Proyectos */}
           <Route path="proyectos" element={<ProyectosList />} />
           <Route path="proyectos/nuevo" element={<ProyectoForm />} />
+          <Route path="proyectos/:id" element={<ProyectoDetail />} />
           <Route path="proyectos/:id/editar" element={<ProyectoForm />} />
           <Route path="proyectos/:id/plano" element={<ProyectoPlano />} />
           <Route path="proyectos/:id/validar-plano" element={<PlanoValidatorPage />} />
@@ -78,13 +90,14 @@ function App() {
           {/* Clientes */}
           <Route path="clientes" element={<ClientesList />} />
           <Route path="clientes/nuevo" element={<ClienteForm />} />
+          <Route path="clientes/:id" element={<ClienteDetail />} />
           <Route path="clientes/:id/editar" element={<ClienteForm />} />
 
           {/* Ventas */}
           <Route path="ventas" element={<VentasList />} />
           <Route path="ventas/nueva" element={<VentaForm />} />
           <Route path="ventas/:id" element={<VentaDetail />} />
-          <Route path="ventas/:id/pagos/nuevo" element={<PagoForm />} />
+          <Route path="ventas/:ventaId/pagos/nuevo" element={<PagoForm />} />
 
           {/* Apartados */}
           <Route path="apartados" element={<ApartadosList />} />
@@ -99,6 +112,14 @@ function App() {
           {/* Planes de Pago */}
           <Route path="planes-pago" element={<PlanesPagoList />} />
           <Route path="planes-pago/:id" element={<PlanPagoDetail />} />
+
+          {/* Fases */}
+          <Route path="proyectos/:proyectoId/fases" element={<FasesList />} />
+          <Route path="proyectos/:proyectoId/fases/nueva" element={<FaseForm />} />
+          <Route path="proyectos/:proyectoId/fases/:id/editar" element={<FaseForm />} />
+
+          {/* Auditoría */}
+          <Route path="auditoria" element={<AuditoriaPage />} />
         </Route>
 
         {/* Redirect any unknown route to home */}
