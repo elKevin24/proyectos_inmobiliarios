@@ -28,6 +28,8 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
 
     List<Apartado> findByTenantIdAndEstadoAndDeletedFalse(Long tenantId, EstadoApartado estado);
 
+    List<Apartado> findByEstadoAndFechaVencimientoBeforeAndDeletedFalse(EstadoApartado estado, LocalDate fecha);
+
     /**
      * Busca apartados vigentes
      */
