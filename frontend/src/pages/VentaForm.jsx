@@ -10,12 +10,11 @@ function VentaForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { createVenta, isLoading } = useVentaStore();
-  const { terrenos, fetchTerrenos } = useTerrenoStore();
+  const { fetchTerrenos } = useTerrenoStore();
   const { clientes, fetchClientes } = clienteStore();
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
 
   const [terrenosDisponibles, setTerrenosDisponibles] = useState([]);
-  const [selectedTerreno, setSelectedTerreno] = useState(null);
 
   // Datos del apartado si viene desde conversión
   const apartadoData = location.state || null;
@@ -54,7 +53,6 @@ function VentaForm() {
   useEffect(() => {
     if (terrenoId) {
       const terreno = terrenosDisponibles.find(t => t.id === parseInt(terrenoId));
-      setSelectedTerreno(terreno);
       if (terreno) {
         setValue('montoTotal', terreno.precioFinal);
       }

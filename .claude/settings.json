@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "Bash(./mvnw test:*)",
+      "Bash(./mvnw clean compile:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATHS\" | grep -Eq '(db/migration/V([1-9]|10|11)__.*\\.sql|\\.env$)'; then echo 'BLOCKED: No edites migraciones Flyway historicas (V1-V11) ni archivos .env. Crea una nueva migracion V12+.' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATHS\" | grep -q '^frontend/.*\\.jsx\\?$'; then cd frontend && npm run lint --silent; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

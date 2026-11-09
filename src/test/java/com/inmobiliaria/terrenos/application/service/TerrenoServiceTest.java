@@ -175,7 +175,7 @@ class TerrenoServiceTest {
 
         BusinessException exception = assertThrows(BusinessException.class, () -> 
                 terrenoService.cambiarEstado(400L, EstadoTerreno.DISPONIBLE));
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.CONFLICT, exception.getStatus());
         verify(terrenoRepository, never()).save(any());
     }
 

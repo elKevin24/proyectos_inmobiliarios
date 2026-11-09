@@ -9,7 +9,7 @@ function ClienteForm() {
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const { selectedCliente, fetchClienteById, createCliente, updateCliente, isLoading } = clienteStore();
+  const { fetchClienteById, createCliente, updateCliente, isLoading } = clienteStore();
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   useEffect(() => {

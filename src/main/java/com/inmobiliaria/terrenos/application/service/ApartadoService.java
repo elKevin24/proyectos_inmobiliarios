@@ -12,6 +12,7 @@ import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.ApartadoMapper;
+import com.inmobiliaria.terrenos.shared.exception.ApartadoException;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -91,13 +92,12 @@ public class ApartadoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Terreno no encontrado con id: " + request.getTerrenoId()));
 
         if (terreno.getEstado() != EstadoTerreno.DISPONIBLE) {
-            throw new BusinessException("El terreno no está disponible para apartar. Estado actual: " + terreno.getEstado(),
-                    HttpStatus.CONFLICT);
+            throw ApartadoException.terrenoNoDisponible(String.valueOf(terreno.getEstado()));
         }
 
         // Validar monto de apartado
         if (request.getMontoApartado().compareTo(request.getPrecioTotal()) > 0) {
-            throw new BusinessException("El monto de apartado no puede ser mayor al precio total", HttpStatus.BAD_REQUEST);
+            throw ApartadoException.montoExcedePrecio();
         }
 
         Apartado apartado = apartadoMapper.toEntity(request);
@@ -128,8 +128,7 @@ public class ApartadoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Apartado no encontrado con id: " + id));
 
         if (apartado.getEstado() != EstadoApartado.ACTIVO) {
-            throw new BusinessException("Solo se pueden cancelar apartados vigentes. Estado actual: " + apartado.getEstado(),
-                    HttpStatus.CONFLICT);
+            throw ApartadoException.soloCancelarVigentes(String.valueOf(apartado.getEstado()));
         }
 
         apartado.setEstado(EstadoApartado.CANCELADO);
@@ -164,8 +163,7 @@ public class ApartadoService {
 
         // Solo se pueden eliminar apartados cancelados o vencidos
         if (apartado.getEstado() == EstadoApartado.ACTIVO) {
-            throw new BusinessException("No se puede eliminar un apartado vigente. Primero debe cancelarlo.",
-                    HttpStatus.CONFLICT);
+            throw ApartadoException.noEliminarVigente();
         }
 
         apartado.setDeleted(true);

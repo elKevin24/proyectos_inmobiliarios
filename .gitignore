@@ -120,3 +120,4 @@ graphify-out/*
 .bloop/
 .metals/
 
+.m2repo/

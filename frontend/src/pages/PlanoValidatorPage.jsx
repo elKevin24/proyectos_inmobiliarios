@@ -55,21 +55,17 @@ function PlanoValidatorPage() {
     setProcessingPercent(5);
 
     try {
-      // 1. Llamar al Backend Java (no directo a Python)
-      const formData = new FormData();
-      // Re-fetch the file from the already-uploaded archive URL to send to analizar
-      // El archivo ya está en el servidor; enviamos su nombre almacenado
       const initRes = await api.post(
         `/proyectos/${proyectoId}/planos/analizar`,
         { nombreAlmacenado: archivoResponse.nombreAlmacenado },
         { headers: { 'Content-Type': 'application/json' } }
       );
-      const { tareaId, sseUrl } = initRes.data;
+      const { sseUrl } = initRes.data;
 
-      // 2. Suscribirse al canal SSE para recibir progreso en tiempo real
-      const token = localStorage.getItem('token');
+      // Suscribirse al canal SSE usando access_token
+      const token = localStorage.getItem('access_token');
       const eventSource = new EventSource(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${sseUrl}?token=${token}`
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${sseUrl}?token=${encodeURIComponent(token || '')}`
       );
       sseRef.current = eventSource;
 
@@ -94,7 +90,11 @@ function PlanoValidatorPage() {
       eventSource.addEventListener('error', (e) => {
         eventSource.close();
         let msg = 'Error al procesar el plano.';
-        try { msg = JSON.parse(e.data)?.mensaje || msg; } catch (_) {}
+        try {
+          msg = JSON.parse(e.data)?.mensaje || msg;
+        } catch {
+          // Evento SSE de error sin payload JSON válido
+        }
         setError(`OCR no disponible: ${msg}. Puedes validar el plano manualmente.`);
         setStep(STEPS.VALIDATE);
         setLotesDetectados([]);
@@ -117,7 +117,6 @@ function PlanoValidatorPage() {
     setSaving(true);
     setError(null);
     try {
-      // Llamar al endpoint de confirmación para persistir en BD
       await api.post(`/proyectos/${proyectoId}/planos/confirmar`, {
         proyectoId: Number(proyectoId),
         lotes: lotesValidados.map((l) => ({

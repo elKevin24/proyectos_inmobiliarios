@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import {
   FaShieldAlt, FaSearch, FaArchive,
-  FaUser, FaTable, FaCalendar, FaClock
+  FaUser, FaTable, FaCalendar, FaClock, FaKey
 } from 'react-icons/fa';
 import useAuditoriaStore from '../store/auditoriaStore';
 import '../styles/Auditoria.css';
@@ -10,7 +11,9 @@ function AuditoriaPage() {
   const {
     logsSimples, logsCriticos, historial,
     isLoading, error,
-    fetchLogsSimples, fetchLogsCriticos, fetchHistorialRegistro, archivarLogs
+    fetchLogsSimples, fetchLogsCriticos,
+    fetchHistorialRegistro, fetchHistorialCampo,
+    fetchUltimosLogins, archivarLogs
   } = useAuditoriaStore();
 
   const [activeTab, setActiveTab] = useState('simple');
@@ -22,13 +25,17 @@ function AuditoriaPage() {
     fechaFin: '',
     limit: 50,
   });
-  const [historialSearch, setHistorialSearch] = useState({ tabla: '', registroId: '' });
+  const [historialSearch, setHistorialSearch] = useState({
+    tabla: '',
+    registroId: '',
+    campo: '',
+  });
+  const [loginsSearch, setLoginsSearch] = useState({
+    usuarioId: '',
+    limit: 10,
+  });
 
-  useEffect(() => {
-    loadLogs();
-  }, [activeTab]);
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     const params = {};
     if (filters.usuarioId) params.usuarioId = filters.usuarioId;
     if (filters.accion) params.accion = filters.accion;
@@ -43,20 +50,46 @@ function AuditoriaPage() {
       } else if (activeTab === 'critica') {
         await fetchLogsCriticos(params);
       }
-    } catch (err) {
-      // Error handled by store
+    } catch {
+      // Error manejado por el store
     }
-  };
+  }, [activeTab, filters, fetchLogsSimples, fetchLogsCriticos]);
+
+  useEffect(() => {
+    if (activeTab === 'simple' || activeTab === 'critica') {
+      loadLogs();
+    }
+  }, [activeTab, loadLogs]);
 
   const handleHistorialSearch = async () => {
     if (!historialSearch.tabla || !historialSearch.registroId) {
-      alert('Ingrese tabla y ID de registro');
+      toast.error('Ingrese tabla y ID de registro');
       return;
     }
     try {
-      await fetchHistorialRegistro(historialSearch.tabla, historialSearch.registroId);
-    } catch (err) {
-      // Error handled by store
+      if (historialSearch.campo.trim()) {
+        await fetchHistorialCampo(
+          historialSearch.tabla,
+          historialSearch.registroId,
+          historialSearch.campo.trim()
+        );
+      } else {
+        await fetchHistorialRegistro(historialSearch.tabla, historialSearch.registroId);
+      }
+    } catch {
+      toast.error('Error al consultar el historial');
+    }
+  };
+
+  const handleLoginsSearch = async () => {
+    if (!loginsSearch.usuarioId) {
+      toast.error('Ingrese el ID del usuario');
+      return;
+    }
+    try {
+      await fetchUltimosLogins(loginsSearch.usuarioId, loginsSearch.limit || 10);
+    } catch {
+      toast.error('Error al consultar últimos logins');
     }
   };
 
@@ -64,10 +97,10 @@ function AuditoriaPage() {
     if (window.confirm('¿Archivar logs con más de 1 año de antigüedad?')) {
       try {
         const count = await archivarLogs();
-        alert(`Se archivaron ${count} logs`);
+        toast.success(`Se archivaron ${count} logs`);
         loadLogs();
-      } catch (err) {
-        alert('Error al archivar logs');
+      } catch {
+        toast.error('Error al archivar logs');
       }
     }
   };
@@ -198,6 +231,15 @@ function AuditoriaPage() {
             min="1"
           />
         </div>
+        <div className="form-group">
+          <label>Campo (Opcional)</label>
+          <input
+            type="text"
+            value={historialSearch.campo}
+            onChange={(e) => setHistorialSearch(prev => ({ ...prev, campo: e.target.value }))}
+            placeholder="Ej: precio_base, estado"
+          />
+        </div>
         <button className="btn btn-primary" onClick={handleHistorialSearch}>
           <FaSearch /> Buscar
         </button>
@@ -238,6 +280,38 @@ function AuditoriaPage() {
     </div>
   );
 
+  const renderLoginsUsuario = () => (
+    <div className="historial-search">
+      <div className="search-form">
+        <div className="form-group">
+          <label>ID Usuario</label>
+          <input
+            type="number"
+            value={loginsSearch.usuarioId}
+            onChange={(e) => setLoginsSearch(prev => ({ ...prev, usuarioId: e.target.value }))}
+            placeholder="Ej: 1"
+            min="1"
+          />
+        </div>
+        <div className="form-group">
+          <label>Límite</label>
+          <input
+            type="number"
+            value={loginsSearch.limit}
+            onChange={(e) => setLoginsSearch(prev => ({ ...prev, limit: Number(e.target.value) || 10 }))}
+            min="1"
+            max="100"
+          />
+        </div>
+        <button className="btn btn-primary" onClick={handleLoginsSearch}>
+          <FaSearch /> Consultar Logins
+        </button>
+      </div>
+
+      {renderSimpleLogs()}
+    </div>
+  );
+
   return (
     <div className="auditoria-container">
       <div className="page-header">
@@ -255,7 +329,7 @@ function AuditoriaPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       {/* Filters (simple & critica tabs) */}
-      {activeTab !== 'historial' && (
+      {(activeTab === 'simple' || activeTab === 'critica') && (
         <div className="audit-filters">
           <div className="filter-group">
             <label>Usuario ID</label>
@@ -341,7 +415,13 @@ function AuditoriaPage() {
           className={`tab-btn ${activeTab === 'historial' ? 'active' : ''}`}
           onClick={() => setActiveTab('historial')}
         >
-          <FaCalendar /> Historial por Registro
+          <FaCalendar /> Historial por Registro / Campo
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'logins' ? 'active' : ''}`}
+          onClick={() => setActiveTab('logins')}
+        >
+          <FaKey /> Últimos Logins por Usuario
         </button>
       </div>
 
@@ -354,6 +434,7 @@ function AuditoriaPage() {
             {activeTab === 'simple' && renderSimpleLogs()}
             {activeTab === 'critica' && renderCriticaLogs()}
             {activeTab === 'historial' && renderHistorial()}
+            {activeTab === 'logins' && renderLoginsUsuario()}
           </>
         )}
       </div>

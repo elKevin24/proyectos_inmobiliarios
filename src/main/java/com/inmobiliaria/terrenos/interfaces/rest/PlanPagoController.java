@@ -92,6 +92,20 @@ public class PlanPagoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.crearPlanPago(request));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('PLAN_PAGO_ELIMINAR', 'ADMIN')")
+    @Operation(summary = "Eliminar plan de pago", description = "Elimina lógicamente un plan de pago solo si no tiene pagos aplicados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Plan de pago eliminado"),
+            @ApiResponse(responseCode = "404", description = "Plan de pago no encontrado"),
+            @ApiResponse(responseCode = "409", description = "El plan tiene pagos aplicados")
+    })
+    public ResponseEntity<Void> eliminarPlanPago(@PathVariable Long id) {
+        log.info("DELETE /api/v1/planes-pago/{}", id);
+        pagoService.eliminarPlanPago(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('PLAN_PAGO_EDITAR', 'ADMIN')")
     @Operation(summary = "Actualizar plan de pago", description = "Actualiza ciertos campos de un plan de pago (solo campos permitidos)")

@@ -9,6 +9,7 @@ import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.ArchivoMapper;
+import com.inmobiliaria.terrenos.shared.exception.ArchivoException;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,7 @@ public class ArchivoService {
             try {
                 Files.createDirectories(fileStorageLocation);
             } catch (IOException ex) {
-                throw new BusinessException("No se pudo crear el directorio de almacenamiento", HttpStatus.INTERNAL_SERVER_ERROR);
+                throw ArchivoException.errorAlmacenamiento(ex.getMessage());
             }
         }
         return fileStorageLocation;
@@ -104,7 +105,7 @@ public class ArchivoService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             log.error("Error al guardar archivo: {}", ex.getMessage());
-            throw new BusinessException("No se pudo almacenar el archivo", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw ArchivoException.errorAlmacenamiento(ex.getMessage());
         }
 
         // Determinar versión
@@ -164,11 +165,11 @@ public class ArchivoService {
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {
-                throw new BusinessException("El archivo no existe o no se puede leer", HttpStatus.NOT_FOUND);
+                throw ArchivoException.noEncontrado();
             }
         } catch (MalformedURLException ex) {
             log.error("Error al leer archivo: {}", ex.getMessage());
-            throw new BusinessException("Error al descargar el archivo", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw ArchivoException.errorAlmacenamiento("Error al descargar el archivo");
         }
     }
 
@@ -243,12 +244,12 @@ public class ArchivoService {
      */
     private void validarArchivo(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new BusinessException("El archivo está vacío", HttpStatus.BAD_REQUEST);
+            throw ArchivoException.archivoVacio();
         }
 
         // Validar tamaño
         if (file.getSize() > fileStorageProperties.getMaxFileSize()) {
-            throw new BusinessException("El archivo excede el tamaño máximo permitido", HttpStatus.BAD_REQUEST);
+            throw ArchivoException.tamanoExcedido(fileStorageProperties.getMaxFileSize());
         }
 
         // Validar extensión
@@ -256,7 +257,7 @@ public class ArchivoService {
         String extension = getFileExtension(filename).toLowerCase();
 
         if (!Arrays.asList(fileStorageProperties.getAllowedExtensions()).contains(extension)) {
-            throw new BusinessException("Tipo de archivo no permitido: " + extension, HttpStatus.BAD_REQUEST);
+            throw ArchivoException.tipoNoPermitido(extension);
         }
     }
 

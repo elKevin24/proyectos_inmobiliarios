@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import apartadoService from '../services/apartadoService';
 
-const useApartadoStore = create((set, get) => ({
+const useApartadoStore = create((set) => ({
   apartados: [],
   selectedApartado: null,
   isLoading: false,

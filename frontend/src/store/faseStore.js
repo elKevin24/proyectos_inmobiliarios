@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '../services/api';
 
-const useFaseStore = create((set, get) => ({
+const useFaseStore = create((set) => ({
   fases: [],
   selectedFase: null,
   isLoading: false,

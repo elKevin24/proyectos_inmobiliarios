@@ -19,6 +19,15 @@ const planPagoService = {
   },
 
   /**
+   * Obtener plan de pago por venta
+   * @param {number} ventaId - ID de la venta
+   */
+  getByVentaId: async (ventaId) => {
+    const response = await api.get(`/planes-pago/venta/${ventaId}`);
+    return response.data;
+  },
+
+  /**
    * Obtener tabla de amortización de un plan
    * @param {number} id - ID del plan
    */

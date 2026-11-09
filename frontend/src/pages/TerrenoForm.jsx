@@ -11,7 +11,7 @@ function TerrenoForm() {
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const { selectedTerreno, fetchTerrenoById, createTerreno, updateTerreno, isLoading } = useTerrenoStore();
+  const { fetchTerrenoById, createTerreno, updateTerreno, isLoading } = useTerrenoStore();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
 
   const [proyectos, setProyectos] = useState([]);

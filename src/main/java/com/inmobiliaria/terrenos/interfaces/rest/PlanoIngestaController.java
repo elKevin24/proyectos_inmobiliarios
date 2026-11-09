@@ -3,10 +3,14 @@ package com.inmobiliaria.terrenos.interfaces.rest;
 import com.inmobiliaria.terrenos.application.dto.plano.ConfirmarIngestaRequest;
 import com.inmobiliaria.terrenos.application.service.PlanoIngestaService;
 import com.inmobiliaria.terrenos.infrastructure.cv.PlanoStatusStore;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -16,29 +20,23 @@ import java.util.Map;
 /**
  * Controlador REST para el módulo de ingesta automática de planos.
  *
- * Flujo SaaS:
- * 1. POST /analizar  → retorna tareaId inmediatamente (HTTP 202)
- * 2. GET  /estado    → el cliente se suscribe vía SSE y recibe progreso en tiempo real
- * 3. POST /confirmar → una vez validado, persiste los lotes en BD
- *
  * @author Kevin
- * @version 2.0.0
+ * @version 2.1.0
  */
 @RestController
 @RequestMapping("/api/v1/proyectos/{proyectoId}/planos")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Plano Ingesta CV", description = "Ingesta automática de planos con OpenCV + OCR y progreso SSE")
+@SecurityRequirement(name = "bearerAuth")
 public class PlanoIngestaController {
 
     private final PlanoIngestaService planoIngestaService;
     private final PlanoStatusStore statusStore;
 
-    /**
-     * Inicia el análisis del plano ya subido al servidor.
-     * Recibe el nombre almacenado del archivo (ya existe en /uploads) y
-     * retorna un tareaId para que el cliente se suscriba al canal SSE.
-     */
     @PostMapping("/analizar")
+    @PreAuthorize("hasAnyAuthority('ARCHIVO_CREAR', 'TERRENO_CREAR', 'ADMIN')")
+    @Operation(summary = "Iniciar análisis de plano con IA/CV", description = "Inicia el análisis asíncrono del plano subido y retorna tareaId + sseUrl")
     public ResponseEntity<Map<String, String>> analizarPlano(
             @PathVariable Long proyectoId,
             @RequestBody Map<String, String> body) throws IOException {
@@ -61,29 +59,23 @@ public class PlanoIngestaController {
                 ));
     }
 
-    /**
-     * Canal SSE de estado del análisis.
-     * El cliente escucha eventos: "progreso", "completado", "error"
-     *
-     * Timeout: 5 minutos (planos muy grandes de alta resolución)
-     */
     @GetMapping(value = "/estado/{tareaId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("hasAnyAuthority('ARCHIVO_VER', 'TERRENO_VER', 'PROYECTO_VER', 'ADMIN')")
+    @Operation(summary = "Suscribirse al estado SSE del análisis", description = "Canal Server-Sent Events con eventos: progreso, completado, error")
     public SseEmitter estadoAnalisis(
             @PathVariable Long proyectoId,
             @PathVariable String tareaId) {
 
-        SseEmitter emitter = new SseEmitter(5 * 60 * 1000L); // 5 minutos
+        SseEmitter emitter = new SseEmitter(5 * 60 * 1000L);
         statusStore.registrar(tareaId, emitter);
 
         log.info("Cliente suscrito a estado de tarea: {}", tareaId);
         return emitter;
     }
 
-    /**
-     * Confirma e ingesta los lotes validados en la base de datos.
-     * Llamado por el frontend tras la revisión manual del administrador.
-     */
     @PostMapping("/confirmar")
+    @PreAuthorize("hasAnyAuthority('TERRENO_CREAR', 'ADMIN')")
+    @Operation(summary = "Confirmar e ingestar lotes validados", description = "Persiste los lotes validados por el usuario en el proyecto y actualiza contadores")
     public ResponseEntity<Map<String, Object>> confirmarIngesta(
             @PathVariable Long proyectoId,
             @RequestBody ConfirmarIngestaRequest request) {

@@ -14,6 +14,18 @@ function TerrenosList() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  const loadTerrenos = async () => {
+    const params = {};
+    if (estadoFilter) {
+      params.estado = estadoFilter;
+    }
+    try {
+      await fetchTerrenos(params);
+    } catch {
+      toast.error('Error al cargar terrenos');
+    }
+  };
+
   useEffect(() => {
     loadTerrenos();
   }, [estadoFilter]);
@@ -22,18 +34,6 @@ function TerrenosList() {
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, estadoFilter]);
-
-  const loadTerrenos = async () => {
-    const params = {};
-    if (estadoFilter) {
-      params.estado = estadoFilter;
-    }
-    try {
-      await fetchTerrenos(params);
-    } catch (err) {
-      toast.error('Error al cargar terrenos');
-    }
-  };
 
   const handleDelete = async (id, nombre) => {
     if (window.confirm(`¿Está seguro de eliminar el terreno "${nombre}"?`)) {

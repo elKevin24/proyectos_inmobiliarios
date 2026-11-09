@@ -8,6 +8,7 @@ import com.inmobiliaria.terrenos.infrastructure.security.SecurityUtils;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.*;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.PagoException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +68,7 @@ public class PagoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada"));
 
         if (planPagoRepository.existePlanParaVenta(tenantId, request.getVentaId())) {
-            throw new BusinessException("Ya existe un plan de pago para esta venta", HttpStatus.CONFLICT);
+            throw PagoException.planDuplicado(request.getVentaId());
         }
 
         // Crear el plan de pago
@@ -109,6 +110,38 @@ public class PagoService {
         return planesPago.stream()
                 .map(this::convertirAPlanPagoResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void eliminarPlanPago(Long id) {
+        Long tenantId = getTenantId();
+        PlanPago planPago = planPagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan de pago no encontrado"));
+
+        List<Pago> pagos = pagoRepository.findByPlanPagoId(tenantId, planPago.getId());
+        boolean tienePagosAplicados = pagos.stream()
+                .anyMatch(p -> p.getEstado() == EstadoPago.APLICADO);
+
+        if (tienePagosAplicados) {
+            throw new PagoException("No se puede eliminar un plan de pago con pagos aplicados",
+                    "PLAN_PAGO_CON_PAGOS", HttpStatus.CONFLICT);
+        }
+
+        amortizacionRepository.findByPlanPagoId(tenantId, planPago.getId())
+                .forEach(a -> {
+                    a.setDeleted(true);
+                    amortizacionRepository.save(a);
+                });
+
+        pagos.forEach(p -> {
+            p.setDeleted(true);
+            pagoRepository.save(p);
+        });
+
+        planPago.setDeleted(true);
+        planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        planPagoRepository.save(planPago);
+        log.info("Plan de pago eliminado lógicamente: {}", id);
     }
 
     @Transactional(readOnly = true)
@@ -293,7 +326,7 @@ public class PagoService {
         }
 
         if (amortizacionesAPagar.isEmpty()) {
-            throw new BusinessException("No hay cuotas pendientes de pago", HttpStatus.BAD_REQUEST);
+            throw PagoException.sinCuotasPendientes();
         }
 
         // Aplicar pago a cada amortización en orden
@@ -310,6 +343,49 @@ public class PagoService {
         log.info("Pago aplicado con ID: {}", pagoGuardado.getId());
 
         return convertirAPagoResponse(pagoGuardado);
+    }
+
+    @Transactional(readOnly = true)
+    public PagoResponse obtenerPago(Long id) {
+        Long tenantId = getTenantId();
+        Pago pago = pagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
+        return convertirAPagoResponse(pago);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PagoResponse> listarPagosPorVenta(Long ventaId) {
+        Long tenantId = getTenantId();
+        PlanPago planPago = planPagoRepository.findByTenantIdAndVentaIdAndDeletedFalse(tenantId, ventaId)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró plan de pago para esta venta"));
+
+        return pagoRepository.findByPlanPagoId(tenantId, planPago.getId()).stream()
+                .map(this::convertirAPagoResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PagoResponse> listarPagos() {
+        Long tenantId = getTenantId();
+        return pagoRepository.findByTenantIdAndDeletedFalse(tenantId).stream()
+                .map(this::convertirAPagoResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void eliminarPago(Long id) {
+        Long tenantId = getTenantId();
+        Pago pago = pagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
+
+        if (pago.getEstado() != EstadoPago.APLICADO) {
+            throw new BusinessException("Solo se pueden eliminar pagos aplicados", HttpStatus.CONFLICT);
+        }
+
+        pago.setDeleted(true);
+        pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        pagoRepository.save(pago);
+        log.info("Pago eliminado lógicamente: {}", id);
     }
 
     private BigDecimal aplicarPagoAAmortizacion(Amortizacion amortizacion, BigDecimal montoDisponible,

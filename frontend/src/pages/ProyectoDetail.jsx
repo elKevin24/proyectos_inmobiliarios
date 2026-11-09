@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import {
   FaArrowLeft, FaEdit, FaMap, FaLayerGroup, FaBuilding,
   FaCalendar, FaCheckCircle, FaExclamationTriangle
@@ -9,7 +9,6 @@ import '../styles/Proyectos.css';
 
 function ProyectoDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { selectedProyecto, fetchProyectoById, isLoading } = useProyectoStore();
 
   useEffect(() => {

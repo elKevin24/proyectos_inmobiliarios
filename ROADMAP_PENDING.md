@@ -2,162 +2,83 @@
 
 ## Resumen
 
-**Fecha:** 2026-07-16
-**Estado:** Fase 5 completada — bugs criticos y medios corregidos
-**Version actual:** 1.5.0-beta
-**Tests backend:** 144 tests, 0 failures
-**Frontend:** 29 paginas, build limpio
+**Fecha:** 2026-11-09
+**Estado:** Fases 5, 7 y 8 completadas — Backend + Frontend sincronizados
+**Versión actual:** 1.6.0-beta
+**Tests backend:** 174 tests (Unitarios + Controllers + E2E), 0 failures
+**Frontend:** 30 páginas (`PagosList` y `PlanPagoForm` incluidos), build limpio
 
 ---
 
-## ✅ COMPLETADO en esta sesion
+## ✅ COMPLETADO Recientemente
 
-### Fase 5 - Bugs Criticos Frontend
+### Fase 5 - Bugs Críticos Frontend (Completada)
+- Creado `ProyectoDetail.jsx` y corregidas rutas en `App.jsx` (`ventas/:ventaId/pagos/nuevo`).
+- Sincronizados servicios (`pagoService`, `planPagoService`, `ventaService`, `terrenoService`, `proyectoService`, `archivoService`).
+- Eliminados imports muertos en `FasesList.jsx`, `FaseForm.jsx` y `Layout.jsx`.
 
-| # | Bug | Fix | Estado |
-|---|-----|-----|--------|
-| 1 | Ruta `proyectos/:id` no existia — "Ver detalles" redirigia a `/` | Creado `ProyectoDetail.jsx` + ruta en `App.jsx` | ✅ |
-| 2 | `PagoForm` usaba `useParams().ventaId` pero ruta era `:id` | Cambiado ruta a `ventas/:ventaId/pagos/nuevo` | ✅ |
-| 3 | `pagoService` tenia 4 endpoints fantasma | Ya estaba corregido (solo `create`) | ✅ |
-| 4 | `planPagoService` usaba `/amortizaciones` | Ya estaba en `/tabla-amortizacion` | ✅ |
-| 5 | `ventaService.update()` usaba PUT inexistente | Renombrado a `updateEstado` (PATCH), `update` como alias seguro | ✅ |
-| 6 | `terrenoService.getByProyecto()` endpoint fantasma | Ya usaba `params: { proyectoId }` | ✅ |
-| 7 | Sin link "Gestionar Fases" en ProyectosList | Ya existia `FaLayerGroup` link | ✅ |
-| 8 | `proyectoService.getEstadisticas()` endpoint fantasma | Ya usaba `/reportes/proyectos/{id}` | ✅ |
-| 9 | `archivoService.getById()` endpoint fantasma | Ya estaba eliminado | ✅ |
-| 10 | `ProyectoForm` key `estado` duplicada | Confirmado correcto: `estado` (String ubicacion) vs `estadoProyecto` (enum status) | ✅ |
-| 11 | `terrenoNumero` vs `terrenoNumeroLote` inconsistente | Ya unificado a `terrenoNumeroLote` | ✅ |
-| 12-14 | Imports muertos en FasesList, FaseForm, Layout | Eliminados `FaEye`, `FaEyeSlash`, `FaMap`, `FaCalendar`, `FaLayerGroup` | ✅ |
+### Fase 7 - Frontend Avanzado (Completada)
+- **Gráficos en Dashboard:** Integrado `recharts` con 4 gráficos interactivos (ventas mensuales, distribución general, estados de lotes por proyecto, ticket promedio).
+- **Notificaciones Toast:** Estandarizado `react-hot-toast`.
+- **Paginación y UX:** Implementada paginación client-side, spinners de carga, modo oscuro (Dark Mode) y menú móvil off-canvas.
 
-**Archivos creados:** 1 (`ProyectoDetail.jsx`)
-**Archivos modificados:** 6 (`App.jsx`, `PagoForm.jsx`, `ventaService.js`, `FasesList.jsx`, `FaseForm.jsx`, `Layout.jsx`)
-
-### Fase 7 - Frontend Avanzado
-
-| # | Mejora | Fix | Estado |
-|---|--------|-----|--------|
-| 1 | Gráficos en Dashboard | Integrado `recharts` con 4 gráficos interactivos (ventas mensuales, distribución general, estados de lotes por proyecto, ticket promedio) | ✅ |
-| 2 | Notificaciones toast uniformes | Reemplazado alerts con `react-hot-toast` | ✅ |
-| 3 | Paginación client-side y spinners | Implementado en ClientesList, TerrenosList y VentasList | ✅ |
-| 4 | Tema Oscuro y Responsive | Añadido botón sol/luna y menú hamburguesa colapsable off-canvas en cabecera móvil | ✅ |
+### Fase 8 - Backend Gaps y Excepciones de Dominio (Completada)
+- **Pagos REST y UI:** Implementados `GET /api/v1/pagos`, `GET /api/v1/pagos/{id}`, `GET /api/v1/pagos/venta/{ventaId}` y `DELETE /api/v1/pagos/{id}` en `PagoController.java` + `pagoService.js` + vista `PagosList.jsx`.
+- **Planes de Pago:** Conectado `GET /api/v1/planes-pago/venta/{ventaId}` en `planPagoService.js` y creada vista `PlanPagoForm.jsx`.
+- **Auditoría Store:** Conectados `GET /auditoria/campo/{tabla}/{id}/{campo}` (`fetchHistorialCampo`) y `GET /auditoria/logins/{usuarioId}` (`fetchUltimosLogins`) en `auditoriaStore.js`.
+- **Jerarquía de Excepciones:** Creadas 13 excepciones específicas por dominio (`*Exception.java`) manejadas en `GlobalExceptionHandler.java` y cubiertas con `PagoControllerTest` y `PlanPagoControllerTest`.
 
 ---
 
-## Fase 6 - Testing Docker/Testcontainers (PENDIENTE)
+## ⏳ Fase 6 - Testing Docker/Testcontainers (PENDIENTE)
 
-### 6.1 PlanoIngestaController tests
+### 6.1 PlanoIngestaController Tests
+**Cobertura pendiente:** 3 endpoints (excluidos de E2E en H2 por dependencia de infraestructura asíncrona SSE + CV Engine).
 
-**Endpoint coverage:** 3 endpoints (excluidos de E2E por dependencia de infraestructura)
-
-| Endpoint | Descripcion |
+| Endpoint | Descripción |
 |----------|-------------|
-| POST /api/v1/proyectos/{id}/planos/analizar | Requiere SSE + CV analysis |
-| GET /api/v1/proyectos/{id}/planos/estado/{tareaId} | Requiere SSE |
-| POST /api/v1/proyectos/{id}/planos/confirmar | |
+| `POST /api/v1/proyectos/{id}/planos/analizar` | Inicia análisis asíncrono con CV Engine y retorna `tareaId` (HTTP 202) |
+| `GET /api/v1/proyectos/{id}/planos/estado/{tareaId}` | Canal SSE (`SseEmitter`) de progreso en tiempo real |
+| `POST /api/v1/proyectos/{id}/planos/confirmar` | Persiste lotes validados con polígonos `JSONB` |
 
-**Requiere:** Mock del servicio de analisis de planos o Docker con OpenCV + Tesseract.
+**Requiere:** Mock de `RestClient` hacia `cv-engine` o contenedor Docker con OpenCV + Tesseract.
 
-### 6.2 Integration tests con PostgreSQL real
-
-Reemplazar H2 por PostgreSQL via Testcontainers para:
-- Validar queries JSONB reales (actualmente ignoradas en H2)
-- Validar GIN indexes
-- Validar comportamiento especifico de PostgreSQL
+### 6.2 Integration Tests con PostgreSQL Real (`Testcontainers`)
+Reemplazar H2 por PostgreSQL 16 vía Testcontainers para:
+- Validar queries nativas `JSONB` (`coordenadas_plano`, `caracteristicas`).
+- Validar índices `GIN` y restricciones de clave foránea con `tenant_id`.
 
 ---
 
-## Fase 7 - Frontend Avanzado (COMPLETADO)
-
-### 7.1 Charts y Graficas
-
-El dashboard actual no tiene graficas. Instalar libreria de charts:
-- **Opcion 1:** `chart.js` + `react-chartjs-2` (ligero, popular)
-- **Opcion 2:** `recharts` (React-native, declarativo)
-- **Opcion 3:** `@nivo/bar` + `@nivo/pie` (moderno, animado)
-
-Graficas sugeridas:
-- Disponibilidad por proyecto (barras)
-- Ventas mensuales (linea)
-- Distribucion de estados (pie)
-- Ticket promedio por proyecto (barras)
-
-### 7.2 UX Mejoras
-
-| Tarea | Descripcion | Prioridad |
-|-------|-------------|-----------|
-| Filtros de busqueda server-side | Implementar paginacion en listados grandes | Media |
-| Loading states consistentes | Spinner uniforme en todas las paginas | Baja |
-| Error handling uniforme | Toast notifications en vez de alert() | Media |
-| Responsive mobile | Optimizar sidebar y tablas para movil | Baja |
-| Dark mode | Toggle de tema oscuro/claro | Baja |
-
----
-
-## Fase 8 - Backend Gaps (PENDIENTE)
-
-### 8.1 Endpoints sin Coverege Frontend
-
-| Endpoint Backend | Descripcion | Prioridad |
-|-----------------|-------------|-----------|
-| `GET /auditoria/campo/{tabla}/{id}/{campo}` | Historial de un campo especifico | Baja |
-| `GET /auditoria/logins/{usuarioId}` | Logins recientes de un usuario | Baja |
-| `GET /planes-pago/venta/{ventaId}` | Plan de pago por venta (backend tiene, frontend no) | Media |
-
-### 8.2 Pagos - Endpoints Faltantes
-
-El frontend `pagoService` solo tiene `create()`, pero el backend `PagoController` solo expone `POST /pagos`. Para funcionalidad completa se necesitarian:
-
-| Endpoint | Descripcion | Prioridad |
-|----------|-------------|-----------|
-| `GET /pagos/venta/{ventaId}` | Historial de pagos de una venta | Alta |
-| `GET /pagos/{id}` | Detalle de un pago | Media |
-| `DELETE /pagos/{id}` | Eliminar pago | Baja |
-
----
-
-## Fase 9 - Produccion (PENDIENTE)
+## ⏳ Fase 9 - Producción y Observabilidad (PENDIENTE)
 
 ### 9.1 Observabilidad
-
-| Tarea | Descripcion |
+| Tarea | Descripción |
 |-------|-------------|
-| Actuator endpoints | `/health`, `/metrics`, `/info` |
-| Prometheus metrics | Exportar metricas de negocio |
-| Logging estructurado | JSON logs para ELK |
+| Actuator endpoints | Exponer y asegurar `/actuator/health`, `/actuator/metrics`, `/actuator/info` |
+| Prometheus metrics | Exportar métricas de negocio y JVM con Micrometer |
+| Logging estructurado | Formato JSON para agregación en ELK / Loki |
 
-### 9.2 Performance
-
-| Tarea | Descripcion |
+### 9.2 Performance e Infraestructura
+| Tarea | Descripción |
 |-------|-------------|
-| Load testing con k6 | 100 usuarios concurrentes |
-| Cache Redis | Para reportes frecuentes |
-| Connection pooling tuning | HikariCP config |
-| Index query optimization | Analizar queries lentas |
+| Frontend en Docker Compose | Agregar contenedor `frontend` (Nginx multi-stage) a `docker-compose.yml` |
+| Caché Redis | Caché para reportes frecuentes y sesiones |
+| Load testing con k6 | Prueba de estrés con 100 usuarios concurrentes |
+| Tuning HikariCP e Índices | Optimización de pool de conexiones y `EXPLAIN ANALYZE` en queries de reportes |
 
-### 9.3 Seguridad Produccion
-
-| Tarea | Descripcion |
+### 9.3 Seguridad en Producción
+| Tarea | Descripción |
 |-------|-------------|
-| Rate limiting | Limitar requests por IP/tenant |
-| CORS configurado | Dominios permitidos |
-| Helmet headers | Security headers HTTP |
-| Audit log retention | Politica de retencion de logs |
+| Rate limiting | Limitar peticiones por IP y `tenant_id` (Bucket4j / Redis) |
+| CORS estricto | Restringir orígenes permitidos por variable de entorno |
+| Security Headers | Configurar CSP, HSTS y `X-Frame-Options` en Spring Security / Nginx |
 
 ---
 
-## Exclusiones
-
-- **CORS tests**: Spring Security CORS se testea mejor con MockMvc o Testcontainers. Pendiente Fase 6.
-- **PlanoIngestaController E2E**: Requiere SSE + CV infra. Pendiente Fase 6.
-- **RBAC tests con roles custom**: Requieren setup a nivel de servicio (no endpoint REST para crear usuarios no-ADMIN). Implementado via inyeccion directa de repositorios.
-
----
-
-## Resumen de Prioridad
+## Resumen de Prioridad Actual
 
 | Fase | Tipo | Items | Esfuerzo Est. |
 |------|------|-------|---------------|
-| **6** | Testing Docker/Testcontainers | 2 | 1-2 dias |
-| **7** | Frontend avanzado (charts, UX) | 7 | 3-5 dias |
-| **8** | Backend gaps (endpoints faltantes) | 6 | 2-3 dias |
-| **9** | Produccion (observabilidad, perf) | 9 | 5-7 dias |
+| **6** | Testing Docker/Testcontainers + SSE CV Engine | 2 | 1-2 días |
+| **9** | Producción (Observabilidad, Redis, Docker Frontend, Seguridad) | 10 | 5-7 días |

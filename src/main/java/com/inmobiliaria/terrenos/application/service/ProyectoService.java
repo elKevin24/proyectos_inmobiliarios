@@ -9,6 +9,7 @@ import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.ProyectoMapper;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.ProyectoException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +80,7 @@ public class ProyectoService {
 
         // Validar que no exista un proyecto con el mismo nombre
         if (proyectoRepository.existsByTenantIdAndNombreIgnoreCaseAndDeletedFalse(tenantId, request.getNombre())) {
-            throw new BusinessException("Ya existe un proyecto con el nombre: " + request.getNombre(), HttpStatus.CONFLICT);
+            throw ProyectoException.nombreDuplicado(request.getNombre());
         }
 
         // Convertir DTO a entidad
@@ -129,7 +130,7 @@ public class ProyectoService {
         // Validar nombre único si se está actualizando
         if (request.getNombre() != null && !request.getNombre().isBlank()) {
             if (proyectoRepository.existsByNombreExcludingId(tenantId, request.getNombre(), id)) {
-                throw new BusinessException("Ya existe otro proyecto con el nombre: " + request.getNombre(), HttpStatus.CONFLICT);
+                throw ProyectoException.nombreDuplicado(request.getNombre());
             }
         }
 
@@ -156,11 +157,11 @@ public class ProyectoService {
 
         // Validar que no tenga terrenos vendidos o apartados
         if (proyecto.getTerrenosVendidos() != null && proyecto.getTerrenosVendidos() > 0) {
-            throw new BusinessException("No se puede eliminar el proyecto porque tiene terrenos vendidos", HttpStatus.CONFLICT);
+            throw ProyectoException.tieneTerrenosVendidos();
         }
 
         if (proyecto.getTerrenosApartados() != null && proyecto.getTerrenosApartados() > 0) {
-            throw new BusinessException("No se puede eliminar el proyecto porque tiene terrenos apartados", HttpStatus.CONFLICT);
+            throw ProyectoException.tieneTerrenosApartados();
         }
 
         // Soft delete
@@ -234,19 +235,19 @@ public class ProyectoService {
         // No se puede poner en venta si no hay terrenos
         if (nuevoEstado == EstadoProyecto.EN_VENTA &&
                 (proyecto.getTotalTerrenos() == null || proyecto.getTotalTerrenos() == 0)) {
-            throw new BusinessException("No se puede poner en venta un proyecto sin terrenos", HttpStatus.BAD_REQUEST);
+            throw ProyectoException.sinTerrenos();
         }
 
         // No se puede finalizar si hay terrenos apartados
         if (nuevoEstado == EstadoProyecto.AGOTADO &&
                 proyecto.getTerrenosApartados() != null && proyecto.getTerrenosApartados() > 0) {
-            throw new BusinessException("No se puede finalizar el proyecto con terrenos apartados", HttpStatus.BAD_REQUEST);
+            throw ProyectoException.tieneApartadosActivos();
         }
 
         // No se puede cancelar si tiene terrenos vendidos
         if (nuevoEstado == EstadoProyecto.CANCELADO &&
                 proyecto.getTerrenosVendidos() != null && proyecto.getTerrenosVendidos() > 0) {
-            throw new BusinessException("No se puede cancelar el proyecto con terrenos vendidos", HttpStatus.BAD_REQUEST);
+            throw new ProyectoException("No se puede cancelar el proyecto con terrenos vendidos");
         }
     }
 }

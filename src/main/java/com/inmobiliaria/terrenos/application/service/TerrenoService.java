@@ -11,6 +11,7 @@ import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.TerrenoMapper;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.TerrenoException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -128,8 +129,7 @@ public class TerrenoService {
         // Validar que no exista un terreno con el mismo número de lote en el proyecto
         if (terrenoRepository.existsByTenantIdAndProyectoIdAndNumeroLoteIgnoreCaseAndDeletedFalse(
                 tenantId, request.getProyectoId(), request.getNumeroLote())) {
-            throw new BusinessException("Ya existe un terreno con el número de lote: " + request.getNumeroLote()
-                    + " en este proyecto", HttpStatus.CONFLICT);
+            throw TerrenoException.loteDuplicado(request.getNumeroLote());
         }
 
         // Convertir DTO a entidad
@@ -172,8 +172,7 @@ public class TerrenoService {
         if (request.getNumeroLote() != null && !request.getNumeroLote().isBlank()) {
             if (terrenoRepository.existsByNumeroLoteExcludingId(
                     tenantId, terreno.getProyectoId(), request.getNumeroLote(), id)) {
-                throw new BusinessException("Ya existe otro terreno con el número de lote: " + request.getNumeroLote()
-                        + " en este proyecto", HttpStatus.CONFLICT);
+                throw TerrenoException.loteDuplicado(request.getNumeroLote());
             }
         }
 
@@ -206,12 +205,12 @@ public class TerrenoService {
 
         // Validar que no esté vendido
         if (terreno.getEstado() == EstadoTerreno.VENDIDO) {
-            throw new BusinessException("No se puede eliminar un terreno vendido", HttpStatus.CONFLICT);
+            throw TerrenoException.noEliminarVendido();
         }
 
         // Validar que no esté disponible o apartado
         if (terreno.getEstado() == EstadoTerreno.DISPONIBLE || terreno.getEstado() == EstadoTerreno.APARTADO) {
-            throw new BusinessException("No se puede eliminar un terreno que está disponible o apartado", HttpStatus.CONFLICT);
+            throw TerrenoException.noEliminarDisponibleApartado();
         }
 
         // Soft delete
@@ -273,12 +272,12 @@ public class TerrenoService {
     private void validarTransicionEstado(EstadoTerreno estadoActual, EstadoTerreno nuevoEstado) {
         // No se puede cambiar de vendido a otro estado
         if (estadoActual == EstadoTerreno.VENDIDO && nuevoEstado != EstadoTerreno.VENDIDO) {
-            throw new BusinessException("No se puede cambiar el estado de un terreno vendido", HttpStatus.BAD_REQUEST);
+            throw TerrenoException.estadoInvalido(estadoActual.name(), nuevoEstado.name());
         }
 
         // No se puede vender directamente sin apartar
         if (estadoActual == EstadoTerreno.DISPONIBLE && nuevoEstado == EstadoTerreno.VENDIDO) {
-            throw new BusinessException("Un terreno disponible no puede venderse directamente. Primero debe apartarse.", HttpStatus.BAD_REQUEST);
+            throw TerrenoException.ventaDirectaNoPermitida();
         }
     }
 

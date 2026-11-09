@@ -17,6 +17,7 @@ import com.inmobiliaria.terrenos.infrastructure.security.SecurityUtils;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.VentaMapper;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.VentaException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +89,7 @@ public class VentaService {
 
         // Validar estado del terreno
         if (terreno.getEstado() == EstadoTerreno.VENDIDO) {
-            throw new BusinessException("El terreno ya ha sido vendido", HttpStatus.CONFLICT);
+            throw VentaException.terrenoYaVendido();
         }
 
         Venta venta = ventaMapper.toEntity(request);
@@ -106,7 +107,7 @@ public class VentaService {
                     .orElseThrow(() -> new ResourceNotFoundException("Apartado no encontrado con id: " + request.getApartadoId()));
 
             if (apartado.getEstado() != EstadoApartado.ACTIVO) {
-                throw new BusinessException("El apartado debe estar vigente para convertirlo en venta", HttpStatus.CONFLICT);
+                throw VentaException.apartadoNoVigente();
             }
 
             apartado.setEstado(EstadoApartado.COMPLETADO);
@@ -151,7 +152,7 @@ public class VentaService {
 
         // Solo se pueden eliminar ventas canceladas
         if (venta.getEstado() != EstadoVenta.CANCELADA) {
-            throw new BusinessException("Solo se pueden eliminar ventas canceladas", HttpStatus.CONFLICT);
+            throw VentaException.soloEliminarCanceladas();
         }
 
         venta.setDeleted(true);

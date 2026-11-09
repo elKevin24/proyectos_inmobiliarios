@@ -11,11 +11,10 @@ import com.inmobiliaria.terrenos.domain.repository.AuditLogCriticaRepository;
 import com.inmobiliaria.terrenos.domain.repository.AuditLogSimpleRepository;
 import com.inmobiliaria.terrenos.infrastructure.security.SecurityUtils;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
-import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.AuditException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -46,7 +45,7 @@ public class AuditService {
     private Long getTenantId() {
         Long tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
-            throw new BusinessException("No se encontró tenant_id en el contexto", HttpStatus.UNAUTHORIZED);
+            throw AuditException.tenantNoEncontrado();
         }
         return tenantId;
     }

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import cotizacionService from '../services/cotizacionService';
 
-const useCotizacionStore = create((set, get) => ({
+const useCotizacionStore = create((set) => ({
   cotizaciones: [],
   selectedCotizacion: null,
   isLoading: false,

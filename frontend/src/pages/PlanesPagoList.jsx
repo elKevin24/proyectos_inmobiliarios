@@ -20,11 +20,6 @@ const PlanesPagoList = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('es-MX');
-  };
-
   const getTipoPlanLabel = (tipo) => {
     const labels = {
       CONTADO: 'Contado',

@@ -37,6 +37,7 @@ const NAV_GROUPS = [
     label: 'Finanzas',
     items: [
       { to: '/planes-pago', icon: <FaCalculator />, label: 'Planes de Pago' },
+      { to: '/pagos', icon: <FaMoneyBillWave />, label: 'Pagos' },
     ],
   },
   {
@@ -55,12 +56,6 @@ function Layout() {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    loadNotificaciones();
-    const interval = setInterval(loadNotificaciones, 300000);
-    return () => clearInterval(interval);
-  }, []);
-
   const loadNotificaciones = async () => {
     try {
       const response = await api.get('/reportes/dashboard');
@@ -68,10 +63,16 @@ function Layout() {
       setNotificaciones({
         apartadosVencidos: data?.apartadosVencidos || 0,
       });
-    } catch (err) {
+    } catch {
       // Silently fail — notifications are non-critical
     }
   };
+
+  useEffect(() => {
+    loadNotificaciones();
+    const interval = setInterval(loadNotificaciones, 300000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     logout();

@@ -25,7 +25,7 @@ function FasesList() {
     if (window.confirm(`¿Está seguro de eliminar la fase "${nombre}"?`)) {
       try {
         await deleteFase(id);
-      } catch (error) {
+      } catch {
         alert('Error al eliminar la fase');
       }
     }

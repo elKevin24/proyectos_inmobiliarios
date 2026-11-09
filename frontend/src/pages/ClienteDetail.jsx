@@ -15,20 +15,20 @@ function ClienteDetail() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('cotizaciones');
 
-  useEffect(() => {
-    loadHistorial();
-  }, [id]);
-
   const loadHistorial = async () => {
     try {
       const response = await api.get(`/clientes/${id}/historial`);
       setHistorial(response.data);
-    } catch (err) {
+    } catch {
       setError('Error al cargar el historial del cliente');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadHistorial();
+  }, [id]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-MX', {

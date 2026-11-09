@@ -35,6 +35,8 @@ import CotizacionForm from './pages/CotizacionForm';
 import CotizacionDetail from './pages/CotizacionDetail';
 import PlanesPagoList from './pages/PlanesPagoList';
 import PlanPagoDetail from './pages/PlanPagoDetail';
+import PlanPagoForm from './pages/PlanPagoForm';
+import PagosList from './pages/PagosList';
 import FasesList from './pages/FasesList';
 import FaseForm from './pages/FaseForm';
 import AuditoriaPage from './pages/AuditoriaPage';
@@ -111,7 +113,12 @@ function App() {
 
           {/* Planes de Pago */}
           <Route path="planes-pago" element={<PlanesPagoList />} />
+          <Route path="planes-pago/nuevo" element={<PlanPagoForm />} />
           <Route path="planes-pago/:id" element={<PlanPagoDetail />} />
+          <Route path="planes-pago/:id/editar" element={<PlanPagoForm />} />
+
+          {/* Pagos */}
+          <Route path="pagos" element={<PagosList />} />
 
           {/* Fases */}
           <Route path="proyectos/:proyectoId/fases" element={<FasesList />} />

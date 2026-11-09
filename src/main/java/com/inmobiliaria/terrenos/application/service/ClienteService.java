@@ -22,6 +22,7 @@ import com.inmobiliaria.terrenos.interfaces.mapper.ClienteMapper;
 import com.inmobiliaria.terrenos.interfaces.mapper.CotizacionMapper;
 import com.inmobiliaria.terrenos.interfaces.mapper.VentaMapper;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.ClienteException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -145,8 +146,7 @@ public class ClienteService {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             clienteRepository.findByTenantIdAndEmailAndDeletedFalse(tenantId, request.getEmail())
                     .ifPresent(c -> {
-                        throw new BusinessException("Ya existe un cliente con el email: " + request.getEmail(),
-                                "DUPLICATE_EMAIL", HttpStatus.CONFLICT);
+                        throw ClienteException.duplicado("email", request.getEmail());
                     });
         }
 
@@ -154,8 +154,7 @@ public class ClienteService {
         if (request.getRfc() != null && !request.getRfc().isBlank()) {
             clienteRepository.findByTenantIdAndRfcAndDeletedFalse(tenantId, request.getRfc())
                     .ifPresent(c -> {
-                        throw new BusinessException("Ya existe un cliente con el RFC: " + request.getRfc(),
-                                "DUPLICATE_RFC", HttpStatus.CONFLICT);
+                        throw ClienteException.duplicado("RFC", request.getRfc());
                     });
         }
 
@@ -185,7 +184,7 @@ public class ClienteService {
         // Validar email único (si está cambiando)
         if (request.getEmail() != null && !request.getEmail().equals(cliente.getEmail())) {
             if (clienteRepository.existeEmailEnOtroCliente(tenantId, request.getEmail(), id)) {
-                throw new BusinessException("Ya existe otro cliente con el email: " + request.getEmail());
+                throw ClienteException.duplicado("email", request.getEmail());
             }
         }
 
@@ -211,12 +210,12 @@ public class ClienteService {
         // Verificar que no tenga transacciones activas
         long cotizacionesVigentes = cotizacionRepository.countByClienteIdAndFechaVigenciaAfter(id, java.time.LocalDate.now());
         if (cotizacionesVigentes > 0) {
-            throw new BusinessException("No se puede eliminar el cliente porque tiene cotizaciones vigentes");
+            throw ClienteException.tieneCotizacionesVigentes();
         }
 
         long apartadosVigentes = apartadoRepository.countByClienteIdAndEstadoVigente(id);
         if (apartadosVigentes > 0) {
-            throw new BusinessException("No se puede eliminar el cliente porque tiene apartados vigentes");
+            throw ClienteException.tieneApartadosVigentes();
         }
 
         cliente.setDeleted(true);

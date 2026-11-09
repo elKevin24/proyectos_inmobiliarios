@@ -10,7 +10,7 @@ function ProyectoForm() {
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const { selectedProyecto, fetchProyectoById, createProyecto, updateProyecto, isLoading } = useProyectoStore();
+  const { fetchProyectoById, createProyecto, updateProyecto, isLoading } = useProyectoStore();
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   const [uploadedFile, setUploadedFile] = useState(null);

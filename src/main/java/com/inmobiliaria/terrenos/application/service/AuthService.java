@@ -14,12 +14,11 @@ import com.inmobiliaria.terrenos.domain.repository.RolRepository;
 import com.inmobiliaria.terrenos.domain.repository.TenantRepository;
 import com.inmobiliaria.terrenos.domain.repository.UsuarioRepository;
 import com.inmobiliaria.terrenos.infrastructure.security.JwtService;
-import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.AuthException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -62,14 +61,14 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + request.getEmail()));
 
         if (!usuario.getActivo()) {
-            throw new BusinessException("Usuario desactivado", HttpStatus.FORBIDDEN);
+            throw AuthException.usuarioDesactivado();
         }
 
         Tenant tenant = tenantRepository.findById(usuario.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant no encontrado"));
 
         if (!tenant.getActivo()) {
-            throw new BusinessException("Empresa desactivada. Contacte al administrador.", HttpStatus.FORBIDDEN);
+            throw AuthException.empresaDesactivada();
         }
 
         usuario.setUltimoAcceso(LocalDateTime.now());
@@ -102,15 +101,15 @@ public class AuthService {
         log.info("Registro de nueva empresa: {}", request.getNombreEmpresa());
 
         if (tenantRepository.existsByEmail(request.getEmailEmpresa())) {
-            throw new BusinessException("Ya existe una empresa con ese email", HttpStatus.CONFLICT);
+            throw AuthException.empresaDuplicada("email", request.getEmailEmpresa());
         }
 
         if (request.getRfc() != null && tenantRepository.existsByRfc(request.getRfc())) {
-            throw new BusinessException("Ya existe una empresa con ese RFC", HttpStatus.CONFLICT);
+            throw AuthException.empresaDuplicada("RFC", request.getRfc());
         }
 
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new BusinessException("Ya existe un usuario con ese email", HttpStatus.CONFLICT);
+            throw AuthException.usuarioDuplicado(request.getEmail());
         }
 
         Tenant tenant = Tenant.builder()
@@ -171,20 +170,20 @@ public class AuthService {
         String userEmail = jwtService.extractUsername(request.getRefreshToken());
 
         if (userEmail == null) {
-            throw new BusinessException("Refresh token inválido", HttpStatus.UNAUTHORIZED);
+            throw AuthException.refreshTokenInvalido();
         }
 
         Usuario usuario = usuarioRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         if (!usuario.getActivo()) {
-            throw new BusinessException("Usuario desactivado", HttpStatus.FORBIDDEN);
+            throw AuthException.usuarioDesactivado();
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
         if (!jwtService.isTokenValid(request.getRefreshToken(), userDetails)) {
-            throw new BusinessException("Refresh token expirado o inválido", HttpStatus.UNAUTHORIZED);
+            throw AuthException.refreshTokenExpirado();
         }
 
         Tenant tenant = tenantRepository.findById(usuario.getTenantId())

@@ -13,10 +13,6 @@ function ProyectoPlano() {
   const { terrenos, fetchTerrenos } = useTerrenoStore();
   const [selectedTerreno, setSelectedTerreno] = useState(null);
 
-  useEffect(() => {
-    loadData();
-  }, [id]);
-
   const loadData = async () => {
     try {
       await fetchProyectoById(id);
@@ -25,6 +21,10 @@ function ProyectoPlano() {
       console.error('Error loading data:', error);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
 
   const handleTerrenoClick = (terreno) => {
     setSelectedTerreno(terreno);

@@ -11,6 +11,7 @@ import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.FaseMapper;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.FaseException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,16 +95,14 @@ public class FaseService {
         // Validar nombre único
         if (faseRepository.existsByTenantIdAndProyectoIdAndNombreIgnoreCaseAndDeletedFalse(
                 tenantId, request.getProyectoId(), request.getNombre())) {
-            throw new BusinessException("Ya existe una fase con el nombre: " + request.getNombre()
-                    + " en este proyecto", HttpStatus.CONFLICT);
+            throw FaseException.nombreDuplicado(request.getNombre());
         }
 
         // Validar número de fase único si se proporcionó
         if (request.getNumeroFase() != null &&
                 faseRepository.existsByTenantIdAndProyectoIdAndNumeroFaseAndDeletedFalse(
                         tenantId, request.getProyectoId(), request.getNumeroFase())) {
-            throw new BusinessException("Ya existe una fase con el número: " + request.getNumeroFase()
-                    + " en este proyecto", HttpStatus.CONFLICT);
+            throw FaseException.numeroDuplicado(String.valueOf(request.getNumeroFase()));
         }
 
         Fase fase = faseMapper.toEntity(request);
@@ -138,8 +137,7 @@ public class FaseService {
         // Validar nombre único si se actualiza
         if (request.getNombre() != null && !request.getNombre().isBlank()) {
             if (faseRepository.existsByNombreExcludingId(tenantId, fase.getProyectoId(), request.getNombre(), id)) {
-                throw new BusinessException("Ya existe otra fase con el nombre: " + request.getNombre()
-                        + " en este proyecto", HttpStatus.CONFLICT);
+                throw FaseException.nombreDuplicado(request.getNombre());
             }
         }
 
@@ -147,8 +145,7 @@ public class FaseService {
         if (request.getNumeroFase() != null) {
             if (faseRepository.existsByNumeroFaseExcludingId(
                     tenantId, fase.getProyectoId(), request.getNumeroFase(), id)) {
-                throw new BusinessException("Ya existe otra fase con el número: " + request.getNumeroFase()
-                        + " en este proyecto", HttpStatus.CONFLICT);
+                throw FaseException.numeroDuplicado(String.valueOf(request.getNumeroFase()));
             }
         }
 
@@ -170,11 +167,11 @@ public class FaseService {
         // Validar que no tenga terrenos vendidos o apartados
         long vendidos = terrenoRepository.countByTenantIdAndFaseIdAndEstadoAndDeletedFalse(tenantId, id, EstadoTerreno.VENDIDO);
         if (vendidos > 0) {
-            throw new BusinessException("No se puede eliminar la fase porque tiene terrenos vendidos", HttpStatus.CONFLICT);
+            throw FaseException.tieneTerrenosVendidos();
         }
         long apartados = terrenoRepository.countByTenantIdAndFaseIdAndEstadoAndDeletedFalse(tenantId, id, EstadoTerreno.APARTADO);
         if (apartados > 0) {
-            throw new BusinessException("No se puede eliminar la fase porque tiene terrenos apartados", HttpStatus.CONFLICT);
+            throw FaseException.tieneTerrenosApartados();
         }
 
         fase.setDeleted(true);

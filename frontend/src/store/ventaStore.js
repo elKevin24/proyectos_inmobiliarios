@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import ventaService from '../services/ventaService';
 
-const useVentaStore = create((set, get) => ({
+const useVentaStore = create((set) => ({
   ventas: [],
   selectedVenta: null,
   isLoading: false,

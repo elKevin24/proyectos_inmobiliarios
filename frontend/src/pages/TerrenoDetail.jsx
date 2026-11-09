@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaMap } from 'react-icons/fa';
 import useTerrenoStore from '../store/terrenoStore';

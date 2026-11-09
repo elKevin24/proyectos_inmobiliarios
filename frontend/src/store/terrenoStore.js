@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import terrenoService from '../services/terrenoService';
 
-const useTerrenoStore = create((set, get) => ({
+const useTerrenoStore = create((set) => ({
   terrenos: [],
   selectedTerreno: null,
   isLoading: false,

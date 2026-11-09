@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import planPagoService from '../services/planPagoService';
 
-const usePlanPagoStore = create((set, get) => ({
+const usePlanPagoStore = create((set) => ({
   planesPago: [],
   selectedPlan: null,
   amortizaciones: [],

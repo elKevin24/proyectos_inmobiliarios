@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '../services/api';
 
-const clienteStore = create((set, get) => ({
+const clienteStore = create((set) => ({
   clientes: [],
   selectedCliente: null,
   isLoading: false,

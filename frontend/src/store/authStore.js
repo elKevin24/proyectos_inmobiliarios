@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import authService from '../services/authService';
 import { jwtDecode } from 'jwt-decode';
 
-const useAuthStore = create((set, get) => ({
+const useAuthStore = create((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,

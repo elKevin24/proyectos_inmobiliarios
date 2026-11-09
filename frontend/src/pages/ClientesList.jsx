@@ -14,6 +14,18 @@ function ClientesList() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  const loadClientes = async () => {
+    const params = {};
+    if (estadoFilter) {
+      params.estado = estadoFilter;
+    }
+    try {
+      await fetchClientes(params);
+    } catch {
+      toast.error('Error al cargar clientes');
+    }
+  };
+
   useEffect(() => {
     loadClientes();
   }, [estadoFilter]);
@@ -22,18 +34,6 @@ function ClientesList() {
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, estadoFilter]);
-
-  const loadClientes = async () => {
-    const params = {};
-    if (estadoFilter) {
-      params.estado = estadoFilter;
-    }
-    try {
-      await fetchClientes(params);
-    } catch (err) {
-      toast.error('Error al cargar clientes');
-    }
-  };
 
   const handleDelete = async (id, nombre) => {
     if (window.confirm(`¿Está seguro de eliminar al cliente "${nombre}"?`)) {

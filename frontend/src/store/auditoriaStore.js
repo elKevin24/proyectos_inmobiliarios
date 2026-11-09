@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '../services/api';
 
-const useAuditoriaStore = create((set, get) => ({
+const useAuditoriaStore = create((set) => ({
   logsSimples: [],
   logsCriticos: [],
   historial: [],
@@ -50,6 +50,38 @@ const useAuditoriaStore = create((set, get) => ({
     } catch (error) {
       set({
         error: error.response?.data?.message || 'Error al cargar historial',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  // Obtener historial de un campo específico de un registro
+  fetchHistorialCampo: async (tabla, id, campo) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/auditoria/campo/${tabla}/${id}/${campo}`);
+      set({ historial: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || 'Error al cargar historial del campo',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  // Obtener últimos logins de un usuario
+  fetchUltimosLogins: async (usuarioId, limit = 10) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/auditoria/logins/${usuarioId}`, { params: { limit } });
+      set({ logsSimples: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || 'Error al cargar logins del usuario',
         isLoading: false,
       });
       throw error;

@@ -16,7 +16,6 @@ const ApartadoDetail = () => {
   } = useApartadoStore();
 
   const [showCancelarModal, setShowCancelarModal] = useState(false);
-  const [showConvertirModal, setShowConvertirModal] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState('');
 
   useEffect(() => {

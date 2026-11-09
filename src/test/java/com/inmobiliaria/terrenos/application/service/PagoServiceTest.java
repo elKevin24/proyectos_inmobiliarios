@@ -163,6 +163,104 @@ class PagoServiceTest {
     }
 
     @Test
+    void obtenerPago_Existente_Exitoso() {
+        Pago pago = Pago.builder()
+                .id(300L)
+                .tenantId(tenantId)
+                .planPagoId(100L)
+                .estado(EstadoPago.APLICADO)
+                .montoPagado(BigDecimal.valueOf(2500))
+                .build();
+        PagoResponse pagoResponse = new PagoResponse();
+        pagoResponse.setId(300L);
+
+        when(pagoRepository.findByIdAndTenantIdAndDeletedFalse(300L, tenantId)).thenReturn(Optional.of(pago));
+        when(pagoMapper.toResponse(pago)).thenReturn(pagoResponse);
+
+        PagoResponse resultado = pagoService.obtenerPago(300L);
+
+        assertNotNull(resultado);
+        assertEquals(300L, resultado.getId());
+    }
+
+    @Test
+    void obtenerPago_Inexistente_LanzaExcepcion() {
+        when(pagoRepository.findByIdAndTenantIdAndDeletedFalse(999L, tenantId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> pagoService.obtenerPago(999L));
+    }
+
+    @Test
+    void listarPagosPorVenta_Exitoso() {
+        PlanPago plan = PlanPago.builder()
+                .id(100L)
+                .tenantId(tenantId)
+                .ventaId(200L)
+                .build();
+        Pago pago = Pago.builder()
+                .id(300L)
+                .tenantId(tenantId)
+                .planPagoId(100L)
+                .estado(EstadoPago.APLICADO)
+                .montoPagado(BigDecimal.valueOf(2500))
+                .build();
+        PagoResponse pagoResponse = new PagoResponse();
+        pagoResponse.setId(300L);
+
+        when(planPagoRepository.findByTenantIdAndVentaIdAndDeletedFalse(tenantId, 200L)).thenReturn(Optional.of(plan));
+        when(pagoRepository.findByPlanPagoId(tenantId, 100L)).thenReturn(List.of(pago));
+        when(pagoMapper.toResponse(pago)).thenReturn(pagoResponse);
+
+        List<PagoResponse> resultado = pagoService.listarPagosPorVenta(200L);
+
+        assertEquals(1, resultado.size());
+        assertEquals(300L, resultado.get(0).getId());
+    }
+
+    @Test
+    void listarPagosPorVenta_SinPlan_LanzaExcepcion() {
+        when(planPagoRepository.findByTenantIdAndVentaIdAndDeletedFalse(tenantId, 200L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> pagoService.listarPagosPorVenta(200L));
+    }
+
+    @Test
+    void eliminarPago_Exitoso_MarcaComoEliminado() {
+        Pago pago = Pago.builder()
+                .id(300L)
+                .tenantId(tenantId)
+                .planPagoId(100L)
+                .estado(EstadoPago.APLICADO)
+                .deleted(false)
+                .build();
+
+        when(pagoRepository.findByIdAndTenantIdAndDeletedFalse(300L, tenantId)).thenReturn(Optional.of(pago));
+        when(pagoRepository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        pagoService.eliminarPago(300L);
+
+        assertTrue(pago.getDeleted());
+        verify(pagoRepository).save(pago);
+    }
+
+    @Test
+    void eliminarPago_NoAplicado_LanzaExcepcion() {
+        Pago pago = Pago.builder()
+                .id(300L)
+                .tenantId(tenantId)
+                .planPagoId(100L)
+                .estado(EstadoPago.CANCELADO)
+                .deleted(false)
+                .build();
+
+        when(pagoRepository.findByIdAndTenantIdAndDeletedFalse(300L, tenantId)).thenReturn(Optional.of(pago));
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> pagoService.eliminarPago(300L));
+        assertEquals(HttpStatus.CONFLICT, exception.getStatus());
+        verify(pagoRepository, never()).save(any());
+    }
+
+    @Test
     void aplicarPago_NoCuotasPendientes_LanzaExcepcion() {
         CreatePagoRequest request = CreatePagoRequest.builder()
                 .planPagoId(100L)

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import proyectoService from '../services/proyectoService';
 
-const useProyectoStore = create((set, get) => ({
+const useProyectoStore = create((set) => ({
   proyectos: [],
   selectedProyecto: null,
   isLoading: false,
