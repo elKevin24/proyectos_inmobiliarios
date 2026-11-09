@@ -161,16 +161,4 @@ public class PlanPagoController {
         return ResponseEntity.ok(pagoService.obtenerEstadoCuenta(id));
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('PLAN_PAGO_ELIMINAR', 'ADMIN')")
-    @Operation(summary = "Eliminar plan de pago", description = "Elimina un plan de pago y sus registros relacionados (soft delete)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Plan de pago eliminado"),
-            @ApiResponse(responseCode = "404", description = "Plan de pago no encontrado")
-    })
-    public ResponseEntity<Void> eliminarPlanPago(@PathVariable Long id) {
-        log.info("DELETE /api/v1/planes-pago/{}", id);
-        pagoService.eliminarPlanPago(id);
-        return ResponseEntity.noContent().build();
-    }
 }
