@@ -1,206 +1,113 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  FaHome, FaMap, FaUsers, FaMoneyBillWave, FaSignOutAlt,
-  FaBuilding, FaBookmark, FaFileInvoiceDollar, FaCalculator,
-  FaShieldAlt, FaChevronDown, FaChevronRight,
-  FaBell, FaSun, FaMoon, FaBars, FaTimes
+  FaHome,
+  FaMap,
+  FaUsers,
+  FaMoneyBillWave,
+  FaSignOutAlt,
+  FaBuilding,
+  FaBookmark,
+  FaFileInvoiceDollar,
+  FaCalculator,
+  FaShieldAlt,
+  FaSun,
+  FaMoon
 } from 'react-icons/fa';
-import { useState, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
-import api from '../services/api';
+import useThemeStore from '../store/themeStore';
 import '../styles/Layout.css';
-
-const NAV_GROUPS = [
-  {
-    label: 'Principal',
-    items: [
-      { to: '/', icon: <FaHome />, label: 'Dashboard', end: true },
-    ],
-  },
-  {
-    label: 'Inventario',
-    items: [
-      { to: '/proyectos', icon: <FaBuilding />, label: 'Proyectos' },
-      { to: '/terrenos', icon: <FaMap />, label: 'Terrenos' },
-    ],
-  },
-  {
-    label: 'Clientes y Ventas',
-    items: [
-      { to: '/clientes', icon: <FaUsers />, label: 'Clientes' },
-      { to: '/cotizaciones', icon: <FaFileInvoiceDollar />, label: 'Cotizaciones' },
-      { to: '/apartados', icon: <FaBookmark />, label: 'Apartados' },
-      { to: '/ventas', icon: <FaMoneyBillWave />, label: 'Ventas' },
-    ],
-  },
-  {
-    label: 'Finanzas',
-    items: [
-      { to: '/planes-pago', icon: <FaCalculator />, label: 'Planes de Pago' },
-      { to: '/pagos', icon: <FaMoneyBillWave />, label: 'Pagos' },
-    ],
-  },
-  {
-    label: 'Administración',
-    items: [
-      { to: '/auditoria', icon: <FaShieldAlt />, label: 'Auditoría' },
-    ],
-  },
-];
 
 function Layout() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const [collapsed, setCollapsed] = useState({});
-  const [notificaciones, setNotificaciones] = useState({ apartadosVencidos: 0 });
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const loadNotificaciones = async () => {
-    try {
-      const response = await api.get('/reportes/dashboard');
-      const data = response.data;
-      setNotificaciones({
-        apartadosVencidos: data?.apartadosVencidos || 0,
-      });
-    } catch {
-      // Silently fail — notifications are non-critical
-    }
-  };
+  const { theme, toggleTheme, initTheme } = useThemeStore();
 
   useEffect(() => {
-    loadNotificaciones();
-    const interval = setInterval(loadNotificaciones, 300000);
-    return () => clearInterval(interval);
-  }, []);
+    initTheme();
+  }, [initTheme]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const toggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
-    localStorage.setItem('theme', nextTheme);
-  };
-
-  const toggleGroup = (label) =>
-    setCollapsed(prev => ({ ...prev, [label]: !prev[label] }));
-
-  // Initials from email or name
-  const initials = user?.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : '??';
-
-  const tenantName = user?.tenantNombre || user?.nombreEmpresa || 'Mi Empresa';
+  const userInitial = user?.nombre?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U';
 
   return (
     <div className="layout">
-      {/* Mobile Top Navbar */}
-      <header className="mobile-header">
-        <button className="menu-toggle" onClick={() => setMobileOpen(!mobileOpen)} title="Menu">
-          {mobileOpen ? <FaTimes /> : <FaBars />}
-        </button>
-        <span className="mobile-brand">Inmobiliaria</span>
-        <button className="theme-toggle-btn" onClick={toggleTheme} title="Cambiar tema">
-          {theme === 'light' ? <FaMoon /> : <FaSun />}
-        </button>
-      </header>
-
-      {/* Sidebar Overlay for Mobile */}
-      {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)}></div>}
-
-      <nav className={`sidebar ${mobileOpen ? 'sidebar--open' : ''}`}>
-        {/* Header */}
+      <nav className="sidebar">
         <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <div className="brand-icon">🏢</div>
-            <div className="brand-text">
-              <h2>Inmobiliaria</h2>
-              <span className="tenant-name">{tenantName}</span>
+          <div className="brand-lockup">
+            <span className="brand-mark"><FaBuilding /></span>
+            <div>
+              <h2>Terrenos</h2>
+              <span className="brand-kicker">Real estate OS</span>
             </div>
-            {/* Desktop Theme Toggle */}
-            <button className="theme-toggle-btn desktop-theme-toggle" onClick={toggleTheme} title="Cambiar tema">
-              {theme === 'light' ? <FaMoon /> : <FaSun />}
-            </button>
           </div>
-          <div className="user-badge">
-            <div className="user-avatar">{initials}</div>
-            <div className="user-details">
-              <span className="user-name">{user?.nombre || 'Usuario'}</span>
-              <span className="user-email">{user?.email}</span>
-            </div>
-            {notificaciones.apartadosVencidos > 0 && (
-              <NavLink to="/apartados" className="notification-badge" title="Apartados vencidos" onClick={() => setMobileOpen(false)}>
-                <FaBell />
-                <span className="notification-count">{notificaciones.apartadosVencidos}</span>
-              </NavLink>
-            )}
+          <div className="user-chip">
+            <span className="user-avatar">{userInitial}</span>
+            <p className="user-info">{user?.email || 'Usuario'}</p>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="sidebar-nav">
-          {NAV_GROUPS.map(group => (
-            <div key={group.label} className="nav-group">
-              {group.items.length > 1 ? (
-                <>
-                  <button
-                    className="nav-group-toggle"
-                    onClick={() => toggleGroup(group.label)}
-                  >
-                    <span className="group-label">{group.label}</span>
-                    <span className="group-chevron">
-                      {collapsed[group.label] ? <FaChevronRight /> : <FaChevronDown />}
-                    </span>
-                  </button>
-                  {!collapsed[group.label] && (
-                    <ul className="nav-list">
-                      {group.items.map(item => (
-                        <li key={item.to}>
-                          <NavLink
-                            to={item.to}
-                            end={item.end}
-                            className={({ isActive }) =>
-                              `nav-link${isActive ? ' nav-link--active' : ''}`
-                            }
-                            onClick={() => setMobileOpen(false)}
-                          >
-                            <span className="nav-icon">{item.icon}</span>
-                            <span>{item.label}</span>
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              ) : (
-                <ul className="nav-list nav-list--flat">
-                  {group.items.map(item => (
-                    <li key={item.to}>
-                      <NavLink
-                        to={item.to}
-                        end={item.end}
-                        className={({ isActive }) =>
-                          `nav-link${isActive ? ' nav-link--active' : ''}`
-                        }
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <span className="nav-icon">{item.icon}</span>
-                        <span>{item.label}</span>
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </nav>
+        <ul className="nav-menu">
+          <li>
+            <NavLink to="/" end>
+              <FaHome /> <span>Dashboard</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/proyectos" data-testid="nav-proyectos">
+              <FaBuilding /> <span>Proyectos</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/terrenos" data-testid="nav-terrenos">
+              <FaMap /> <span>Terrenos</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/clientes" data-testid="nav-clientes">
+              <FaUsers /> <span>Clientes</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/ventas" data-testid="nav-ventas">
+              <FaMoneyBillWave /> <span>Ventas</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/apartados">
+              <FaBookmark /> <span>Apartados</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/cotizaciones">
+              <FaFileInvoiceDollar /> <span>Cotizaciones</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/planes-pago">
+              <FaCalculator /> <span>Planes de Pago</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/pagos" data-testid="nav-pagos">
+              <FaMoneyBillWave /> <span>Pagos</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/auditoria">
+              <FaShieldAlt /> <span>Auditoría</span>
+            </NavLink>
+          </li>
+        </ul>
 
-        {/* Footer */}
         <div className="sidebar-footer">
+          <button onClick={toggleTheme} className="btn-theme-toggle" title="Cambiar Tema">
+            {theme === 'dark' ? <><FaSun /> Modo Claro</> : <><FaMoon /> Modo Oscuro</>}
+          </button>
           <button onClick={handleLogout} className="btn-logout">
             <FaSignOutAlt /> Cerrar Sesión
           </button>

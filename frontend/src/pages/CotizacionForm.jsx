@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import useCotizacionStore from '../store/cotizacionStore';
 import useTerrenoStore from '../store/terrenoStore';
+import { calculateCotizacion } from '../utils/calculations';
 import '../styles/Cotizaciones.css';
 
 const CotizacionForm = () => {
@@ -58,22 +59,19 @@ const CotizacionForm = () => {
 
   // Calcular precio final según tipo de descuento
   useEffect(() => {
-    let descuentoCalculado = 0;
-    let precioFinalCalculado = parseFloat(precioBase) || 0;
-
-    if (tipoDescuento === 'porcentaje' && porcentajeDescuento > 0) {
-      descuentoCalculado = (precioFinalCalculado * parseFloat(porcentajeDescuento)) / 100;
-      setValue('descuento', descuentoCalculado.toFixed(2));
-      precioFinalCalculado = precioFinalCalculado - descuentoCalculado;
-    } else if (tipoDescuento === 'fijo' && descuento > 0) {
-      descuentoCalculado = parseFloat(descuento);
-      const porcentaje = (descuentoCalculado / precioFinalCalculado) * 100;
-      setValue('porcentajeDescuento', porcentaje.toFixed(2));
-      precioFinalCalculado = precioFinalCalculado - descuentoCalculado;
+    const calculated = calculateCotizacion({
+      precioBase,
+      tipoDescuento,
+      porcentajeDescuento,
+      descuento,
+    });
+    if (tipoDescuento === 'porcentaje') {
+      setValue('descuento', calculated.descuento.toFixed(2));
+    } else {
+      setValue('porcentajeDescuento', calculated.porcentajeDescuento.toFixed(2));
     }
-
-    setValue('precioFinal', precioFinalCalculado.toFixed(2));
-  }, [precioBase, porcentajeDescuento, descuento, tipoDescuento]);
+    setValue('precioFinal', calculated.precioFinal.toFixed(2));
+  }, [precioBase, porcentajeDescuento, descuento, tipoDescuento, setValue]);
 
   // Fecha mínima (mañana)
   const getMinDate = () => {
@@ -152,7 +150,7 @@ const CotizacionForm = () => {
               ))}
             </select>
             {errors.terrenoId && (
-              <span className="error-message">{errors.terrenoId.message}</span>
+              <span data-testid="error-terreno" className="error-message">{errors.terrenoId.message}</span>
             )}
           </div>
 
@@ -202,8 +200,8 @@ const CotizacionForm = () => {
                 })}
                 className={errors.clienteEmail ? 'error' : ''}
               />
-              {errors.clienteEmail && (
-                <span className="error-message">{errors.clienteEmail.message}</span>
+                {errors.clienteEmail && (
+                  <span data-testid="error-cliente-email" className="error-message">{errors.clienteEmail.message}</span>
               )}
             </div>
 
@@ -252,6 +250,7 @@ const CotizacionForm = () => {
             <div className="radio-group">
               <label className="radio-label">
                 <input
+                  data-testid="discount-mode-percent"
                   type="radio"
                   checked={tipoDescuento === 'porcentaje'}
                   onChange={() => setTipoDescuento('porcentaje')}
@@ -260,6 +259,7 @@ const CotizacionForm = () => {
               </label>
               <label className="radio-label">
                 <input
+                  data-testid="discount-mode-fixed"
                   type="radio"
                   checked={tipoDescuento === 'fijo'}
                   onChange={() => setTipoDescuento('fijo')}
@@ -276,6 +276,7 @@ const CotizacionForm = () => {
                 <input
                   type="number"
                   id="porcentajeDescuento"
+                  data-testid="discount-percent-input"
                   step="0.01"
                   min="0"
                   max="100"
@@ -307,6 +308,7 @@ const CotizacionForm = () => {
                 <input
                   type="number"
                   id="descuento"
+                  data-testid="discount-fixed-input"
                   step="0.01"
                   min="0"
                   {...register('descuento', {
@@ -336,6 +338,7 @@ const CotizacionForm = () => {
             <input
               type="number"
               id="precioFinal"
+              data-testid="precio-final"
               step="0.01"
               min="0"
               {...register('precioFinal', {

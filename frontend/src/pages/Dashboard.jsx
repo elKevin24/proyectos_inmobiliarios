@@ -9,42 +9,16 @@ import {
   FaBookmark,
   FaFileInvoiceDollar,
   FaCheckCircle,
-  FaExclamationTriangle,
-  FaClock,
-  FaArrowRight
+  FaExclamationTriangle
 } from 'react-icons/fa';
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar
-} from 'recharts';
-import toast from 'react-hot-toast';
 import reporteService from '../services/reporteService';
-import ventaService from '../services/ventaService';
-import apartadoService from '../services/apartadoService';
 import StatCard from '../components/StatCard';
 import '../styles/Dashboard.css';
-
-const PIE_COLORS = ['#2ecc71', '#f1c40f', '#9b59b6'];
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [ventasRecientes, setVentasRecientes] = useState([]);
-  const [todasLasVentas, setTodasLasVentas] = useState([]);
-  const [apartadosPorVencer, setApartadosPorVencer] = useState([]);
-  const [proyectosEstadisticas, setProyectosEstadisticas] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -52,63 +26,14 @@ function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      setLoading(true);
       const data = await reporteService.getDashboard();
       setDashboardData(data);
-
-      // Load recent sales, expiring apartados, and project statistics in parallel
-      const [ventasData, apartadosData, statsData] = await Promise.allSettled([
-        ventaService.getAll(),
-        apartadoService.getAll(),
-        reporteService.getProyectosEstadisticas()
-      ]);
-
-      if (ventasData.status === 'fulfilled') {
-        const ventas = Array.isArray(ventasData.value) ? ventasData.value : [];
-        setTodasLasVentas(ventas);
-        setVentasRecientes(ventas.slice(0, 5));
-      }
-
-      if (apartadosData.status === 'fulfilled') {
-        const apartados = Array.isArray(apartadosData.value) ? apartadosData.value : [];
-        const now = new Date();
-        const threeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-        const porVencer = apartados.filter(a =>
-          a.estado === 'VIGENTE' &&
-          a.fechaLimite &&
-          new Date(a.fechaLimite) <= threeDays &&
-          new Date(a.fechaLimite) >= now
-        );
-        setApartadosPorVencer(porVencer);
-      }
-
-      if (statsData.status === 'fulfilled') {
-        setProyectosEstadisticas(Array.isArray(statsData.value) ? statsData.value : []);
-      }
     } catch (error) {
       console.error('Error loading dashboard:', error);
       setError('Error al cargar estadísticas');
-      toast.error('Error al cargar estadísticas');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getVentasMensualesData = (todasLasVentas) => {
-    const grouped = {};
-    todasLasVentas.forEach(v => {
-      if (!v.fechaVenta) return;
-      const date = new Date(v.fechaVenta);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const label = date.toLocaleDateString('es-MX', { year: 'numeric', month: 'short' });
-      if (!grouped[key]) {
-        grouped[key] = { key, label, total: 0 };
-      }
-      grouped[key].total += Number(v.montoTotal || 0);
-    });
-    return Object.values(grouped)
-      .sort((a, b) => a.key.localeCompare(b.key))
-      .map(item => ({ name: item.label, total: item.total }));
   };
 
   const formatCurrency = (amount) => {
@@ -143,51 +68,81 @@ function Dashboard() {
     );
   }
 
-  const inventoryData = [
-    { name: 'Disponibles', value: dashboardData?.terrenosDisponibles || 0 },
-    { name: 'Apartados', value: dashboardData?.terrenosApartados || 0 },
-    { name: 'Vendidos', value: dashboardData?.terrenosVendidos || 0 }
-  ];
-
-  const salesHistory = getVentasMensualesData(todasLasVentas);
-
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p>Resumen general del sistema inmobiliario</p>
+        <div>
+          <span className="eyebrow">Resumen ejecutivo</span>
+          <h1>Buenos días, equipo</h1>
+          <p>Una vista clara del rendimiento de tu operación inmobiliaria.</p>
+        </div>
+        <div className="dashboard-status"><span /> Datos actualizados</div>
       </div>
 
-      {/* Proyectos, Terrenos, Clientes Cards */}
+      {/* Proyectos */}
       <div className="dashboard-section">
+        <h2 className="section-title">
+          <FaBuilding /> Proyectos
+        </h2>
         <div className="stats-grid">
           <StatCard
-            title="Proyectos Activos"
+            title="Total Proyectos"
             value={dashboardData?.totalProyectos || 0}
-            icon="🏢"
+            icon={<FaBuilding />}
             color="blue"
             subtitle={`${dashboardData?.proyectosActivos || 0} activos`}
           />
+        </div>
+      </div>
+
+      {/* Terrenos */}
+      <div className="dashboard-section">
+        <h2 className="section-title">
+          <FaMap /> Inventario de Terrenos
+        </h2>
+        <div className="stats-grid">
           <StatCard
             title="Total Terrenos"
             value={dashboardData?.totalTerrenos || 0}
-            icon="📍"
+            icon={<FaMap />}
             color="blue"
-            subtitle="Inventario total"
           />
+          <StatCard
+            title="Disponibles"
+            value={dashboardData?.terrenosDisponibles || 0}
+            icon={<FaCheckCircle />}
+            color="green"
+            subtitle="Listos para venta"
+          />
+          <StatCard
+            title="Apartados"
+            value={dashboardData?.terrenosApartados || 0}
+            icon={<FaBookmark />}
+            color="orange"
+            subtitle="En reserva"
+          />
+          <StatCard
+            title="Vendidos"
+            value={dashboardData?.terrenosVendidos || 0}
+            icon={<FaMoneyBillWave />}
+            color="purple"
+            subtitle="Transacciones completadas"
+          />
+        </div>
+      </div>
+
+      {/* Clientes */}
+      <div className="dashboard-section">
+        <h2 className="section-title">
+          <FaUsers /> Clientes
+        </h2>
+        <div className="stats-grid">
           <StatCard
             title="Total Clientes"
             value={dashboardData?.totalClientes || 0}
-            icon="👥"
+            icon={<FaUsers />}
             color="teal"
             subtitle={`${dashboardData?.clientesActivos || 0} activos`}
-          />
-          <StatCard
-            title="Avance de Ventas"
-            value={`${(dashboardData?.porcentajeAvanceVentas || 0).toFixed(1)}%`}
-            icon="📈"
-            color="green"
-            subtitle="Del inventario total"
           />
         </div>
       </div>
@@ -195,220 +150,66 @@ function Dashboard() {
       {/* Ventas y Finanzas */}
       <div className="dashboard-section">
         <h2 className="section-title">
-          <FaMoneyBillWave /> Finanzas de Ventas
+          <FaMoneyBillWave /> Ventas y Finanzas
         </h2>
         <div className="stats-grid">
           <StatCard
             title="Total Ventas"
             value={dashboardData?.totalVentas || 0}
-            icon="💵"
+            icon={<FaMoneyBillWave />}
             color="green"
             subtitle={`${dashboardData?.ventasPagadas || 0} pagadas`}
           />
           <StatCard
             title="Monto Total Ventas"
             value={formatCurrency(dashboardData?.montoTotalVentas || 0)}
-            icon="💰"
+            icon={<FaMoneyBillWave />}
             color="purple"
           />
           <StatCard
             title="Comisiones Generadas"
-            value={formatCurrency(dashboardData?.montoComisiones || dashboardData?.montoTotalComisiones || 0)}
-            icon="📊"
+            value={formatCurrency(dashboardData?.montoComisiones || 0)}
+            icon={<FaChartLine />}
             color="blue"
           />
           <StatCard
-            title="Ticket Promedio"
-            value={formatCurrency(dashboardData?.ticketPromedio || 0)}
-            icon="🎟️"
-            color="orange"
+            title="Avance de Ventas"
+            value={`${(dashboardData?.porcentajeAvanceVentas || 0).toFixed(1)}%`}
+            icon={<FaChartLine />}
+            color="green"
+            subtitle="Del inventario total"
           />
         </div>
       </div>
 
-      {/* SECCIÓN DE GRÁFICOS */}
+      {/* Apartados */}
       <div className="dashboard-section">
         <h2 className="section-title">
-          <FaChartLine /> Métricas y Análisis Visual
+          <FaBookmark /> Apartados
         </h2>
-        <div className="charts-grid">
-          <div className="chart-card">
-            <h3>Historial de Ventas Mensuales</h3>
-            <div className="chart-container">
-              {salesHistory.length === 0 ? (
-                <div className="empty-chart">Sin historial de ventas disponible</div>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={salesHistory} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                    <XAxis dataKey="name" stroke="var(--text-muted)" />
-                    <YAxis tickFormatter={(v) => `$${v.toLocaleString('es-MX')}`} stroke="var(--text-muted)" />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
-                      formatter={(v) => [`$${Number(v).toLocaleString('es-MX')}`, 'Monto Ventas']}
-                    />
-                    <Legend />
-                    <Line type="monotone" dataKey="total" stroke="#3498db" strokeWidth={3} activeDot={{ r: 8 }} name="Monto total" />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
-
-          <div className="chart-card">
-            <h3>Distribución General de Inventario</h3>
-            <div className="chart-container">
-              {dashboardData?.totalTerrenos === 0 ? (
-                <div className="empty-chart">Sin terrenos registrados</div>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={inventoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {inventoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
-                      formatter={(v) => [v, 'Terrenos']}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
-
-          <div className="chart-card">
-            <h3>Estado de Lotes por Proyecto</h3>
-            <div className="chart-container">
-              {proyectosEstadisticas.length === 0 ? (
-                <div className="empty-chart">Sin datos de proyectos</div>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={proyectosEstadisticas} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                    <XAxis dataKey="proyectoNombre" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
-                    />
-                    <Legend />
-                    <Bar dataKey="terrenosDisponibles" fill="#2ecc71" name="Disponibles" stackId="a" />
-                    <Bar dataKey="terrenosApartados" fill="#f1c40f" name="Apartados" stackId="a" />
-                    <Bar dataKey="terrenosVendidos" fill="#9b59b6" name="Vendidos" stackId="a" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
-
-          <div className="chart-card">
-            <h3>Ticket Promedio por Proyecto</h3>
-            <div className="chart-container">
-              {proyectosEstadisticas.length === 0 ? (
-                <div className="empty-chart">Sin datos de proyectos</div>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={proyectosEstadisticas} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                    <XAxis dataKey="proyectoNombre" stroke="var(--text-muted)" />
-                    <YAxis tickFormatter={(v) => `$${v.toLocaleString('es-MX')}`} stroke="var(--text-muted)" />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
-                      formatter={(v) => [`$${Number(v).toLocaleString('es-MX')}`, 'Ticket Promedio']}
-                    />
-                    <Legend />
-                    <Bar dataKey="ticketPromedio" fill="#e74c3c" name="Valor Promedio" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
+        <div className="stats-grid">
+          <StatCard
+            title="Total Apartados"
+            value={dashboardData?.totalApartados || 0}
+            icon={<FaBookmark />}
+            color="orange"
+          />
+          <StatCard
+            title="Vigentes"
+            value={dashboardData?.apartadosVigentes || 0}
+            icon={<FaCheckCircle />}
+            color="green"
+            subtitle="Activos"
+          />
+          <StatCard
+            title="Vencidos"
+            value={dashboardData?.apartadosVencidos || 0}
+            icon={<FaExclamationTriangle />}
+            color="red"
+            subtitle="Requieren atención"
+          />
         </div>
       </div>
-
-      {/* Alertas de Apartados por Vencer */}
-      {apartadosPorVencer.length > 0 && (
-        <div className="dashboard-alerts">
-          <h2 className="section-title">
-            <FaExclamationTriangle /> Alertas - Apartados por Vencer
-          </h2>
-          <div className="alerts-list">
-            {apartadosPorVencer.map(a => (
-              <div key={a.id} className="alert-card alert-warning">
-                <FaClock className="alert-icon" />
-                <div className="alert-content">
-                  <span className="alert-title">
-                    Apartado #{a.id} — {a.clienteNombre || 'Cliente'}
-                  </span>
-                  <span className="alert-subtitle">
-                    Vence: {new Date(a.fechaLimite).toLocaleDateString('es-MX')} — {a.terrenoNumeroLote || 'Terreno'}
-                  </span>
-                </div>
-                <Link to={`/apartados/${a.id}`} className="btn btn-sm btn-secondary">
-                  Ver <FaArrowRight />
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ventas Recientes */}
-      {ventasRecientes.length > 0 && (
-        <div className="dashboard-section">
-          <h2 className="section-title">
-            <FaMoneyBillWave /> Últimas Ventas
-          </h2>
-          <div className="recent-table-container">
-            <table className="recent-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Proyecto</th>
-                  <th>Terreno</th>
-                  <th>Monto</th>
-                  <th>Estado</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ventasRecientes.map(venta => (
-                  <tr key={venta.id}>
-                    <td>
-                      <Link to={`/ventas/${venta.id}`}>#{venta.id}</Link>
-                    </td>
-                    <td>{venta.proyectoNombre || 'N/A'}</td>
-                    <td>{venta.terrenoNumeroLote || 'N/A'}</td>
-                    <td className="monto-cell">{formatCurrency(venta.montoTotal)}</td>
-                    <td>
-                      <span className={`badge badge-${venta.estado?.toLowerCase() || 'default'}`}>
-                        {venta.estado}
-                      </span>
-                    </td>
-                    <td>{venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleDateString('es-MX') : 'N/A'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="section-footer">
-            <Link to="/ventas" className="link-more">
-              Ver todas las ventas <FaArrowRight />
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* Acciones Rápidas */}
       <div className="quick-actions">

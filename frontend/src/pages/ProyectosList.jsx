@@ -84,6 +84,7 @@ function ProyectosList() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="search-input"
+          data-testid="proyectos-search"
         />
       </div>
 

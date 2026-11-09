@@ -116,12 +116,14 @@ function ClientesList() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="search-input"
+          data-testid="clientes-search"
         />
 
         <select
           value={estadoFilter}
           onChange={(e) => setEstadoFilter(e.target.value)}
           className="filter-select"
+          data-testid="clientes-status-filter"
         >
           <option value="">Todos los estados</option>
           <option value="PROSPECTO">Prospecto</option>

@@ -2,6 +2,8 @@ package com.inmobiliaria.terrenos.domain.repository;
 
 import com.inmobiliaria.terrenos.domain.entity.Venta;
 import com.inmobiliaria.terrenos.domain.enums.EstadoVenta;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,11 +25,15 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     List<Venta> findByTenantIdAndDeletedFalse(Long tenantId);
 
+    Page<Venta> findByTenantIdAndDeletedFalse(Long tenantId, Pageable pageable);
+
     Optional<Venta> findByIdAndTenantIdAndDeletedFalse(Long id, Long tenantId);
 
     List<Venta> findByTenantIdAndTerrenoIdAndDeletedFalse(Long tenantId, Long terrenoId);
 
     List<Venta> findByTenantIdAndEstadoAndDeletedFalse(Long tenantId, EstadoVenta estado);
+
+    Page<Venta> findByTenantIdAndEstadoAndDeletedFalse(Long tenantId, EstadoVenta estado, Pageable pageable);
 
     /**
      * Busca ventas por comprador

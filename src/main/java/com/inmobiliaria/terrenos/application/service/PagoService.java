@@ -167,6 +167,34 @@ public class PagoService {
         return convertirAPlanPagoResponse(actualizado);
     }
 
+    @Transactional
+    public void eliminarPlanPago(Long id) {
+        Long tenantId = getTenantId();
+        log.info("Eliminando plan de pago {} para tenant: {}", id, tenantId);
+
+        PlanPago planPago = planPagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan de pago no encontrado"));
+
+        List<Pago> pagos = pagoRepository.findByPlanPagoId(tenantId, id);
+        for (Pago pago : pagos) {
+            pago.setDeleted(true);
+            pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+            pagoRepository.save(pago);
+        }
+
+        List<Amortizacion> amortizaciones = amortizacionRepository.findByPlanPagoId(tenantId, id);
+        for (Amortizacion amortizacion : amortizaciones) {
+            amortizacion.setDeleted(true);
+            amortizacionRepository.save(amortizacion);
+        }
+
+        planPago.setDeleted(true);
+        planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        planPagoRepository.save(planPago);
+
+        log.info("Plan de pago {} eliminado exitosamente", id);
+    }
+
     // ==================== GENERACIÓN DE AMORTIZACIONES ====================
 
     @Transactional
@@ -276,6 +304,49 @@ public class PagoService {
 
     private LocalDate calcularFechaUltimoPago(LocalDate fechaPrimerPago, Integer numeroPagos, FrecuenciaPago frecuencia) {
         return fechaPrimerPago.plusDays((long) (numeroPagos - 1) * frecuencia.getDias());
+    }
+
+    // ==================== CONSULTAS DE PAGOS ====================
+
+    @Transactional(readOnly = true)
+    public PagoResponse obtenerPago(Long id) {
+        Long tenantId = getTenantId();
+        log.debug("Obteniendo pago {} para tenant: {}", id, tenantId);
+
+        Pago pago = pagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + id));
+
+        return convertirAPagoResponse(pago);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PagoResponse> listarPagosPorVenta(Long ventaId) {
+        Long tenantId = getTenantId();
+        log.debug("Listando pagos para venta: {}", ventaId);
+
+        PlanPago planPago = planPagoRepository.findByTenantIdAndVentaIdAndDeletedFalse(tenantId, ventaId)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró plan de pago para esta venta"));
+
+        List<Pago> pagos = pagoRepository.findByPlanPagoId(tenantId, planPago.getId());
+
+        return pagos.stream()
+                .map(this::convertirAPagoResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void eliminarPago(Long id) {
+        Long tenantId = getTenantId();
+        log.info("Eliminando pago {} para tenant: {}", id, tenantId);
+
+        Pago pago = pagoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + id));
+
+        pago.setDeleted(true);
+        pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
+        pagoRepository.save(pago);
+
+        log.info("Pago {} eliminado exitosamente", id);
     }
 
     // ==================== APLICACIÓN DE PAGOS ====================

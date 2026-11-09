@@ -134,6 +134,20 @@ public class PlanPagoController {
         return ResponseEntity.ok(pagoService.obtenerTablaAmortizacion(id));
     }
 
+    @GetMapping("/{id}/amortizaciones")
+    @PreAuthorize("hasAnyAuthority('PLAN_PAGO_VER', 'ADMIN')")
+    @Operation(summary = "Obtener amortizaciones del plan", description = "Alias compatible con el frontend para la tabla de amortización")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Amortizaciones obtenidas",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = AmortizacionResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Plan de pago no encontrado")
+    })
+    public ResponseEntity<List<AmortizacionResponse>> obtenerAmortizaciones(@PathVariable Long id) {
+        log.info("GET /api/v1/planes-pago/{}/amortizaciones", id);
+        return ResponseEntity.ok(pagoService.obtenerTablaAmortizacion(id).getAmortizaciones());
+    }
+
     @GetMapping("/{id}/estado-cuenta")
     @PreAuthorize("hasAnyAuthority('PLAN_PAGO_VER', 'ADMIN')")
     @Operation(summary = "Obtener estado de cuenta", description = "Obtiene el estado de cuenta completo con historial de pagos y estadísticas")
@@ -145,5 +159,18 @@ public class PlanPagoController {
     public ResponseEntity<EstadoCuentaResponse> obtenerEstadoCuenta(@PathVariable Long id) {
         log.info("GET /api/v1/planes-pago/{}/estado-cuenta", id);
         return ResponseEntity.ok(pagoService.obtenerEstadoCuenta(id));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('PLAN_PAGO_ELIMINAR', 'ADMIN')")
+    @Operation(summary = "Eliminar plan de pago", description = "Elimina un plan de pago y sus registros relacionados (soft delete)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Plan de pago eliminado"),
+            @ApiResponse(responseCode = "404", description = "Plan de pago no encontrado")
+    })
+    public ResponseEntity<Void> eliminarPlanPago(@PathVariable Long id) {
+        log.info("DELETE /api/v1/planes-pago/{}", id);
+        pagoService.eliminarPlanPago(id);
+        return ResponseEntity.noContent().build();
     }
 }

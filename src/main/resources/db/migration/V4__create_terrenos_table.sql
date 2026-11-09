@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS terrenos (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
     updated_by VARCHAR(255),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     
     CONSTRAINT uk_terrenos_proyecto_numero UNIQUE (proyecto_id, numero_lote, manzana)
 );
@@ -56,6 +57,7 @@ CREATE INDEX idx_terrenos_proyecto_id ON terrenos(proyecto_id);
 CREATE INDEX idx_terrenos_fase_id ON terrenos(fase_id);
 CREATE INDEX idx_terrenos_estado ON terrenos(estado);
 CREATE INDEX idx_terrenos_numero_lote ON terrenos(numero_lote);
+CREATE INDEX idx_terrenos_deleted ON terrenos(deleted);
 
 -- Índice GIN para búsqueda en JSON
 CREATE INDEX idx_terrenos_caracteristicas ON terrenos USING GIN (caracteristicas);

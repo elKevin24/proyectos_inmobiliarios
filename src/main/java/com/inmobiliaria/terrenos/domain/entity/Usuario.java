@@ -23,7 +23,7 @@ import java.util.Set;
         @Index(name = "idx_usuario_tenant", columnList = "tenant_id"),
         @Index(name = "idx_usuario_activo", columnList = "activo")
 }, uniqueConstraints = {
-        @UniqueConstraint(name = "uk_usuario_email", columnNames = "email")
+        @UniqueConstraint(name = "uk_usuario_email", columnNames = {"email", "tenant_id"})
 })
 @Getter
 @Setter
@@ -45,7 +45,7 @@ public class Usuario extends TenantBaseEntity {
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "Email inválido")
     @Size(max = 100)
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 100)
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")

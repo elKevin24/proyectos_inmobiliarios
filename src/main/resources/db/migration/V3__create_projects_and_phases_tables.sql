@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS proyectos (
     codigo_postal VARCHAR(10),
     
     -- Ubicación geográfica
-    latitud DECIMAL(10, 8),
-    longitud DECIMAL(11, 8),
+    latitud DOUBLE PRECISION,
+    longitud DOUBLE PRECISION,
     
     -- Plano/Mapa
     plano_url VARCHAR(500),
@@ -34,18 +34,21 @@ CREATE TABLE IF NOT EXISTS proyectos (
     -- Configuración de precios
     tipo_precio tipo_precio NOT NULL DEFAULT 'VARIABLE',
     precio_base DECIMAL(15, 2),
+    precio_maximo DECIMAL(15, 2),
     
     -- Estado
-    estado estado_proyecto NOT NULL DEFAULT 'PLANIFICACION',
+    estado_proyecto estado_proyecto NOT NULL DEFAULT 'PLANIFICACION',
     fecha_inicio DATE,
     fecha_fin DATE,
     
-    -- Estadísticas (denormalizadas para performance)
+    -- Estadísticas
     total_terrenos INTEGER DEFAULT 0,
     terrenos_disponibles INTEGER DEFAULT 0,
     terrenos_apartados INTEGER DEFAULT 0,
     terrenos_vendidos INTEGER DEFAULT 0,
     
+    observaciones TEXT,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
@@ -61,20 +64,17 @@ CREATE TABLE IF NOT EXISTS fases (
     proyecto_id BIGINT NOT NULL REFERENCES proyectos(id) ON DELETE CASCADE,
     nombre VARCHAR(255) NOT NULL,
     descripcion TEXT,
-    orden INTEGER NOT NULL DEFAULT 1,
-    
-    -- Plano específico de la fase (opcional)
-    plano_url VARCHAR(500),
-    
-    -- Estado
-    estado estado_proyecto NOT NULL DEFAULT 'PLANIFICACION',
-    fecha_inicio DATE,
-    fecha_fin DATE,
-    
-    -- Estadísticas
+    numero_fase INTEGER NOT NULL,
     total_terrenos INTEGER DEFAULT 0,
     terrenos_disponibles INTEGER DEFAULT 0,
+    area_total DECIMAL(15, 2),
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    fecha_fin_estimada DATE,
     
+    observaciones TEXT,
+    activa BOOLEAN NOT NULL DEFAULT TRUE,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
@@ -85,10 +85,9 @@ CREATE TABLE IF NOT EXISTS fases (
 
 -- Índices
 CREATE INDEX idx_proyectos_tenant_id ON proyectos(tenant_id);
-CREATE INDEX idx_proyectos_estado ON proyectos(estado);
+CREATE INDEX idx_proyectos_estado_proyecto ON proyectos(estado_proyecto);
 CREATE INDEX idx_fases_tenant_id ON fases(tenant_id);
 CREATE INDEX idx_fases_proyecto_id ON fases(proyecto_id);
-CREATE INDEX idx_fases_estado ON fases(estado);
 
 -- Comentarios
 COMMENT ON TABLE proyectos IS 'Proyectos inmobiliarios de venta de terrenos';

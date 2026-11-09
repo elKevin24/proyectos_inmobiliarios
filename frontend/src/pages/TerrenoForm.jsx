@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import useTerrenoStore from '../store/terrenoStore';
 import proyectoService from '../services/proyectoService';
 import MapEditor from '../components/MapEditor';
+import { calculateTerrenoPrecioFinal } from '../utils/calculations';
 import '../styles/Terrenos.css';
 
 function TerrenoForm() {
@@ -85,7 +86,7 @@ function TerrenoForm() {
   const ajustePrecio = watch('ajustePrecio') || 0;
   const multiplicadorPrecio = watch('multiplicadorPrecio') || 1;
 
-  const precioFinal = (parseFloat(precioBase) + parseFloat(ajustePrecio)) * parseFloat(multiplicadorPrecio);
+  const precioFinal = calculateTerrenoPrecioFinal({ precioBase, ajustePrecio, multiplicadorPrecio });
 
   return (
     <div className="terrenos-container">
@@ -106,7 +107,7 @@ function TerrenoForm() {
               {...register('numero', { required: 'El número es requerido' })}
               placeholder="001"
             />
-            {errors.numero && <span className="error-message">{errors.numero.message}</span>}
+            {errors.numero && <span data-testid="error-numero" className="error-message">{errors.numero.message}</span>}
           </div>
 
           <div className="form-group">
@@ -161,7 +162,7 @@ function TerrenoForm() {
               })}
               placeholder="100.00"
             />
-            {errors.area && <span className="error-message">{errors.area.message}</span>}
+            {errors.area && <span data-testid="error-area" className="error-message">{errors.area.message}</span>}
           </div>
 
           <div className="form-group">
@@ -215,7 +216,7 @@ function TerrenoForm() {
 
         <div className="precio-calculado">
           <h3>Precio Final Calculado:</h3>
-          <p className="precio-final-value">
+          <p data-testid="precio-final" className="precio-final-value">
             ${precioFinal.toLocaleString('es-MX', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2

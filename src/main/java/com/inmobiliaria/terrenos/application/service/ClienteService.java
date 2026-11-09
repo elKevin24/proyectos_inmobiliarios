@@ -21,11 +21,14 @@ import com.inmobiliaria.terrenos.interfaces.mapper.ApartadoMapper;
 import com.inmobiliaria.terrenos.interfaces.mapper.ClienteMapper;
 import com.inmobiliaria.terrenos.interfaces.mapper.CotizacionMapper;
 import com.inmobiliaria.terrenos.interfaces.mapper.VentaMapper;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ClienteException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +56,40 @@ public class ClienteService {
     private final CotizacionMapper cotizacionMapper;
     private final ApartadoMapper apartadoMapper;
     private final VentaMapper ventaMapper;
+
+    @Transactional(readOnly = true)
+    public PagedResponse<ClienteResponse> listarClientesPaginado(Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Cliente> clientesPage = clienteRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        List<ClienteResponse> content = clienteMapper.toResponseList(clientesPage.getContent());
+        return new PagedResponse<>(
+                content,
+                clientesPage.getNumber(),
+                clientesPage.getSize(),
+                clientesPage.getTotalElements(),
+                clientesPage.getTotalPages(),
+                clientesPage.isFirst(),
+                clientesPage.isLast(),
+                clientesPage.isEmpty()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<ClienteResponse> listarClientesPorEstadoPaginado(EstadoCliente estado, Pageable pageable) {
+        Long tenantId = getTenantId();
+        Page<Cliente> clientesPage = clienteRepository.findByTenantIdAndEstadoClienteAndDeletedFalse(tenantId, estado, pageable);
+        List<ClienteResponse> content = clienteMapper.toResponseList(clientesPage.getContent());
+        return new PagedResponse<>(
+                content,
+                clientesPage.getNumber(),
+                clientesPage.getSize(),
+                clientesPage.getTotalElements(),
+                clientesPage.getTotalPages(),
+                clientesPage.isFirst(),
+                clientesPage.isLast(),
+                clientesPage.isEmpty()
+        );
+    }
 
     /**
      * Obtiene el tenant_id del contexto actual

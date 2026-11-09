@@ -2,6 +2,8 @@ package com.inmobiliaria.terrenos.domain.repository;
 
 import com.inmobiliaria.terrenos.domain.entity.Apartado;
 import com.inmobiliaria.terrenos.domain.enums.EstadoApartado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,11 +24,15 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
 
     List<Apartado> findByTenantIdAndDeletedFalse(Long tenantId);
 
+    Page<Apartado> findByTenantIdAndDeletedFalse(Long tenantId, Pageable pageable);
+
     Optional<Apartado> findByIdAndTenantIdAndDeletedFalse(Long id, Long tenantId);
 
     List<Apartado> findByTenantIdAndTerrenoIdAndDeletedFalse(Long tenantId, Long terrenoId);
 
     List<Apartado> findByTenantIdAndEstadoAndDeletedFalse(Long tenantId, EstadoApartado estado);
+
+    List<Apartado> findByEstadoAndFechaVencimientoBeforeAndDeletedFalse(EstadoApartado estado, LocalDate fecha);
 
     /**
      * Busca apartados vigentes

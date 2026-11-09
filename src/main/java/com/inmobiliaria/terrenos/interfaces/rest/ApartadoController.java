@@ -3,6 +3,7 @@ package com.inmobiliaria.terrenos.interfaces.rest;
 import com.inmobiliaria.terrenos.application.dto.apartado.ApartadoResponse;
 import com.inmobiliaria.terrenos.application.dto.apartado.CreateApartadoRequest;
 import com.inmobiliaria.terrenos.application.service.ApartadoService;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,6 +68,14 @@ public class ApartadoController {
         }
 
         return ResponseEntity.ok(apartados);
+    }
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyAuthority('APARTADO_VER', 'ADMIN')")
+    @Operation(summary = "Listar apartados paginado", description = "Obtiene la lista paginada de apartados")
+    public ResponseEntity<PagedResponse<ApartadoResponse>> listarApartadosPaginado(Pageable pageable) {
+        log.info("GET /api/v1/apartados/paged - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(apartadoService.listarApartadosPaginado(pageable));
     }
 
     @GetMapping("/{id}")

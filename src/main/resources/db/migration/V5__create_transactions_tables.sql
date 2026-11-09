@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
     -- Precios
     precio_base DECIMAL(15, 2) NOT NULL,
     descuento DECIMAL(15, 2) DEFAULT 0,
+    porcentaje_descuento DECIMAL(5, 2) DEFAULT 0,
     precio_final DECIMAL(15, 2) NOT NULL,
     
     -- Vigencia
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
     -- Observaciones
     observaciones TEXT,
     
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
@@ -70,8 +72,8 @@ CREATE TABLE IF NOT EXISTS apartados (
     precio_total DECIMAL(15, 2) NOT NULL,
     
     -- Fechas
-    fecha_apartado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    fecha_vencimiento TIMESTAMP NOT NULL,
+    fecha_apartado DATE NOT NULL DEFAULT CURRENT_DATE,
+    fecha_vencimiento DATE NOT NULL,
     duracion_dias INTEGER NOT NULL DEFAULT 30,
     
     -- Estado
@@ -80,7 +82,9 @@ CREATE TABLE IF NOT EXISTS apartados (
     -- Información adicional
     observaciones TEXT,
     documentos JSONB,
+    motivo_cancelacion VARCHAR(255),
     
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
@@ -94,6 +98,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     terreno_id BIGINT NOT NULL REFERENCES terrenos(id) ON DELETE RESTRICT,
     usuario_id BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
     apartado_id BIGINT REFERENCES apartados(id) ON DELETE SET NULL,
+    cotizacion_id BIGINT REFERENCES cotizaciones(id) ON DELETE SET NULL,
     
     -- Folio/Número de venta
     folio VARCHAR(50) NOT NULL,
@@ -116,7 +121,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     monto_comision DECIMAL(15, 2),
     
     -- Fechas
-    fecha_venta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_venta DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_escrituracion DATE,
     
     -- Estado
@@ -127,6 +132,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     observaciones TEXT,
     documentos JSONB,
     
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
@@ -172,17 +178,20 @@ CREATE INDEX idx_cotizaciones_tenant_id ON cotizaciones(tenant_id);
 CREATE INDEX idx_cotizaciones_terreno_id ON cotizaciones(terreno_id);
 CREATE INDEX idx_cotizaciones_usuario_id ON cotizaciones(usuario_id);
 CREATE INDEX idx_cotizaciones_fecha ON cotizaciones(fecha_cotizacion);
+CREATE INDEX idx_cotizaciones_deleted ON cotizaciones(deleted);
 
 CREATE INDEX idx_apartados_tenant_id ON apartados(tenant_id);
 CREATE INDEX idx_apartados_terreno_id ON apartados(terreno_id);
 CREATE INDEX idx_apartados_estado ON apartados(estado);
 CREATE INDEX idx_apartados_fecha_vencimiento ON apartados(fecha_vencimiento);
+CREATE INDEX idx_apartados_deleted ON apartados(deleted);
 
 CREATE INDEX idx_ventas_tenant_id ON ventas(tenant_id);
 CREATE INDEX idx_ventas_terreno_id ON ventas(terreno_id);
 CREATE INDEX idx_ventas_estado ON ventas(estado);
 CREATE INDEX idx_ventas_fecha ON ventas(fecha_venta);
 CREATE INDEX idx_ventas_folio ON ventas(folio);
+CREATE INDEX idx_ventas_deleted ON ventas(deleted);
 
 CREATE INDEX idx_descuentos_tenant_id ON descuentos(tenant_id);
 CREATE INDEX idx_descuentos_proyecto_id ON descuentos(proyecto_id);

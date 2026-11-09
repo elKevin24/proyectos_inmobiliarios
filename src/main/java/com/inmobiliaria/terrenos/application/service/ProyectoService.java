@@ -8,6 +8,7 @@ import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
 import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.ProyectoMapper;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ProyectoException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -54,6 +57,36 @@ public class ProyectoService {
 
         List<Proyecto> proyectos = proyectoRepository.findByTenantIdAndDeletedFalse(tenantId);
         return proyectoMapper.toResponseList(proyectos);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<ProyectoResponse> listarProyectosPaginado(EstadoProyecto estado, Boolean disponibles, Boolean activos, Pageable pageable) {
+        Long tenantId = getTenantId();
+        log.debug("Listando proyectos paginados para tenant: {} con estado: {}, disponibles: {}, activos: {}", tenantId, estado, disponibles, activos);
+
+        Page<Proyecto> proyectosPage;
+
+        if (Boolean.TRUE.equals(activos)) {
+            proyectosPage = proyectoRepository.findProyectosActivos(tenantId, pageable);
+        } else if (Boolean.TRUE.equals(disponibles)) {
+            proyectosPage = proyectoRepository.findProyectosConTerrenosDisponibles(tenantId, pageable);
+        } else if (estado != null) {
+            proyectosPage = proyectoRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado, pageable);
+        } else {
+            proyectosPage = proyectoRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
+        }
+
+        List<ProyectoResponse> content = proyectoMapper.toResponseList(proyectosPage.getContent());
+        return new PagedResponse<>(
+                content,
+                proyectosPage.getNumber(),
+                proyectosPage.getSize(),
+                proyectosPage.getTotalElements(),
+                proyectosPage.getTotalPages(),
+                proyectosPage.isFirst(),
+                proyectosPage.isLast(),
+                proyectosPage.isEmpty()
+        );
     }
 
     /**

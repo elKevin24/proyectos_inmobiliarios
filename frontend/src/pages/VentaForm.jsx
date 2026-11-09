@@ -5,6 +5,7 @@ import useVentaStore from '../store/ventaStore';
 import useTerrenoStore from '../store/terrenoStore';
 import clienteStore from '../store/clienteStore';
 import '../styles/Ventas.css';
+import { calculateMontoFinanciado } from '../utils/calculations';
 
 function VentaForm() {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ function VentaForm() {
 
   const montoTotal = watch('montoTotal') || 0;
   const enganche = watch('enganche') || 0;
-  const montoFinanciado = parseFloat(montoTotal) - parseFloat(enganche);
+  const montoFinanciado = calculateMontoFinanciado(montoTotal, enganche);
 
   const onSubmit = async (data) => {
     try {
@@ -119,7 +120,7 @@ function VentaForm() {
                 </option>
               ))}
             </select>
-            {errors.terrenoId && <span className="error-message">{errors.terrenoId.message}</span>}
+            {errors.terrenoId && <span data-testid="error-terreno" className="error-message">{errors.terrenoId.message}</span>}
           </div>
 
           <div className="form-group">
@@ -135,7 +136,7 @@ function VentaForm() {
                 </option>
               ))}
             </select>
-            {errors.clienteId && <span className="error-message">{errors.clienteId.message}</span>}
+            {errors.clienteId && <span data-testid="error-cliente" className="error-message">{errors.clienteId.message}</span>}
           </div>
 
           <div className="form-group">
@@ -166,7 +167,7 @@ function VentaForm() {
               })}
               placeholder="100000.00"
             />
-            {errors.enganche && <span className="error-message">{errors.enganche.message}</span>}
+            {errors.enganche && <span data-testid="error-enganche" className="error-message">{errors.enganche.message}</span>}
           </div>
 
           <div className="form-group">
@@ -185,7 +186,7 @@ function VentaForm() {
           </div>
         </div>
 
-        <div className="monto-info">
+        <div className="monto-info" data-testid="monto-info">
           <div className="info-item">
             <span className="label">Monto Total:</span>
             <span className="value">${Number(montoTotal).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
@@ -196,13 +197,13 @@ function VentaForm() {
           </div>
           <div className="info-item highlight">
             <span className="label">Monto a Financiar:</span>
-            <span className="value">${Number(montoFinanciado).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+            <span className="value" data-testid="monto-financiado">${Number(montoFinanciado).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
           </div>
         </div>
 
         {montoFinanciado > 0 && (
           <>
-            <h3>Plan de Financiamiento</h3>
+            <h3 data-testid="plan-financiamiento">Plan de Financiamiento</h3>
             <div className="form-grid">
               <div className="form-group">
                 <label htmlFor="tipoPlan">Tipo de Plan</label>

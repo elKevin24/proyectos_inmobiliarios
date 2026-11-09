@@ -4,6 +4,8 @@ import com.inmobiliaria.terrenos.application.dto.pago.CreatePagoRequest;
 import com.inmobiliaria.terrenos.application.dto.pago.PagoResponse;
 import com.inmobiliaria.terrenos.application.service.PagoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +39,7 @@ public class PagoController {
     private final PagoService pagoService;
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('PAGO_VER', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PAGO_VER', 'PAGO_REGISTRAR', 'ADMIN')")
     @Operation(summary = "Listar todos los pagos", description = "Obtiene la lista de todos los pagos registrados")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista obtenida",
@@ -52,7 +54,7 @@ public class PagoController {
     @PreAuthorize("hasAnyAuthority('PAGO_REGISTRAR', 'ADMIN')")
     @Operation(summary = "Registrar pago", description = "Registra un nuevo pago y lo aplica automáticamente a las cuotas correspondientes")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Pago registrado y aplicado exitosamente",
+            @ApiResponse(responseCode = "201", description = "Pago registrado exitosamente",
                     content = @Content(schema = @Schema(implementation = PagoResponse.class))),
             @ApiResponse(responseCode = "400", description = "Datos inválidos o no hay cuotas pendientes"),
             @ApiResponse(responseCode = "404", description = "Plan de pago no encontrado")
@@ -64,40 +66,43 @@ public class PagoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('PAGO_VER', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PAGO_VER', 'PAGO_REGISTRAR', 'ADMIN')")
     @Operation(summary = "Obtener pago por ID", description = "Obtiene el detalle de un pago específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pago encontrado",
                     content = @Content(schema = @Schema(implementation = PagoResponse.class))),
             @ApiResponse(responseCode = "404", description = "Pago no encontrado")
     })
-    public ResponseEntity<PagoResponse> obtenerPago(@PathVariable Long id) {
+    public ResponseEntity<PagoResponse> obtenerPago(
+            @Parameter(description = "ID del pago", required = true) @PathVariable Long id) {
         log.info("GET /api/v1/pagos/{}", id);
         return ResponseEntity.ok(pagoService.obtenerPago(id));
     }
 
     @GetMapping("/venta/{ventaId}")
-    @PreAuthorize("hasAnyAuthority('PAGO_VER', 'ADMIN')")
-    @Operation(summary = "Listar pagos por venta", description = "Obtiene todos los pagos asociados a la venta indicada")
+    @PreAuthorize("hasAnyAuthority('PAGO_VER', 'PAGO_REGISTRAR', 'VENTA_VER', 'ADMIN')")
+    @Operation(summary = "Listar pagos por venta", description = "Obtiene todos los pagos asociados a una venta")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pagos obtenidos",
-                    content = @Content(schema = @Schema(implementation = PagoResponse.class))),
-            @ApiResponse(responseCode = "404", description = "No se encontró plan de pago para esta venta")
+            @ApiResponse(responseCode = "200", description = "Lista de pagos obtenida",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = PagoResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Venta o plan de pago no encontrado")
     })
-    public ResponseEntity<List<PagoResponse>> listarPagosPorVenta(@PathVariable Long ventaId) {
+    public ResponseEntity<List<PagoResponse>> listarPagosPorVenta(
+            @Parameter(description = "ID de la venta", required = true) @PathVariable Long ventaId) {
         log.info("GET /api/v1/pagos/venta/{}", ventaId);
         return ResponseEntity.ok(pagoService.listarPagosPorVenta(ventaId));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('PAGO_ELIMINAR', 'ADMIN')")
-    @Operation(summary = "Eliminar pago", description = "Elimina lógicamente un pago")
+    @PreAuthorize("hasAnyAuthority('PAGO_ELIMINAR', 'PAGO_REGISTRAR', 'ADMIN')")
+    @Operation(summary = "Eliminar pago", description = "Elimina lógicamente un pago (soft delete)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Pago eliminado"),
             @ApiResponse(responseCode = "404", description = "Pago no encontrado"),
             @ApiResponse(responseCode = "409", description = "El pago no puede eliminarse en su estado actual")
     })
-    public ResponseEntity<Void> eliminarPago(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarPago(
+            @Parameter(description = "ID del pago", required = true) @PathVariable Long id) {
         log.info("DELETE /api/v1/pagos/{}", id);
         pagoService.eliminarPago(id);
         return ResponseEntity.noContent().build();

@@ -1,9 +1,12 @@
 package com.inmobiliaria.terrenos.interfaces.rest;
 
 import com.inmobiliaria.terrenos.application.dto.venta.CreateVentaRequest;
+import com.inmobiliaria.terrenos.application.dto.venta.CancelarVentaRequest;
+import com.inmobiliaria.terrenos.application.dto.venta.UpdateVentaRequest;
 import com.inmobiliaria.terrenos.application.dto.venta.VentaResponse;
 import com.inmobiliaria.terrenos.application.service.VentaService;
 import com.inmobiliaria.terrenos.domain.enums.EstadoVenta;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -16,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,6 +67,25 @@ public class VentaController {
         return ResponseEntity.ok(ventas);
     }
 
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyAuthority('VENTA_VER', 'ADMIN')")
+    @Operation(summary = "Listar ventas paginado", description = "Obtiene la lista paginada de ventas con filtros")
+    public ResponseEntity<PagedResponse<VentaResponse>> listarVentasPaginado(
+            @Parameter(description = "Filtrar por estado de venta")
+            @RequestParam(required = false) EstadoVenta estado,
+            Pageable pageable) {
+        log.info("GET /api/v1/ventas/paged - estado: {}, page: {}, size: {}",
+                estado, pageable.getPageNumber(), pageable.getPageSize());
+
+        PagedResponse<VentaResponse> result;
+        if (estado != null) {
+            result = ventaService.listarVentasPorEstadoPaginado(estado, pageable);
+        } else {
+            result = ventaService.listarVentasPaginado(pageable);
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('VENTA_VER', 'ADMIN')")
     @Operation(summary = "Obtener venta por ID")
@@ -89,8 +112,24 @@ public class VentaController {
             @ApiResponse(responseCode = "409", description = "Terreno no disponible")
     })
     public ResponseEntity<VentaResponse> crearVenta(@Valid @RequestBody CreateVentaRequest request) {
-        log.info("POST /api/v1/ventas - Terreno: {}, Comprador: {}", request.getTerrenoId(), request.getCompradorNombre());
+        log.info("POST /api/v1/ventas - Terreno: {}, Cliente ID: {}", request.getTerrenoId(), request.getClienteId());
         return ResponseEntity.status(HttpStatus.CREATED).body(ventaService.crearVenta(request));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('VENTA_EDITAR', 'ADMIN')")
+    @Operation(summary = "Actualizar venta", description = "Actualiza los datos de una venta existente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Venta actualizada",
+                    content = @Content(schema = @Schema(implementation = VentaResponse.class))),
+            @ApiResponse(responseCode = "404", description = "No encontrada"),
+            @ApiResponse(responseCode = "409", description = "No se permite cambiar el terreno o una venta cancelada")
+    })
+    public ResponseEntity<VentaResponse> actualizarVenta(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateVentaRequest request) {
+        log.info("PUT /api/v1/ventas/{}", id);
+        return ResponseEntity.ok(ventaService.actualizarVenta(id, request));
     }
 
     @PatchMapping("/{id}/estado")
@@ -108,6 +147,22 @@ public class VentaController {
             @RequestParam EstadoVenta estado) {
         log.info("PATCH /api/v1/ventas/{}/estado - Nuevo estado: {}", id, estado);
         return ResponseEntity.ok(ventaService.cambiarEstado(id, estado));
+    }
+
+    @PostMapping("/{id}/cancelar")
+    @PreAuthorize("hasAnyAuthority('VENTA_EDITAR', 'ADMIN')")
+    @Operation(summary = "Cancelar venta", description = "Cancela una venta y libera el terreno asociado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Venta cancelada",
+                    content = @Content(schema = @Schema(implementation = VentaResponse.class))),
+            @ApiResponse(responseCode = "404", description = "No encontrada")
+    })
+    public ResponseEntity<VentaResponse> cancelarVenta(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) CancelarVentaRequest request) {
+        log.info("POST /api/v1/ventas/{}/cancelar", id);
+        String motivo = request != null ? request.getMotivo() : null;
+        return ResponseEntity.ok(ventaService.cancelarVenta(id, motivo));
     }
 
     @DeleteMapping("/{id}")

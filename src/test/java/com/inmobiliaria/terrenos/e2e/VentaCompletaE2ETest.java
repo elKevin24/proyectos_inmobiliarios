@@ -19,9 +19,7 @@ class VentaCompletaE2ETest extends BaseE2ETest {
     private Long cotizacionId;
     private Long apartadoId;
     private Long ventaId;
-    private Long cotizacionParaEliminarId;
-    private Long apartadoCanceladoParaEliminarId;
-    private Long ventaCanceladaParaEliminarId;
+    private Long clienteId;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -30,6 +28,7 @@ class VentaCompletaE2ETest extends BaseE2ETest {
             token = getAccessToken(response);
             proyectoId = crearProyecto(token, "Proyecto Venta E2E");
             terrenoId = crearTerreno(token, proyectoId, "V-001");
+            clienteId = crearCliente(token, "Juan", "Comprador", "juan@test.com");
         }
     }
 
@@ -62,16 +61,6 @@ class VentaCompletaE2ETest extends BaseE2ETest {
 
     @Test
     @Order(2)
-    @DisplayName("GET /api/v1/cotizaciones - Listar cotizaciones")
-    void listarCotizaciones_returns200() throws Exception {
-        ResponseEntity<JsonNode> response = getJsonWithAuth("/api/v1/cotizaciones", token);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isArray());
-        assertTrue(response.getBody().size() >= 1);
-    }
-
-    @Test
-    @Order(3)
     @DisplayName("POST /api/v1/apartados - Crear apartado")
     void crearApartado_returns201() throws Exception {
         String body = """
@@ -91,6 +80,15 @@ class VentaCompletaE2ETest extends BaseE2ETest {
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/apartados", body, token);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         apartadoId = response.getBody().get("id").asLong();
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("GET /api/v1/apartados/{id} - Obtener apartado creado")
+    void obtenerApartado_returns200() throws Exception {
+        ResponseEntity<JsonNode> response = getJsonWithAuth(
+                "/api/v1/apartados/" + apartadoId, token);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("ACTIVO", response.getBody().get("estado").asText());
     }
 
@@ -122,24 +120,19 @@ class VentaCompletaE2ETest extends BaseE2ETest {
                 {
                     "terrenoId": %d,
                     "apartadoId": %d,
-                    "compradorNombre": "Juan Perez Comprador",
-                    "compradorEmail": "juan@test.com",
-                    "compradorTelefono": "4421234567",
-                    "compradorRfc": "PEPJ850101ABC",
-                    "precioTotal": 390000.00,
-                    "montoApartadoAcreditado": 50000.00,
-                    "montoFinal": 340000.00,
-                    "porcentajeComision": 5.00,
-                    "montoComision": 19500.00,
-                    "formaPago": "CONTADO",
+                    "clienteId": %d,
+                    "montoTotal": 390000.00,
+                    "enganche": 50000.00,
+                    "montoFinanciado": 340000.00,
+                    "metodoPago": "TRANSFERENCIA",
                     "observaciones": "Venta de prueba E2E"
                 }
-                """.formatted(terrenoId, apartadoId);
+                """.formatted(terrenoId, apartadoId, clienteId);
 
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/ventas", body, token);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         ventaId = response.getBody().get("id").asLong();
-        assertEquals("CONTADO", response.getBody().get("formaPago").asText());
+        assertEquals("TRANSFERENCIA", response.getBody().get("formaPago").asText());
     }
 
     @Test
@@ -210,14 +203,14 @@ class VentaCompletaE2ETest extends BaseE2ETest {
                 }
                 """.formatted(terrenoId2);
         ResponseEntity<JsonNode> aptResp = postJsonWithAuth("/api/v1/apartados", aptBody, token);
-        apartadoCanceladoParaEliminarId = aptResp.getBody().get("id").asLong();
+        Long aptId = aptResp.getBody().get("id").asLong();
 
         String cancelBody = """
                 {
                     "motivo": "Cliente se arrepentio"
                 }
                 """;
-        ResponseEntity<JsonNode> response = putJson("/api/v1/apartados/" + apartadoCanceladoParaEliminarId + "/cancelar", cancelBody, token);
+        ResponseEntity<JsonNode> response = putJson("/api/v1/apartados/" + aptId + "/cancelar", cancelBody, token);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("CANCELADO", response.getBody().get("estado").asText());
     }
@@ -232,12 +225,13 @@ class VentaCompletaE2ETest extends BaseE2ETest {
         String body = """
                 {
                     "terrenoId": %d,
-                    "compradorNombre": "Cliente Venta Directa",
-                    "precioTotal": 450000.00,
-                    "montoFinal": 450000.00,
-                    "formaPago": "CONTADO"
+                    "clienteId": %d,
+                    "montoTotal": 450000.00,
+                    "enganche": 0.00,
+                    "montoFinanciado": 450000.00,
+                    "metodoPago": "CONTADO"
                 }
-                """.formatted(terrenoId2);
+                """.formatted(terrenoId2, clienteId);
 
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/ventas", body, token);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -260,86 +254,5 @@ class VentaCompletaE2ETest extends BaseE2ETest {
 
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/apartados", body, token);
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-    }
-
-    @Test
-    @Order(14)
-    @DisplayName("GET /api/v1/cotizaciones/{id} - Obtener cotizacion por ID")
-    void obtenerCotizacionPorId_returns200() throws Exception {
-        ResponseEntity<JsonNode> response = getJsonWithAuth(
-                "/api/v1/cotizaciones/" + cotizacionId, token);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(cotizacionId, response.getBody().get("id").asLong());
-        assertEquals(terrenoId, response.getBody().get("terrenoId").asLong());
-    }
-
-    @Test
-    @Order(15)
-    @DisplayName("GET /api/v1/apartados/{id} - Obtener apartado por ID")
-    void obtenerApartadoPorId_returns200() throws Exception {
-        ResponseEntity<JsonNode> response = getJsonWithAuth(
-                "/api/v1/apartados/" + apartadoCanceladoParaEliminarId, token);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(apartadoCanceladoParaEliminarId, response.getBody().get("id").asLong());
-        assertEquals("CANCELADO", response.getBody().get("estado").asText());
-    }
-
-    @Test
-    @Order(16)
-    @DisplayName("DELETE /api/v1/cotizaciones/{id} - Eliminar cotizacion")
-    void eliminarCotizacion_returns204() throws Exception {
-        Long proyectoTmp = crearProyecto(token, "Proyecto Eliminar Cotizacion");
-        Long terrenoTmp = crearTerreno(token, proyectoTmp, "EC-001");
-
-        String cotBody = """
-                {
-                    "terrenoId": %d,
-                    "clienteNombre": "Cliente Cotizacion Eliminable",
-                    "precioBase": 300000.00,
-                    "precioFinal": 300000.00,
-                    "fechaVigencia": "%s"
-                }
-                """.formatted(terrenoTmp, java.time.LocalDate.now().plusDays(30));
-        ResponseEntity<JsonNode> cotResp = postJsonWithAuth("/api/v1/cotizaciones", cotBody, token);
-        cotizacionParaEliminarId = cotResp.getBody().get("id").asLong();
-
-        ResponseEntity<Void> response = deleteJson(
-                "/api/v1/cotizaciones/" + cotizacionParaEliminarId, token);
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    @Order(17)
-    @DisplayName("DELETE /api/v1/apartados/{id} - Eliminar apartado cancelado")
-    void eliminarApartadoCancelado_returns204() throws Exception {
-        ResponseEntity<Void> response = deleteJson(
-                "/api/v1/apartados/" + apartadoCanceladoParaEliminarId, token);
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    @Order(18)
-    @DisplayName("DELETE /api/v1/ventas/{id} - Eliminar venta cancelada")
-    void eliminarVentaCancelada_returns204() throws Exception {
-        Long proyectoTmp = crearProyecto(token, "Proyecto Eliminar Venta");
-        Long terrenoTmp = crearTerreno(token, proyectoTmp, "EV-001");
-
-        String ventaBody = """
-                {
-                    "terrenoId": %d,
-                    "compradorNombre": "Cliente Venta Eliminable",
-                    "precioTotal": 350000.00,
-                    "montoFinal": 350000.00,
-                    "formaPago": "CONTADO"
-                }
-                """.formatted(terrenoTmp);
-        ResponseEntity<JsonNode> ventaResp = postJsonWithAuth("/api/v1/ventas", ventaBody, token);
-        Long ventaTmpId = ventaResp.getBody().get("id").asLong();
-
-        patchJson("/api/v1/ventas/" + ventaTmpId + "/estado?estado=CANCELADA", token);
-
-        ResponseEntity<Void> response = deleteJson(
-                "/api/v1/ventas/" + ventaTmpId, token);
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 }

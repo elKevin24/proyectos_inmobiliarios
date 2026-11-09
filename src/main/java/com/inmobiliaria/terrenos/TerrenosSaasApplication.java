@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 /**
  * Aplicación principal del sistema SaaS Multi-tenant de Gestión de Venta de Terrenos.
  *
@@ -13,6 +15,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  */
 @SpringBootApplication
 @EnableJpaAuditing
+@EnableScheduling
 public class TerrenosSaasApplication {
 
     public static void main(String[] args) {

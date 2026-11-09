@@ -1,0 +1,193 @@
+/*
+ * Shared application layer
+ *
+ * Page styles should define layout only. These selectors keep the repeated
+ * product patterns consistent across legacy and new screens.
+ */
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 32px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.page-header h1,
+.planes-pago-container .page-header h1 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.page-header p,
+.help-text {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.filters-section,
+.filters {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 18px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.filters-section {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn,
+.search-input,
+.filter-select,
+.search-box input {
+  min-height: 42px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: inherit;
+  transition: all var(--transition-normal);
+}
+
+.filter-btn {
+  padding: 9px 15px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.search-input,
+.filter-select,
+.search-box input {
+  padding: 10px 13px;
+}
+
+.search-input:focus,
+.filter-select:focus,
+.search-box input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.table-container {
+  overflow: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+}
+
+.data-table thead {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.data-table th {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-glass);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-glass);
+  color: var(--text-primary);
+}
+
+.data-table tbody tr:hover {
+  background: var(--bg-tertiary);
+}
+
+.empty-state {
+  padding: 56px 24px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.form-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-glass);
+}
+
+.btn-back,
+.btn-icon {
+  border: 1px solid var(--border-glass);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  transition: all var(--transition-normal);
+}
+
+.btn-back:hover,
+.btn-icon:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+@media (max-width: 700px) {
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .page-header h1,
+  .planes-pago-container .page-header h1 {
+    font-size: 26px;
+  }
+
+  .filters {
+    align-items: stretch;
+  }
+
+  .search-input,
+  .filter-select {
+    max-width: none;
+    width: 100%;
+  }
+}

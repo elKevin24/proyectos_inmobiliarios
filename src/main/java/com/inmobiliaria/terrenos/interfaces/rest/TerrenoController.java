@@ -5,6 +5,7 @@ import com.inmobiliaria.terrenos.application.dto.terreno.TerrenoResponse;
 import com.inmobiliaria.terrenos.application.dto.terreno.UpdateTerrenoRequest;
 import com.inmobiliaria.terrenos.application.service.TerrenoService;
 import com.inmobiliaria.terrenos.domain.enums.EstadoTerreno;
+import com.inmobiliaria.terrenos.shared.dto.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -86,6 +88,29 @@ public class TerrenoController {
         }
 
         return ResponseEntity.ok(terrenos);
+    }
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyAuthority('TERRENO_VER', 'ADMIN')")
+    @Operation(summary = "Listar terrenos paginado", description = "Obtiene la lista paginada de terrenos con filtros opcionales")
+    public ResponseEntity<PagedResponse<TerrenoResponse>> listarTerrenosPaginado(
+            @Parameter(description = "Filtrar por proyecto")
+            @RequestParam(required = false) Long proyectoId,
+            @Parameter(description = "Filtrar por estado del terreno")
+            @RequestParam(required = false) EstadoTerreno estado,
+            Pageable pageable) {
+        log.info("GET /api/v1/terrenos/paged - proyectoId: {}, estado: {}, page: {}, size: {}",
+                proyectoId, estado, pageable.getPageNumber(), pageable.getPageSize());
+
+        PagedResponse<TerrenoResponse> result;
+        if (proyectoId != null) {
+            result = terrenoService.listarTerrenosPorProyectoPaginado(proyectoId, pageable);
+        } else if (estado != null) {
+            result = terrenoService.listarTerrenosPorEstadoPaginado(estado, pageable);
+        } else {
+            result = terrenoService.listarTerrenosPaginado(pageable);
+        }
+        return ResponseEntity.ok(result);
     }
 
     /**

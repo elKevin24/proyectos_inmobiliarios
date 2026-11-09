@@ -279,4 +279,45 @@ class PagoServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
         verify(pagoRepository, never()).save(any());
     }
+
+    @Test
+    void aplicarPago_Exitoso() {
+        CreatePagoRequest request = CreatePagoRequest.builder()
+                .planPagoId(100L)
+                .montoPagado(BigDecimal.valueOf(8000))
+                .fechaPago(LocalDate.now())
+                .build();
+
+        Amortizacion cuota1 = Amortizacion.builder()
+                .id(100L)
+                .tenantId(tenantId)
+                .planPagoId(100L)
+                .numeroCuota(1)
+                .montoCuota(BigDecimal.valueOf(8000))
+                .montoPagado(BigDecimal.ZERO)
+                .montoPendiente(BigDecimal.valueOf(8000))
+                .capital(BigDecimal.valueOf(8000))
+                .interes(BigDecimal.ZERO)
+                .moraAcumulada(BigDecimal.ZERO)
+                .estado(EstadoAmortizacion.PENDIENTE)
+                .build();
+
+        Pago pago = Pago.builder().id(10L).montoPagado(BigDecimal.valueOf(8000)).build();
+        PagoResponse pagoResponse = new PagoResponse();
+        pagoResponse.setId(10L);
+
+        when(planPagoRepository.findByIdAndTenantIdAndDeletedFalse(100L, tenantId)).thenReturn(Optional.of(planPago));
+        when(amortizacionRepository.findVencidasHastaFecha(eq(tenantId), eq(100L), any())).thenReturn(List.of());
+        when(amortizacionRepository.findPendientesByPlanPagoId(tenantId, 100L)).thenReturn(List.of(cuota1));
+        when(pagoMapper.toEntity(request)).thenReturn(pago);
+        when(pagoRepository.save(any())).thenReturn(pago);
+        when(pagoMapper.toResponse(pago)).thenReturn(pagoResponse);
+
+        PagoResponse response = pagoService.aplicarPago(request);
+
+        assertNotNull(response);
+        assertEquals(EstadoAmortizacion.PAGADO, cuota1.getEstado());
+        verify(pagoRepository, times(1)).save(any());
+        verify(amortizacionRepository, times(1)).save(cuota1);
+    }
 }

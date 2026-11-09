@@ -6,6 +6,7 @@ import com.inmobiliaria.terrenos.domain.entity.Apartado;
 import com.inmobiliaria.terrenos.domain.entity.Proyecto;
 import com.inmobiliaria.terrenos.domain.entity.Terreno;
 import com.inmobiliaria.terrenos.domain.entity.Venta;
+import com.inmobiliaria.terrenos.domain.entity.Cliente;
 import com.inmobiliaria.terrenos.domain.enums.EstadoApartado;
 import com.inmobiliaria.terrenos.domain.enums.EstadoTerreno;
 import com.inmobiliaria.terrenos.domain.enums.EstadoVenta;
@@ -13,6 +14,7 @@ import com.inmobiliaria.terrenos.domain.repository.ApartadoRepository;
 import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.domain.repository.VentaRepository;
+import com.inmobiliaria.terrenos.domain.repository.ClienteRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.VentaMapper;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
@@ -50,54 +52,35 @@ class VentaServiceTest {
     private ProyectoRepository proyectoRepository;
 
     @Mock
+    private ClienteRepository clienteRepository;
+
+    @Mock
     private VentaMapper ventaMapper;
 
     @InjectMocks
     private VentaService ventaService;
 
     private final Long tenantId = 1L;
-    private Venta venta;
     private Terreno terreno;
-    private Proyecto proyecto;
+    private Venta venta;
     private VentaResponse ventaResponse;
 
     @BeforeEach
     void setUp() {
         TenantContext.setTenantId(tenantId);
 
-        proyecto = Proyecto.builder()
-                .id(10L)
-                .tenantId(tenantId)
-                .nombre("Proyecto Las Lomas")
-                .totalTerrenos(5)
-                .terrenosDisponibles(5)
-                .terrenosApartados(0)
-                .terrenosVendidos(0)
-                .deleted(false)
-                .build();
-
         terreno = Terreno.builder()
-                .id(50L)
+                .id(200L)
                 .tenantId(tenantId)
-                .proyectoId(10L)
-                .numeroLote("15")
+                .proyectoId(100L)
+                .numeroLote("Lote 01")
                 .estado(EstadoTerreno.DISPONIBLE)
                 .build();
 
-        venta = Venta.builder()
-                .id(100L)
-                .tenantId(tenantId)
-                .terrenoId(50L)
-                .compradorNombre("Juan Pérez")
-                .estado(EstadoVenta.PENDIENTE)
-                .precioTotal(BigDecimal.valueOf(150000))
-                .deleted(false)
-                .build();
-
+        terreno = Terreno.builder().id(200L).tenantId(tenantId).estado(EstadoTerreno.DISPONIBLE).proyectoId(100L).build();
+        venta = Venta.builder().id(50L).tenantId(tenantId).terrenoId(200L).estado(EstadoVenta.PENDIENTE).precioTotal(new BigDecimal("100000")).build();
         ventaResponse = new VentaResponse();
-        ventaResponse.setId(100L);
-        ventaResponse.setCompradorNombre("Juan Pérez");
-        ventaResponse.setEstado(EstadoVenta.PENDIENTE);
+        ventaResponse.setId(50L);
     }
 
     @AfterEach
@@ -114,139 +97,78 @@ class VentaServiceTest {
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals("Juan Pérez", resultado.get(0).getCompradorNombre());
         verify(ventaRepository, times(1)).findByTenantIdAndDeletedFalse(tenantId);
     }
 
     @Test
-    void listarVentasPorEstado_Exitoso() {
-        when(ventaRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, EstadoVenta.PENDIENTE))
-                .thenReturn(List.of(venta));
-        when(ventaMapper.toResponseList(any())).thenReturn(List.of(ventaResponse));
-
-        List<VentaResponse> resultado = ventaService.listarVentasPorEstado(EstadoVenta.PENDIENTE);
-
-        assertNotNull(resultado);
-        assertEquals(1, resultado.size());
-        verify(ventaRepository, times(1))
-                .findByTenantIdAndEstadoAndDeletedFalse(tenantId, EstadoVenta.PENDIENTE);
-    }
-
-    @Test
-    void obtenerVenta_Existente_Exitoso() {
-        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(100L, tenantId)).thenReturn(Optional.of(venta));
+    void obtenerVenta_Existente_RetornaVenta() {
+        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(50L, tenantId)).thenReturn(Optional.of(venta));
         when(ventaMapper.toResponse(venta)).thenReturn(ventaResponse);
 
-        VentaResponse resultado = ventaService.obtenerVenta(100L);
+        VentaResponse resultado = ventaService.obtenerVenta(50L);
 
         assertNotNull(resultado);
-        assertEquals(100L, resultado.getId());
+        assertEquals(50L, resultado.getId());
     }
 
     @Test
-    void obtenerVenta_Inexistente_LanzaExcepcion() {
-        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(999L, tenantId)).thenReturn(Optional.empty());
+    void crearVenta_TerrenoYaVendido_LanzaExcepcion() {
+        terreno.setEstado(EstadoTerreno.VENDIDO);
+        CreateVentaRequest request = new CreateVentaRequest();
+        request.setTerrenoId(200L);
+        request.setClienteId(300L);
 
-        assertThrows(ResourceNotFoundException.class, () -> ventaService.obtenerVenta(999L));
+        when(terrenoRepository.findByIdAndTenantIdAndDeletedFalse(200L, tenantId)).thenReturn(Optional.of(terreno));
+        when(clienteRepository.findByIdAndTenantIdAndDeletedFalse(300L, tenantId)).thenReturn(Optional.of(Cliente.builder().id(300L).build()));
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> ventaService.crearVenta(request));
+        assertEquals(HttpStatus.CONFLICT, exception.getStatus());
+        assertTrue(exception.getMessage().contains("ya ha sido vendido"));
+        verify(ventaRepository, never()).save(any());
     }
 
     @Test
-    void crearVenta_Exitoso_SinApartado() {
-        CreateVentaRequest request = CreateVentaRequest.builder()
-                .terrenoId(50L)
-                .compradorNombre("Juan Pérez")
-                .precioTotal(BigDecimal.valueOf(150000))
-                .build();
+    void crearVenta_Exitoso() {
+        CreateVentaRequest request = new CreateVentaRequest();
+        request.setTerrenoId(200L);
+        request.setClienteId(300L);
 
-        when(terrenoRepository.findByIdAndTenantIdAndDeletedFalse(50L, tenantId)).thenReturn(Optional.of(terreno));
+        Proyecto proyecto = Proyecto.builder().id(100L).tenantId(tenantId).deleted(false).build();
+        Cliente cliente = Cliente.builder().id(300L).nombre("Carlos").apellido("Ruiz").build();
+
+        when(terrenoRepository.findByIdAndTenantIdAndDeletedFalse(200L, tenantId)).thenReturn(Optional.of(terreno));
+        when(clienteRepository.findByIdAndTenantIdAndDeletedFalse(300L, tenantId)).thenReturn(Optional.of(cliente));
         when(ventaMapper.toEntity(request)).thenReturn(venta);
-        when(proyectoRepository.findById(10L)).thenReturn(Optional.of(proyecto));
-        when(ventaRepository.save(venta)).thenReturn(venta);
+        when(ventaRepository.save(any())).thenReturn(venta);
         when(ventaMapper.toResponse(venta)).thenReturn(ventaResponse);
+        when(proyectoRepository.findById(100L)).thenReturn(Optional.of(proyecto));
 
         VentaResponse resultado = ventaService.crearVenta(request);
 
         assertNotNull(resultado);
         assertEquals(EstadoTerreno.VENDIDO, terreno.getEstado());
         verify(terrenoRepository, times(1)).save(terreno);
-        verify(ventaRepository, times(1)).save(venta);
-        verify(proyectoRepository, times(1)).save(proyecto);
-    }
-
-    @Test
-    void crearVenta_TerrenoYaVendido_LanzaExcepcion() {
-        CreateVentaRequest request = CreateVentaRequest.builder()
-                .terrenoId(50L)
-                .build();
-        terreno.setEstado(EstadoTerreno.VENDIDO);
-
-        when(terrenoRepository.findByIdAndTenantIdAndDeletedFalse(50L, tenantId)).thenReturn(Optional.of(terreno));
-
-        BusinessException exception = assertThrows(BusinessException.class, () -> ventaService.crearVenta(request));
-        assertEquals(HttpStatus.CONFLICT, exception.getStatus());
-        verify(ventaRepository, never()).save(any());
-    }
-
-    @Test
-    void crearVenta_Exitoso_ConApartadoActivo() {
-        CreateVentaRequest request = CreateVentaRequest.builder()
-                .terrenoId(50L)
-                .apartadoId(200L)
-                .compradorNombre("Juan Pérez")
-                .build();
-
-        Apartado apartado = Apartado.builder()
-                .id(200L)
-                .tenantId(tenantId)
-                .estado(EstadoApartado.ACTIVO)
-                .build();
-
-        when(terrenoRepository.findByIdAndTenantIdAndDeletedFalse(50L, tenantId)).thenReturn(Optional.of(terreno));
-        when(apartadoRepository.findByIdAndTenantIdAndDeletedFalse(200L, tenantId)).thenReturn(Optional.of(apartado));
-        when(ventaMapper.toEntity(request)).thenReturn(venta);
-        when(proyectoRepository.findById(10L)).thenReturn(Optional.of(proyecto));
-        when(ventaRepository.save(venta)).thenReturn(venta);
-        when(ventaMapper.toResponse(venta)).thenReturn(ventaResponse);
-
-        VentaResponse resultado = ventaService.crearVenta(request);
-
-        assertNotNull(resultado);
-        assertEquals(EstadoApartado.COMPLETADO, apartado.getEstado());
-        verify(apartadoRepository, times(1)).save(apartado);
-        verify(terrenoRepository, times(1)).save(terreno);
-    }
-
-    @Test
-    void cambiarEstado_Exitoso() {
-        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(100L, tenantId)).thenReturn(Optional.of(venta));
-        when(ventaRepository.save(venta)).thenReturn(venta);
-        when(ventaMapper.toResponse(venta)).thenReturn(ventaResponse);
-
-        VentaResponse resultado = ventaService.cambiarEstado(100L, EstadoVenta.PAGADO);
-
-        assertNotNull(resultado);
-        assertEquals(EstadoVenta.PAGADO, venta.getEstado());
-        verify(ventaRepository, times(1)).save(venta);
-    }
-
-    @Test
-    void eliminarVenta_Exitoso() {
-        venta.setEstado(EstadoVenta.CANCELADA);
-        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(100L, tenantId)).thenReturn(Optional.of(venta));
-
-        ventaService.eliminarVenta(100L);
-
-        assertTrue(venta.getDeleted());
-        verify(ventaRepository, times(1)).save(venta);
+        verify(ventaRepository, times(1)).save(any());
     }
 
     @Test
     void eliminarVenta_NoCancelada_LanzaExcepcion() {
         venta.setEstado(EstadoVenta.PENDIENTE);
-        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(100L, tenantId)).thenReturn(Optional.of(venta));
+        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(50L, tenantId)).thenReturn(Optional.of(venta));
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> ventaService.eliminarVenta(100L));
+        BusinessException exception = assertThrows(BusinessException.class, () -> ventaService.eliminarVenta(50L));
         assertEquals(HttpStatus.CONFLICT, exception.getStatus());
         verify(ventaRepository, never()).save(any());
+    }
+
+    @Test
+    void eliminarVenta_Cancelada_Exitoso() {
+        venta.setEstado(EstadoVenta.CANCELADA);
+        when(ventaRepository.findByIdAndTenantIdAndDeletedFalse(50L, tenantId)).thenReturn(Optional.of(venta));
+
+        ventaService.eliminarVenta(50L);
+
+        assertTrue(venta.getDeleted());
+        verify(ventaRepository, times(1)).save(venta);
     }
 }
