@@ -72,4 +72,12 @@ public class ClienteResponse {
         }
         return nombre + " " + apellido;
     }
+
+    public String getApellidos() {
+        return apellido;
+    }
+
+    public String getEstado() {
+        return estadoCliente != null ? estadoCliente.name() : "ACTIVO";
+    }
 }

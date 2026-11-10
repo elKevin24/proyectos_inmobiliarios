@@ -40,11 +40,13 @@ public abstract class TerrenoMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "poligono", ignore = true)
     @Mapping(target = "coordenadasPlano", expression = "java(coordenadasToJson(request.getCoordenadasPlano()))")
+    @Mapping(target = "caracteristicas", source = "caracteristicas", qualifiedByName = "caracteristicasToJson")
     public abstract Terreno toEntity(CreateTerrenoRequest request);
 
     /**
      * Convierte entidad Terreno a TerrenoResponse
      */
+    @Mapping(target = "caracteristicas", source = "caracteristicas", qualifiedByName = "jsonToCaracteristicas")
     public abstract TerrenoResponse toResponse(Terreno terreno);
 
     /**
@@ -67,6 +69,8 @@ public abstract class TerrenoMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "poligono", ignore = true)
+    @Mapping(target = "coordenadasPlano", ignore = true)
+    @Mapping(target = "caracteristicas", ignore = true)
     public abstract void updateEntityFromRequest(UpdateTerrenoRequest request, @MappingTarget Terreno terreno);
 
     /**
@@ -77,6 +81,50 @@ public abstract class TerrenoMapper {
         if (request.getCoordenadasPlano() != null) {
             terreno.setCoordenadasPlano(coordenadasToJson(request.getCoordenadasPlano()));
         }
+        if (request.getCaracteristicas() != null) {
+            terreno.setCaracteristicas(caracteristicasToJson(request.getCaracteristicas()));
+        }
+    }
+
+    /**
+     * Convierte texto plano o JSON de caracteristicas a JSON válido para la columna jsonb.
+     */
+    @Named("caracteristicasToJson")
+    protected String caracteristicasToJson(String caracteristicas) {
+        return Terreno.normalizeJson(caracteristicas);
+    }
+
+    /**
+     * Deserializa o desenvuelve el valor JSON de caracteristicas para la respuesta DTO.
+     */
+    @Named("jsonToCaracteristicas")
+    protected String jsonToCaracteristicas(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        String trimmed = json.trim();
+        // Si es una cadena JSON entrecomillada ("..."), desenvolver al texto original
+        if (trimmed.startsWith("\"") && trimmed.endsWith("\"") && trimmed.length() >= 2) {
+            try {
+                return objectMapper.readValue(trimmed, String.class);
+            } catch (Exception e) {
+                return trimmed.substring(1, trimmed.length() - 1);
+            }
+        }
+        // Si es un objeto JSON simple que envuelve descripcion o nombre, extraer el texto
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(trimmed);
+                if (node.hasNonNull("nombre") && node.size() == 1) {
+                    return node.get("nombre").asText();
+                }
+                if (node.hasNonNull("descripcion") && node.size() == 1) {
+                    return node.get("descripcion").asText();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return trimmed;
     }
 
     /**

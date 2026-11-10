@@ -4,7 +4,7 @@ const proyectoService = {
   // Obtener todos los proyectos
   getAll: async (params = {}) => {
     const response = await api.get('/proyectos', { params });
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.content || []);
   },
 
   // Obtener un proyecto por ID

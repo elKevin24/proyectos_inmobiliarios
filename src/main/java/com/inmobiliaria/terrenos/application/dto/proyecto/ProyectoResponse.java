@@ -67,4 +67,16 @@ public class ProyectoResponse {
         int disponibles = terrenosDisponibles != null ? terrenosDisponibles : 0;
         return (disponibles * 100.0) / totalTerrenos;
     }
+
+    public BigDecimal getPrecioBaseM2() {
+        return precioBase;
+    }
+
+    public String getUbicacion() {
+        return direccion != null ? direccion : ciudad;
+    }
+
+    public String getEstadoProvincia() {
+        return estado;
+    }
 }

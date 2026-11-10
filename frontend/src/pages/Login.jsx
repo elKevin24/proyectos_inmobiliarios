@@ -32,7 +32,7 @@ function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+        <form noValidate onSubmit={handleSubmit(onSubmit)} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Correo Electrónico</label>
             <input

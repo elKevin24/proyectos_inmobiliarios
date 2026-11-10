@@ -228,10 +228,12 @@ public class TerrenoController {
     })
     public ResponseEntity<Void> eliminarTerreno(
             @Parameter(description = "ID del terreno", required = true)
-            @PathVariable Long id
+            @PathVariable Long id,
+            @Parameter(description = "Forzar eliminación de terreno disponible")
+            @RequestParam(required = false, defaultValue = "false") boolean force
     ) {
-        log.info("DELETE /api/v1/terrenos/{}", id);
-        terrenoService.eliminarTerreno(id);
+        log.info("DELETE /api/v1/terrenos/{} - force: {}", id, force);
+        terrenoService.eliminarTerreno(id, force);
         return ResponseEntity.noContent().build();
     }
 

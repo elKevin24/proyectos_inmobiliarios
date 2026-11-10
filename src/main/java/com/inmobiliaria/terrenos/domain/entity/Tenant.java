@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import lombok.experimental.SuperBuilder;
+
 /**
  * Entidad Tenant (Empresa/Cliente del sistema SaaS).
  * Representa una empresa que utiliza el sistema.
@@ -22,7 +24,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Tenant extends BaseEntity {
 
     @NotBlank(message = "El nombre de la empresa es obligatorio")

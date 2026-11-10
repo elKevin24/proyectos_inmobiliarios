@@ -168,13 +168,13 @@ function Dashboard() {
           />
           <StatCard
             title="Comisiones Generadas"
-            value={formatCurrency(dashboardData?.montoComisiones || 0)}
+            value={formatCurrency(dashboardData?.montoComisiones ?? dashboardData?.montoTotalComisiones ?? 0)}
             icon={<FaChartLine />}
             color="blue"
           />
           <StatCard
             title="Avance de Ventas"
-            value={`${(dashboardData?.porcentajeAvanceVentas || 0).toFixed(1)}%`}
+            value={`${(dashboardData?.porcentajeAvanceVentas ?? dashboardData?.porcentajeOcupacion ?? 0).toFixed(1)}%`}
             icon={<FaChartLine />}
             color="green"
             subtitle="Del inventario total"

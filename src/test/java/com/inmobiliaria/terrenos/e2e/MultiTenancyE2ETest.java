@@ -114,16 +114,18 @@ class MultiTenancyE2ETest extends BaseE2ETest {
         ResponseEntity<JsonNode> response = getJsonWithAuth("/api/v1/proyectos", tokenB);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        JsonNode proyectos = response.getBody();
-        assertTrue(proyectos.isArray());
+        JsonNode items = response.getBody().has("content")
+                ? response.getBody().get("content")
+                : response.getBody();
+        assertTrue(items.isArray());
 
         // Ningún proyecto de la lista debe tener el ID del proyecto A
-        for (JsonNode proyecto : proyectos) {
+        for (JsonNode proyecto : items) {
             assertNotEquals(proyectoIdA, proyecto.get("id").asLong(),
                     "Tenant B ve el proyecto de Tenant A en el listado");
         }
         // Tenant B debe ver solo su propio proyecto
-        assertTrue(proyectos.size() >= 1,
+        assertTrue(items.size() >= 1,
                 "Tenant B no ve sus propios proyectos");
     }
 

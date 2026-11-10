@@ -3,6 +3,7 @@ package com.inmobiliaria.terrenos.interfaces.rest;
 import com.inmobiliaria.terrenos.application.dto.plano.ConfirmarIngestaRequest;
 import com.inmobiliaria.terrenos.application.service.PlanoIngestaService;
 import com.inmobiliaria.terrenos.infrastructure.cv.PlanoStatusStore;
+import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,6 +67,9 @@ public class PlanoIngestaController {
             @PathVariable Long proyectoId,
             @PathVariable String tareaId) {
 
+        Long tenantId = TenantContext.getTenantId();
+        statusStore.verificarAccesoTarea(tareaId, tenantId);
+
         SseEmitter emitter = new SseEmitter(5 * 60 * 1000L);
         statusStore.registrar(tareaId, emitter);
 
@@ -83,9 +87,10 @@ public class PlanoIngestaController {
         request.setProyectoId(proyectoId);
         planoIngestaService.confirmarIngesta(request);
 
+        int totalLotes = request.getLotes() != null ? request.getLotes().size() : 0;
         return ResponseEntity.ok(Map.of(
                 "mensaje", "Lotes ingresados exitosamente con estado DISPONIBLE",
-                "totalLotes", request.getLotes().size()
+                "totalLotes", totalLotes
         ));
     }
 }

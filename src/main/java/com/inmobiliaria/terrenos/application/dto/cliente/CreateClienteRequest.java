@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.cliente;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.inmobiliaria.terrenos.domain.enums.EstadoCliente;
 import com.inmobiliaria.terrenos.domain.enums.OrigenCliente;
 import jakarta.validation.constraints.*;
@@ -26,6 +27,7 @@ public class CreateClienteRequest {
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
     private String nombre;
 
+    @JsonAlias("apellidos")
     @NotBlank(message = "El apellido es obligatorio")
     @Size(max = 100, message = "El apellido no puede exceder 100 caracteres")
     private String apellido;
@@ -74,6 +76,7 @@ public class CreateClienteRequest {
     // Información comercial
     private OrigenCliente origen;
 
+    @JsonAlias("estado")
     private EstadoCliente estadoCliente;
 
     // Notas
@@ -82,4 +85,25 @@ public class CreateClienteRequest {
 
     // Preferencias (JSON string)
     private String preferencias;
+
+    public void setEstado(String estado) {
+        if (estado != null) {
+            String upper = estado.trim().toUpperCase();
+            if ("ACTIVO".equals(upper)) {
+                if (this.estadoCliente == null) {
+                    this.estadoCliente = EstadoCliente.PROSPECTO;
+                }
+                return;
+            }
+            for (EstadoCliente ec : EstadoCliente.values()) {
+                if (ec.name().equalsIgnoreCase(upper)) {
+                    if (this.estadoCliente == null) {
+                        this.estadoCliente = ec;
+                    }
+                    return;
+                }
+            }
+        }
+        this.estado = estado;
+    }
 }

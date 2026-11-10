@@ -4,7 +4,7 @@ const terrenoService = {
   // Obtener todos los terrenos
   getAll: async (params = {}) => {
     const response = await api.get('/terrenos', { params });
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.content || []);
   },
 
   // Obtener un terreno por ID
@@ -27,20 +27,20 @@ const terrenoService = {
 
   // Eliminar un terreno
   delete: async (id) => {
-    const response = await api.delete(`/terrenos/${id}`);
+    const response = await api.delete(`/terrenos/${id}?force=true`);
     return response.data;
   },
 
   // Filtrar terrenos por proyecto
   getByProyecto: async (proyectoId) => {
     const response = await api.get('/terrenos', { params: { proyectoId } });
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.content || []);
   },
 
   // Filtrar terrenos por estado
   getByEstado: async (estado) => {
     const response = await api.get('/terrenos', { params: { estado } });
-    return response.data;
+    return Array.isArray(response.data) ? response.data : (response.data?.content || []);
   },
 };
 

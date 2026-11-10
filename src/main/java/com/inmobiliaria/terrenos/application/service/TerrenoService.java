@@ -39,6 +39,7 @@ public class TerrenoService {
     private final TerrenoRepository terrenoRepository;
     private final ProyectoRepository proyectoRepository;
     private final TerrenoMapper terrenoMapper;
+    private final ProyectoContadorService proyectoContadorService;
 
     @Transactional(readOnly = true)
     public PagedResponse<TerrenoResponse> listarTerrenosPaginado(Pageable pageable) {
@@ -197,9 +198,23 @@ public class TerrenoService {
             terreno.setEstado(EstadoTerreno.DISPONIBLE);
         }
 
+        // Calcular precio base si no se proporcionó
+        if (terreno.getPrecioBase() == null) {
+            if (terreno.getArea() != null && proyecto.getPrecioBase() != null) {
+                terreno.setPrecioBase(terreno.getArea().multiply(proyecto.getPrecioBase()));
+            } else {
+                terreno.setPrecioBase(BigDecimal.ZERO);
+            }
+        }
+
         // Calcular precio final si no se proporcionó
         if (terreno.getPrecioFinal() == null) {
             terreno.setPrecioFinal(calcularPrecioFinal(terreno));
+        }
+
+        // Asegurar formato JSON válido en caracteristicas de forma defensiva
+        if (terreno.getCaracteristicas() != null) {
+            terreno.setCaracteristicas(Terreno.normalizeJson(terreno.getCaracteristicas()));
         }
 
         // Guardar terreno
@@ -241,6 +256,11 @@ public class TerrenoService {
             terreno.setPrecioFinal(calcularPrecioFinal(terreno));
         }
 
+        // Asegurar formato JSON válido en caracteristicas de forma defensiva
+        if (terreno.getCaracteristicas() != null) {
+            terreno.setCaracteristicas(Terreno.normalizeJson(terreno.getCaracteristicas()));
+        }
+
         // Guardar cambios
         Terreno terrenoActualizado = terrenoRepository.save(terreno);
         log.info("Terreno {} actualizado exitosamente", id);
@@ -253,8 +273,16 @@ public class TerrenoService {
      */
     @Transactional
     public void eliminarTerreno(Long id) {
+        eliminarTerreno(id, false);
+    }
+
+    /**
+     * Elimina un terreno (soft delete) con opción de forzar si está disponible
+     */
+    @Transactional
+    public void eliminarTerreno(Long id, boolean force) {
         Long tenantId = getTenantId();
-        log.info("Eliminando terreno {} para tenant: {}", id, tenantId);
+        log.info("Eliminando terreno {} para tenant: {} (force={})", id, tenantId, force);
 
         Terreno terreno = terrenoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Terreno no encontrado con id: " + id));
@@ -264,13 +292,14 @@ public class TerrenoService {
             throw TerrenoException.noEliminarVendido();
         }
 
-        // Validar que no esté disponible o apartado
-        if (terreno.getEstado() == EstadoTerreno.DISPONIBLE || terreno.getEstado() == EstadoTerreno.APARTADO) {
+        // Validar que no esté disponible (salvo force=true) o apartado
+        if (terreno.getEstado() == EstadoTerreno.APARTADO
+                || (terreno.getEstado() == EstadoTerreno.DISPONIBLE && !force)) {
             throw TerrenoException.noEliminarDisponibleApartado();
         }
 
         // Soft delete
-        terreno.setDeleted(true);
+        terreno.softDelete();
         terrenoRepository.save(terreno);
 
         // Actualizar contadores del proyecto
@@ -341,6 +370,13 @@ public class TerrenoService {
      * Actualiza los contadores de terrenos del proyecto
      */
     private void actualizarContadoresProyecto(Proyecto proyecto) {
+        if (proyectoContadorService != null) {
+            proyectoContadorService.sincronizarContadores(proyecto);
+            return;
+        }
+        if (proyecto == null) {
+            return;
+        }
         Long tenantId = proyecto.getTenantId();
         Long proyectoId = proyecto.getId();
 

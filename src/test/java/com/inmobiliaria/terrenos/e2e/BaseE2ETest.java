@@ -61,7 +61,10 @@ public abstract class BaseE2ETest {
                 {"PLAN_PAGO_VER", "Ver Planes de Pago", "PLAN_PAGO"},
                 {"PLAN_PAGO_CREAR", "Crear Planes de Pago", "PLAN_PAGO"},
                 {"PLAN_PAGO_EDITAR", "Editar Planes de Pago", "PLAN_PAGO"},
+                {"PLAN_PAGO_ELIMINAR", "Eliminar Planes de Pago", "PLAN_PAGO"},
                 {"PAGO_REGISTRAR", "Registrar Pagos", "PAGO"},
+                {"PAGO_VER", "Ver Pagos", "PAGO"},
+                {"PAGO_ELIMINAR", "Eliminar Pagos", "PAGO"},
                 {"ADMIN", "Administrador Total", "ADMIN"}
             };
             for (String[] p : permisos) {
@@ -255,10 +258,12 @@ public abstract class BaseE2ETest {
                     "nombre": "%s",
                     "apellido": "%s",
                     "email": "%s",
-                    "telefono": "5551234567"
+                    "telefono": "5512345678"
                 }
                 """.formatted(nombre, apellido, email);
         ResponseEntity<JsonNode> response = postJsonWithAuth("/api/v1/clientes", body, token);
+        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode(),
+                "Crear cliente fallo: " + response.getBody());
         return response.getBody().get("id").asLong();
     }
 }

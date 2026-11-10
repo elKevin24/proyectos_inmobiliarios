@@ -16,7 +16,9 @@ function ClientesList() {
 
   const loadClientes = async () => {
     const params = {};
-    if (estadoFilter) {
+    if (estadoFilter === 'ACTIVO') {
+      params.activos = true;
+    } else if (estadoFilter) {
       params.estado = estadoFilter;
     }
     try {
@@ -48,7 +50,7 @@ function ClientesList() {
 
   const filteredClientes = clientes.filter(cliente =>
     cliente.nombre?.toLowerCase().includes(filter.toLowerCase()) ||
-    cliente.apellidos?.toLowerCase().includes(filter.toLowerCase()) ||
+    (cliente.apellidos || cliente.apellido)?.toLowerCase().includes(filter.toLowerCase()) ||
     cliente.email?.toLowerCase().includes(filter.toLowerCase()) ||
     cliente.telefono?.includes(filter)
   );
@@ -153,12 +155,12 @@ function ClientesList() {
                 <div key={cliente.id} className="cliente-card">
                   <div className="cliente-header">
                     <div className="cliente-avatar">
-                      {cliente.nombre?.charAt(0)}{cliente.apellidos?.charAt(0)}
+                      {cliente.nombre?.charAt(0)}{(cliente.apellidos || cliente.apellido)?.charAt(0)}
                     </div>
                     <div className="cliente-name">
-                      <h3>{cliente.nombre} {cliente.apellidos}</h3>
-                      <span className={`badge ${getEstadoBadge(cliente.estado)}`}>
-                        {getEstadoLabel(cliente.estado)}
+                      <h3>{cliente.nombre} {cliente.apellidos || cliente.apellido}</h3>
+                      <span className={`badge ${getEstadoBadge(cliente.estado || cliente.estadoCliente || 'ACTIVO')}`}>
+                        {getEstadoLabel(cliente.estado || cliente.estadoCliente || 'ACTIVO')}
                       </span>
                     </div>
                   </div>
@@ -198,7 +200,7 @@ function ClientesList() {
                       <FaEdit />
                     </Link>
                     <button
-                      onClick={() => handleDelete(cliente.id, `${cliente.nombre} ${cliente.apellidos}`)}
+                      onClick={() => handleDelete(cliente.id, `${cliente.nombre} ${cliente.apellidos || cliente.apellido || ''}`.trim())}
                       className="btn-icon btn-danger"
                       title="Eliminar"
                     >

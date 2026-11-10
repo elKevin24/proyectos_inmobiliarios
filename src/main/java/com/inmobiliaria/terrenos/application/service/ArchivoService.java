@@ -1,21 +1,23 @@
 package com.inmobiliaria.terrenos.application.service;
 
 import com.inmobiliaria.terrenos.application.dto.archivo.ArchivoResponse;
+import com.inmobiliaria.terrenos.application.port.out.ExecutionContextPort;
+import com.inmobiliaria.terrenos.application.port.out.FileStoragePort;
 import com.inmobiliaria.terrenos.config.FileStorageProperties;
 import com.inmobiliaria.terrenos.domain.entity.Archivo;
 import com.inmobiliaria.terrenos.domain.enums.TipoArchivo;
 import com.inmobiliaria.terrenos.domain.repository.ArchivoRepository;
 import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
+import com.inmobiliaria.terrenos.infrastructure.storage.LocalFileStorageAdapter;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.ArchivoMapper;
 import com.inmobiliaria.terrenos.shared.exception.ArchivoException;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,23 +25,19 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Servicio de gestión de archivos
+ * Servicio de gestión de archivos.
+ * Aplica DIP utilizando {@link FileStoragePort} y {@link ExecutionContextPort}.
  *
  * @author Kevin
- * @version 1.0.0
+ * @version 2.0.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ArchivoService {
 
@@ -48,10 +46,42 @@ public class ArchivoService {
     private final TerrenoRepository terrenoRepository;
     private final ArchivoMapper archivoMapper;
     private final FileStorageProperties fileStorageProperties;
+    private final FileStoragePort fileStoragePort;
+    private final ExecutionContextPort executionContextPort;
 
-    private Path fileStorageLocation;
+    @Autowired
+    public ArchivoService(
+            ArchivoRepository archivoRepository,
+            ProyectoRepository proyectoRepository,
+            TerrenoRepository terrenoRepository,
+            ArchivoMapper archivoMapper,
+            FileStorageProperties fileStorageProperties,
+            @Autowired(required = false) FileStoragePort fileStoragePort,
+            @Autowired(required = false) ExecutionContextPort executionContextPort) {
+        this.archivoRepository = archivoRepository;
+        this.proyectoRepository = proyectoRepository;
+        this.terrenoRepository = terrenoRepository;
+        this.archivoMapper = archivoMapper;
+        this.fileStorageProperties = fileStorageProperties;
+        this.fileStoragePort = fileStoragePort != null
+                ? fileStoragePort
+                : new LocalFileStorageAdapter(fileStorageProperties);
+        this.executionContextPort = executionContextPort;
+    }
+
+    public ArchivoService(
+            ArchivoRepository archivoRepository,
+            ProyectoRepository proyectoRepository,
+            TerrenoRepository terrenoRepository,
+            ArchivoMapper archivoMapper,
+            FileStorageProperties fileStorageProperties) {
+        this(archivoRepository, proyectoRepository, terrenoRepository, archivoMapper, fileStorageProperties, null, null);
+    }
 
     private Long getTenantId() {
+        if (executionContextPort != null) {
+            return executionContextPort.requireTenantId();
+        }
         Long tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
             throw new BusinessException("No se encontró tenant_id en el contexto", HttpStatus.UNAUTHORIZED);
@@ -59,21 +89,8 @@ public class ArchivoService {
         return tenantId;
     }
 
-    private Path getFileStorageLocation() {
-        if (fileStorageLocation == null) {
-            fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
-                    .toAbsolutePath().normalize();
-            try {
-                Files.createDirectories(fileStorageLocation);
-            } catch (IOException ex) {
-                throw ArchivoException.errorAlmacenamiento(ex.getMessage());
-            }
-        }
-        return fileStorageLocation;
-    }
-
     /**
-     * Sube un archivo
+     * Sube un archivo y lo almacena mediante {@link FileStoragePort}.
      */
     @Transactional
     public ArchivoResponse subirArchivo(MultipartFile file, TipoArchivo tipo, Long proyectoId, Long terrenoId, String descripcion) {
@@ -95,14 +112,14 @@ public class ArchivoService {
         // Validar archivo
         validarArchivo(file);
 
-        // Guardar archivo físicamente
+        // Guardar archivo físicamente a través de FileStoragePort (DIP)
         String nombreOriginal = StringUtils.cleanPath(file.getOriginalFilename());
         String extension = getFileExtension(nombreOriginal);
         String nombreAlmacenado = generarNombreUnico(nombreOriginal);
-        Path targetLocation = getFileStorageLocation().resolve(nombreAlmacenado);
 
+        Path targetLocation;
         try {
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            targetLocation = fileStoragePort.store(file, null, nombreAlmacenado);
         } catch (IOException ex) {
             log.error("Error al guardar archivo: {}", ex.getMessage());
             throw ArchivoException.errorAlmacenamiento(ex.getMessage());
@@ -148,7 +165,7 @@ public class ArchivoService {
     }
 
     /**
-     * Descarga un archivo
+     * Descarga un archivo a través de {@link FileStoragePort}.
      */
     @Transactional(readOnly = true)
     public Resource descargarArchivo(Long id) {
@@ -158,19 +175,7 @@ public class ArchivoService {
         Archivo archivo = archivoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Archivo no encontrado con id: " + id));
 
-        try {
-            Path filePath = Paths.get(archivo.getRuta()).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                return resource;
-            } else {
-                throw ArchivoException.noEncontrado();
-            }
-        } catch (MalformedURLException ex) {
-            log.error("Error al leer archivo: {}", ex.getMessage());
-            throw ArchivoException.errorAlmacenamiento("Error al descargar el archivo");
-        }
+        return fileStoragePort.loadAsResource(archivo.getRuta());
     }
 
     /**
@@ -246,7 +251,7 @@ public class ArchivoService {
         Archivo archivo = archivoRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Archivo no encontrado con id: " + id));
 
-        archivo.setDeleted(true);
+        archivo.softDelete();
         archivo.setEsActivo(false);
         archivoRepository.save(archivo);
 

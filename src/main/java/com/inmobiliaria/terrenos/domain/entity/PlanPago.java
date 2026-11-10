@@ -4,11 +4,11 @@ import com.inmobiliaria.terrenos.domain.enums.FrecuenciaPago;
 import com.inmobiliaria.terrenos.domain.enums.TipoPlanPago;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para Plan de Pago
@@ -22,16 +22,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class PlanPago {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class PlanPago extends TenantBaseEntity {
 
     @Column(name = "venta_id", nullable = false)
     private Long ventaId;
@@ -103,17 +96,6 @@ public class PlanPago {
     @Column(columnDefinition = "TEXT")
     private String notas;
 
-    // Auditoría
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "created_by")
     private String createdBy;
 
@@ -121,10 +103,7 @@ public class PlanPago {
     private String updatedBy;
 
     @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-
+    protected void onPlanPagoCreate() {
         // Calcular monto financiado si no está establecido
         if (montoFinanciado == null && montoTotal != null) {
             montoFinanciado = montoTotal.subtract(enganche != null ? enganche : BigDecimal.ZERO);
@@ -134,10 +113,5 @@ public class PlanPago {
         if (tasaInteresAnual != null && tasaInteresAnual.compareTo(BigDecimal.ZERO) > 0) {
             tasaInteresMensual = tasaInteresAnual.divide(new BigDecimal("12"), 4, java.math.RoundingMode.HALF_UP);
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
     }
 }

@@ -68,7 +68,9 @@ INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
 ('PLAN_PAGO_ELIMINAR', 'Eliminar Planes de Pago', 'Permite eliminar planes de pago', 'PLANES_PAGO', false);
 
 INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
-('PAGO_REGISTRAR', 'Registrar Pagos', 'Permite registrar pagos', 'PAGOS', false);
+('PAGO_REGISTRAR', 'Registrar Pagos', 'Permite registrar pagos', 'PAGOS', false),
+('PAGO_VER', 'Ver Pagos', 'Permite consultar pagos', 'PAGOS', false),
+('PAGO_ELIMINAR', 'Eliminar Pagos', 'Permite cancelar o eliminar pagos', 'PAGOS', false);
 
 INSERT INTO permisos (codigo, nombre, descripcion, modulo, deleted) VALUES
 ('ARCHIVO_CREAR', 'Crear Archivos', 'Permite subir archivos', 'ARCHIVOS', false),

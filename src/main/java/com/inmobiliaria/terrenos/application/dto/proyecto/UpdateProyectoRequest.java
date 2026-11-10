@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.proyecto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
 import com.inmobiliaria.terrenos.domain.enums.TipoPrecio;
 import jakarta.validation.constraints.*;
@@ -38,6 +39,12 @@ public class UpdateProyectoRequest {
     @Size(max = 100, message = "El estado no puede exceder 100 caracteres")
     private String estado;
 
+    private String ubicacion;
+
+    private String estadoProvincia;
+
+    private BigDecimal areaTotal;
+
     @Pattern(regexp = "^\\d{5}$", message = "El código postal debe tener 5 dígitos")
     private String codigoPostal;
 
@@ -51,6 +58,7 @@ public class UpdateProyectoRequest {
 
     private TipoPrecio tipoPrecio;
 
+    @JsonAlias({"precioBaseM2"})
     @DecimalMin(value = "0.0", inclusive = false, message = "El precio base debe ser mayor a 0")
     private BigDecimal precioBase;
 

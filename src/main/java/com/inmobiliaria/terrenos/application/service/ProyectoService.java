@@ -5,6 +5,7 @@ import com.inmobiliaria.terrenos.application.dto.proyecto.ProyectoResponse;
 import com.inmobiliaria.terrenos.application.dto.proyecto.UpdateProyectoRequest;
 import com.inmobiliaria.terrenos.domain.entity.Proyecto;
 import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
+import com.inmobiliaria.terrenos.domain.enums.TipoPrecio;
 import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.ProyectoMapper;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -120,6 +122,45 @@ public class ProyectoService {
         Proyecto proyecto = proyectoMapper.toEntity(request);
         proyecto.setTenantId(tenantId);
 
+        if (request.getEstadoProyecto() == null && request.getEstado() != null) {
+            EstadoProyecto parsedEstado = parseEstadoProyecto(request.getEstado());
+            if (parsedEstado != null) {
+                proyecto.setEstadoProyecto(parsedEstado);
+                String estadoGeo = request.getEstadoProvincia() != null && !request.getEstadoProvincia().isBlank()
+                        ? request.getEstadoProvincia()
+                        : (request.getUbicacion() != null && !request.getUbicacion().isBlank()
+                                ? request.getUbicacion()
+                                : "Estado");
+                proyecto.setEstado(estadoGeo);
+            }
+        }
+
+        String defaultUbicacion = (request.getUbicacion() != null && !request.getUbicacion().isBlank())
+                ? request.getUbicacion()
+                : "Sin especificar";
+
+        if (proyecto.getDireccion() == null || proyecto.getDireccion().isBlank()) {
+            proyecto.setDireccion(defaultUbicacion);
+        }
+
+        if (proyecto.getCiudad() == null || proyecto.getCiudad().isBlank()) {
+            proyecto.setCiudad(defaultUbicacion);
+        }
+
+        if (proyecto.getEstado() == null || proyecto.getEstado().isBlank()) {
+            proyecto.setEstado(request.getEstadoProvincia() != null && !request.getEstadoProvincia().isBlank()
+                    ? request.getEstadoProvincia()
+                    : defaultUbicacion);
+        }
+
+        if (proyecto.getTipoPrecio() == null) {
+            proyecto.setTipoPrecio(defaultTipoPrecio());
+        }
+
+        if (proyecto.getPrecioBase() == null) {
+            proyecto.setPrecioBase(BigDecimal.ZERO);
+        }
+
         // Establecer valores por defecto si no se proporcionaron
         if (proyecto.getEstadoProyecto() == null) {
             proyecto.setEstadoProyecto(EstadoProyecto.PLANIFICACION);
@@ -167,14 +208,92 @@ public class ProyectoService {
             }
         }
 
+        String estadoGeoPrevio = proyecto.getEstado();
+
         // Actualizar campos no nulos
         proyectoMapper.updateEntityFromRequest(request, proyecto);
+
+        if (request.getEstadoProyecto() == null && request.getEstado() != null) {
+            EstadoProyecto parsedEstado = parseEstadoProyecto(request.getEstado());
+            if (parsedEstado != null) {
+                proyecto.setEstadoProyecto(parsedEstado);
+                String estadoGeo = request.getEstadoProvincia() != null && !request.getEstadoProvincia().isBlank()
+                        ? request.getEstadoProvincia()
+                        : (request.getUbicacion() != null && !request.getUbicacion().isBlank()
+                                ? request.getUbicacion()
+                                : (estadoGeoPrevio != null && !estadoGeoPrevio.isBlank() ? estadoGeoPrevio : "Estado"));
+                proyecto.setEstado(estadoGeo);
+            }
+        }
+
+        if (request.getUbicacion() != null && !request.getUbicacion().isBlank()
+                && (request.getDireccion() == null || request.getDireccion().isBlank())) {
+            proyecto.setDireccion(request.getUbicacion());
+        }
+
+        String defaultUbicacion = (request.getUbicacion() != null && !request.getUbicacion().isBlank())
+                ? request.getUbicacion()
+                : "Sin especificar";
+
+        if (proyecto.getDireccion() == null || proyecto.getDireccion().isBlank()) {
+            proyecto.setDireccion(defaultUbicacion);
+        }
+
+        if (proyecto.getCiudad() == null || proyecto.getCiudad().isBlank()) {
+            proyecto.setCiudad(defaultUbicacion);
+        }
+
+        if (proyecto.getEstado() == null || proyecto.getEstado().isBlank()) {
+            proyecto.setEstado(defaultUbicacion);
+        }
+
+        if (proyecto.getTipoPrecio() == null) {
+            proyecto.setTipoPrecio(defaultTipoPrecio());
+        }
+
+        if (proyecto.getPrecioBase() == null) {
+            proyecto.setPrecioBase(BigDecimal.ZERO);
+        }
 
         // Guardar cambios
         Proyecto proyectoActualizado = proyectoRepository.save(proyecto);
         log.info("Proyecto {} actualizado exitosamente", id);
 
         return proyectoMapper.toResponse(proyectoActualizado);
+    }
+
+    private EstadoProyecto parseEstadoProyecto(String estadoStr) {
+        if (estadoStr == null || estadoStr.isBlank()) {
+            return null;
+        }
+        String normalized = estadoStr.trim().toUpperCase();
+        for (EstadoProyecto ep : EstadoProyecto.values()) {
+            if (ep.name().equalsIgnoreCase(normalized)) {
+                return ep;
+            }
+        }
+        return switch (normalized) {
+            case "ACTIVO", "EN_VENTA" -> {
+                for (EstadoProyecto ep : EstadoProyecto.values()) {
+                    if (ep.name().equals("ACTIVO") || ep.name().equals("EN_VENTA")) {
+                        yield ep;
+                    }
+                }
+                yield EstadoProyecto.EN_VENTA;
+            }
+            case "EN_CONSTRUCCION" -> EstadoProyecto.PLANIFICACION;
+            case "FINALIZADO", "VENDIDO", "AGOTADO" -> EstadoProyecto.AGOTADO;
+            default -> null;
+        };
+    }
+
+    private TipoPrecio defaultTipoPrecio() {
+        for (TipoPrecio tp : TipoPrecio.values()) {
+            if (tp.name().equals("POR_M2")) {
+                return tp;
+            }
+        }
+        return TipoPrecio.VARIABLE;
     }
 
     /**
@@ -198,7 +317,7 @@ public class ProyectoService {
         }
 
         // Soft delete
-        proyecto.setDeleted(true);
+        proyecto.softDelete();
         proyectoRepository.save(proyecto);
 
         log.info("Proyecto {} eliminado exitosamente", id);

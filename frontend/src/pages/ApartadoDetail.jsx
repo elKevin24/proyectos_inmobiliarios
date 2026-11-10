@@ -40,8 +40,10 @@ const ApartadoDetail = () => {
 
   const getEstadoBadgeClass = (estado) => {
     const classes = {
+      ACTIVO: 'badge-success',
       VIGENTE: 'badge-success',
       VENCIDO: 'badge-danger',
+      COMPLETADO: 'badge-info',
       CONVERTIDO_A_VENTA: 'badge-info',
       CANCELADO: 'badge-warning'
     };
@@ -50,8 +52,10 @@ const ApartadoDetail = () => {
 
   const getEstadoLabel = (estado) => {
     const labels = {
+      ACTIVO: 'Vigente',
       VIGENTE: 'Vigente',
       VENCIDO: 'Vencido',
+      COMPLETADO: 'Convertido a Venta',
       CONVERTIDO_A_VENTA: 'Convertido a Venta',
       CANCELADO: 'Cancelado'
     };
@@ -125,8 +129,8 @@ const ApartadoDetail = () => {
   }
 
   const diasRestantes = getDiasRestantes(selectedApartado.fechaVencimiento);
-  const puedeConvertir = selectedApartado.estado === 'VIGENTE';
-  const puedeCancelar = ['VIGENTE', 'VENCIDO'].includes(selectedApartado.estado);
+  const puedeConvertir = ['ACTIVO', 'VIGENTE'].includes(selectedApartado.estado);
+  const puedeCancelar = ['ACTIVO', 'VIGENTE', 'VENCIDO'].includes(selectedApartado.estado);
 
   return (
     <div className="detail-container">
@@ -141,7 +145,7 @@ const ApartadoDetail = () => {
       </div>
 
       {/* Alerta de vencimiento */}
-      {selectedApartado.estado === 'VIGENTE' && diasRestantes <= 7 && diasRestantes > 0 && (
+      {['ACTIVO', 'VIGENTE'].includes(selectedApartado.estado) && diasRestantes <= 7 && diasRestantes > 0 && (
         <div className="alert alert-warning">
           ⚠️ Este apartado vence en {diasRestantes} día{diasRestantes !== 1 ? 's' : ''}
         </div>
@@ -175,9 +179,9 @@ const ApartadoDetail = () => {
           </div>
           <div className="info-item">
             <label>Días de Vigencia:</label>
-            <span>{selectedApartado.diasVigencia} días</span>
+            <span>{selectedApartado.diasVigencia ?? selectedApartado.duracionDias ?? 0} días</span>
           </div>
-          {selectedApartado.estado === 'VIGENTE' && (
+          {['ACTIVO', 'VIGENTE'].includes(selectedApartado.estado) && (
             <div className="info-item">
               <label>Días Restantes:</label>
               <span className={diasRestantes <= 7 ? 'text-danger' : ''}>
@@ -198,7 +202,7 @@ const ApartadoDetail = () => {
           </div>
           <div className="monto-card">
             <span className="monto-label">Porcentaje</span>
-            <span className="monto-value">{selectedApartado.porcentajeApartado}%</span>
+            <span className="monto-value">{selectedApartado.porcentajeApartado ?? selectedApartado.porcentajePagado ?? 0}%</span>
           </div>
         </div>
       </div>

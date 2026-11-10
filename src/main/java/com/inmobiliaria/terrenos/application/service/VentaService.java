@@ -60,12 +60,13 @@ public class VentaService {
     private final PagoRepository pagoRepository;
     private final ClienteRepository clienteRepository;
     private final VentaMapper ventaMapper;
+    private final ProyectoContadorService proyectoContadorService;
 
     @Transactional(readOnly = true)
     public PagedResponse<VentaResponse> listarVentasPaginado(Pageable pageable) {
         Long tenantId = getTenantId();
         Page<Venta> ventasPage = ventaRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
-        List<VentaResponse> content = ventaMapper.toResponseList(ventasPage.getContent());
+        List<VentaResponse> content = enriquecerLista(ventaMapper.toResponseList(ventasPage.getContent()));
         return new PagedResponse<>(
                 content,
                 ventasPage.getNumber(),
@@ -82,7 +83,7 @@ public class VentaService {
     public PagedResponse<VentaResponse> listarVentasPorEstadoPaginado(EstadoVenta estado, Pageable pageable) {
         Long tenantId = getTenantId();
         Page<Venta> ventasPage = ventaRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado, pageable);
-        List<VentaResponse> content = ventaMapper.toResponseList(ventasPage.getContent());
+        List<VentaResponse> content = enriquecerLista(ventaMapper.toResponseList(ventasPage.getContent()));
         return new PagedResponse<>(
                 content,
                 ventasPage.getNumber(),
@@ -107,14 +108,14 @@ public class VentaService {
     public List<VentaResponse> listarVentas() {
         Long tenantId = getTenantId();
         log.debug("Listando ventas para tenant: {}", tenantId);
-        return ventaMapper.toResponseList(ventaRepository.findByTenantIdAndDeletedFalse(tenantId));
+        return enriquecerLista(ventaMapper.toResponseList(ventaRepository.findByTenantIdAndDeletedFalse(tenantId)));
     }
 
     @Transactional(readOnly = true)
     public List<VentaResponse> listarVentasPorEstado(EstadoVenta estado) {
         Long tenantId = getTenantId();
         log.debug("Listando ventas con estado {} para tenant: {}", estado, tenantId);
-        return ventaMapper.toResponseList(ventaRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado));
+        return enriquecerLista(ventaMapper.toResponseList(ventaRepository.findByTenantIdAndEstadoAndDeletedFalse(tenantId, estado)));
     }
 
     @Transactional(readOnly = true)
@@ -125,7 +126,7 @@ public class VentaService {
         Venta venta = ventaRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada con id: " + id));
 
-        return ventaMapper.toResponse(venta);
+        return enriquecer(ventaMapper.toResponse(venta));
     }
 
     @Transactional
@@ -148,6 +149,7 @@ public class VentaService {
 
         Venta venta = ventaMapper.toEntity(request);
         venta.setTenantId(tenantId);
+        venta.setClienteId(request.getClienteId());
         venta.setFechaVenta(LocalDate.now());
         venta.setEstado(EstadoVenta.PENDIENTE);
         venta.setPrecioTotal(request.getMontoTotal());
@@ -182,6 +184,17 @@ public class VentaService {
 
             apartado.setEstado(EstadoApartado.COMPLETADO);
             apartadoRepository.save(apartado);
+        } else if (terreno.getEstado() == EstadoTerreno.APARTADO && apartadoRepository != null) {
+            List<Apartado> apartados = apartadoRepository.findByTenantIdAndTerrenoIdAndDeletedFalse(tenantId, terreno.getId());
+            if (apartados != null) {
+                for (Apartado ap : apartados) {
+                    if (ap.getEstado() == EstadoApartado.ACTIVO) {
+                        ap.setEstado(EstadoApartado.COMPLETADO);
+                        apartadoRepository.save(ap);
+                        venta.setApartadoId(ap.getId());
+                    }
+                }
+            }
         }
 
         // Cambiar estado del terreno a VENDIDO
@@ -194,7 +207,19 @@ public class VentaService {
         Venta ventaGuardada = ventaRepository.save(venta);
         log.info("Venta creada con id: {}", ventaGuardada.getId());
 
-        return ventaMapper.toResponse(ventaGuardada);
+        VentaResponse response = ventaMapper.toResponse(ventaGuardada);
+        if (response != null) {
+            if (response.getTerrenoNumeroLote() == null) {
+                response.setTerrenoNumeroLote(terreno.getNumeroLote());
+            }
+            if (response.getTerrenoManzana() == null) {
+                response.setTerrenoManzana(terreno.getManzana());
+            }
+            if (response.getProyectoId() == null) {
+                response.setProyectoId(terreno.getProyectoId());
+            }
+        }
+        return enriquecer(response);
     }
 
     @Transactional
@@ -262,7 +287,7 @@ public class VentaService {
         Venta ventaActualizada = ventaRepository.save(venta);
         log.info("Venta {} actualizada exitosamente", id);
 
-        return ventaMapper.toResponse(ventaActualizada);
+        return enriquecer(ventaMapper.toResponse(ventaActualizada));
     }
 
     @Transactional
@@ -283,7 +308,7 @@ public class VentaService {
         Venta ventaActualizada = ventaRepository.save(venta);
 
         log.info("Estado de venta {} cambiado a {}", id, nuevoEstado);
-        return ventaMapper.toResponse(ventaActualizada);
+        return enriquecer(ventaMapper.toResponse(ventaActualizada));
     }
 
     @Transactional
@@ -304,7 +329,7 @@ public class VentaService {
                 venta.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
                 ventaRepository.save(venta);
             }
-            return ventaMapper.toResponse(venta);
+            return enriquecer(ventaMapper.toResponse(venta));
         }
 
         liberarEstructuraFinanciera(tenantId, venta.getId());
@@ -324,7 +349,44 @@ public class VentaService {
         }
 
         log.info("Venta {} cancelada exitosamente", id);
-        return ventaMapper.toResponse(ventaActualizada);
+        return enriquecer(ventaMapper.toResponse(ventaActualizada));
+    }
+
+    private VentaResponse enriquecer(VentaResponse response) {
+        if (response == null) {
+            return null;
+        }
+        if (response.getTerrenoId() != null &&
+                (response.getTerrenoNumeroLote() == null || response.getProyectoId() == null)) {
+            if (terrenoRepository != null) {
+                terrenoRepository.findById(response.getTerrenoId()).ifPresent(terreno -> {
+                    if (response.getTerrenoNumeroLote() == null) {
+                        response.setTerrenoNumeroLote(terreno.getNumeroLote());
+                    }
+                    if (response.getTerrenoManzana() == null) {
+                        response.setTerrenoManzana(terreno.getManzana());
+                    }
+                    if (response.getProyectoId() == null) {
+                        response.setProyectoId(terreno.getProyectoId());
+                    }
+                    if (response.getProyectoNombre() == null && terreno.getProyecto() != null) {
+                        response.setProyectoNombre(terreno.getProyecto().getNombre());
+                    }
+                });
+            }
+        }
+        if (response.getProyectoId() != null && response.getProyectoNombre() == null && proyectoRepository != null) {
+            proyectoRepository.findById(response.getProyectoId())
+                    .ifPresent(proyecto -> response.setProyectoNombre(proyecto.getNombre()));
+        }
+        return response;
+    }
+
+    private List<VentaResponse> enriquecerLista(List<VentaResponse> responses) {
+        if (responses != null) {
+            responses.forEach(this::enriquecer);
+        }
+        return responses;
     }
 
     @Transactional
@@ -340,7 +402,7 @@ public class VentaService {
             throw VentaException.soloEliminarCanceladas();
         }
 
-        venta.setDeleted(true);
+        venta.softDelete();
         ventaRepository.save(venta);
         log.info("Venta {} eliminada exitosamente", id);
     }
@@ -349,18 +411,18 @@ public class VentaService {
         planPagoRepository.findByTenantIdAndVentaIdAndDeletedFalse(tenantId, ventaId).ifPresent(planPago -> {
             List<Pago> pagos = pagoRepository.findByPlanPagoId(tenantId, planPago.getId());
             for (Pago pago : pagos) {
-                pago.setDeleted(true);
+                pago.softDelete();
                 pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
                 pagoRepository.save(pago);
             }
 
             List<Amortizacion> amortizaciones = amortizacionRepository.findByPlanPagoId(tenantId, planPago.getId());
             for (Amortizacion amortizacion : amortizaciones) {
-                amortizacion.setDeleted(true);
+                amortizacion.softDelete();
                 amortizacionRepository.save(amortizacion);
             }
 
-            planPago.setDeleted(true);
+            planPago.softDelete();
             planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
             planPagoRepository.save(planPago);
         });
@@ -379,6 +441,13 @@ public class VentaService {
     }
 
     private void actualizarContadoresProyecto(Long proyectoId) {
+        if (proyectoContadorService != null) {
+            proyectoContadorService.sincronizarContadores(proyectoId);
+            return;
+        }
+        if (proyectoRepository == null) {
+            return;
+        }
         Proyecto proyecto = proyectoRepository.findById(proyectoId).orElse(null);
         if (proyecto == null || proyecto.getDeleted()) {
             return;

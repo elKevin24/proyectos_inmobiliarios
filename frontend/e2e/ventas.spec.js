@@ -101,7 +101,7 @@ test.describe('Ventas', () => {
     const montoInfo = page.locator('.monto-info');
     await expect(montoInfo).toBeVisible();
     await expect(page.locator('text=Monto a Financiar')).toBeVisible();
-    await expect(montoInfo.locator('.value')).toHaveText('$500,000.00');
+    await expect(page.locator('.monto-info .highlight .value')).toHaveText(/^\$500,000\.00$/);
   });
 
   test('debe mostrar plan de financiamiento cuando hay monto a financiar', async ({ page }) => {

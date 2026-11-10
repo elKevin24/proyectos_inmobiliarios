@@ -39,13 +39,13 @@ function TerrenoForm() {
       const terreno = await fetchTerrenoById(id);
 
       // Llenar el formulario con los datos del terreno
-      setValue('numero', terreno.numero);
-      setValue('nombre', terreno.nombre);
-      setValue('descripcion', terreno.descripcion);
+      setValue('numero', terreno.numero || terreno.numeroLote);
+      setValue('nombre', terreno.nombre || terreno.caracteristicas);
+      setValue('descripcion', terreno.descripcion || terreno.observaciones);
       setValue('area', terreno.area);
       setValue('precioBase', terreno.precioBase);
-      setValue('ajustePrecio', terreno.ajustePrecio || 0);
-      setValue('multiplicadorPrecio', terreno.multiplicadorPrecio || 1);
+      setValue('ajustePrecio', terreno.ajustePrecio ?? terreno.precioAjuste ?? 0);
+      setValue('multiplicadorPrecio', terreno.multiplicadorPrecio ?? terreno.precioMultiplicador ?? 1);
       setValue('estado', terreno.estado);
       setValue('proyectoId', terreno.proyectoId);
 
@@ -62,10 +62,15 @@ function TerrenoForm() {
     try {
       const terrenoData = {
         ...data,
+        numeroLote: data.numero,
+        caracteristicas: data.nombre || null,
+        observaciones: data.descripcion || null,
         area: parseFloat(data.area),
         precioBase: parseFloat(data.precioBase),
         ajustePrecio: parseFloat(data.ajustePrecio || 0),
+        precioAjuste: parseFloat(data.ajustePrecio || 0),
         multiplicadorPrecio: parseFloat(data.multiplicadorPrecio || 1),
+        precioMultiplicador: parseFloat(data.multiplicadorPrecio || 1),
         coordenadas: coordenadas,
       };
 
@@ -97,7 +102,7 @@ function TerrenoForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="form-container">
         <div className="form-grid">
           <div className="form-group">
             <label htmlFor="numero">Número *</label>

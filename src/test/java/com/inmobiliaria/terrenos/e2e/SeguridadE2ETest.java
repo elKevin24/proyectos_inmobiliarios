@@ -54,9 +54,12 @@ class SeguridadE2ETest extends BaseE2ETest {
     void tenantASoloVeSusProyectos() throws Exception {
         ResponseEntity<JsonNode> response = getJsonWithAuth("/api/v1/proyectos", tokenA);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isArray());
+        JsonNode items = response.getBody().has("content")
+                ? response.getBody().get("content")
+                : response.getBody();
+        assertTrue(items.isArray());
 
-        for (JsonNode proyecto : response.getBody()) {
+        for (JsonNode proyecto : items) {
             assertNotEquals("Proyecto Tenant B",
                     proyecto.get("nombre").asText(),
                     "Tenant A no debe ver proyectos de Tenant B");
@@ -69,9 +72,12 @@ class SeguridadE2ETest extends BaseE2ETest {
     void tenantBSoloVeSusProyectos() throws Exception {
         ResponseEntity<JsonNode> response = getJsonWithAuth("/api/v1/proyectos", tokenB);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isArray());
+        JsonNode items = response.getBody().has("content")
+                ? response.getBody().get("content")
+                : response.getBody();
+        assertTrue(items.isArray());
 
-        for (JsonNode proyecto : response.getBody()) {
+        for (JsonNode proyecto : items) {
             assertNotEquals("Proyecto Tenant A",
                     proyecto.get("nombre").asText(),
                     "Tenant B no debe ver proyectos de Tenant A");

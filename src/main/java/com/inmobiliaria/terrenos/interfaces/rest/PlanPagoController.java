@@ -1,7 +1,7 @@
 package com.inmobiliaria.terrenos.interfaces.rest;
 
 import com.inmobiliaria.terrenos.application.dto.pago.*;
-import com.inmobiliaria.terrenos.application.service.PagoService;
+import com.inmobiliaria.terrenos.application.port.in.PlanPagoUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -22,10 +22,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controlador REST para gestión de planes de pago
+ * Controlador REST para gestión de planes de pago.
+ * Depende de la interfaz segregada {@link PlanPagoUseCase} (ISP & DIP).
  *
  * @author Kevin
- * @version 1.0.0
+ * @version 2.0.0
  */
 @RestController
 @RequestMapping("/api/v1/planes-pago")
@@ -35,7 +36,7 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class PlanPagoController {
 
-    private final PagoService pagoService;
+    private final PlanPagoUseCase planPagoUseCase;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('PLAN_PAGO_VER', 'ADMIN')")
@@ -47,7 +48,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<List<PlanPagoResponse>> listarPlanesPago() {
         log.info("GET /api/v1/planes-pago");
-        return ResponseEntity.ok(pagoService.listarPlanesPago());
+        return ResponseEntity.ok(planPagoUseCase.listarPlanesPago());
     }
 
     @GetMapping("/{id}")
@@ -60,7 +61,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<PlanPagoResponse> obtenerPlanPago(@PathVariable Long id) {
         log.info("GET /api/v1/planes-pago/{}", id);
-        return ResponseEntity.ok(pagoService.obtenerPlanPago(id));
+        return ResponseEntity.ok(planPagoUseCase.obtenerPlanPago(id));
     }
 
     @GetMapping("/venta/{ventaId}")
@@ -73,7 +74,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<PlanPagoResponse> obtenerPlanPagoPorVenta(@PathVariable Long ventaId) {
         log.info("GET /api/v1/planes-pago/venta/{}", ventaId);
-        return ResponseEntity.ok(pagoService.obtenerPlanPagoPorVenta(ventaId));
+        return ResponseEntity.ok(planPagoUseCase.obtenerPlanPagoPorVenta(ventaId));
     }
 
     @PostMapping
@@ -89,7 +90,7 @@ public class PlanPagoController {
     public ResponseEntity<PlanPagoResponse> crearPlanPago(@Valid @RequestBody CreatePlanPagoRequest request) {
         log.info("POST /api/v1/planes-pago - Venta: {}, Tipo: {}, Monto: {}",
                 request.getVentaId(), request.getTipoPlan(), request.getMontoTotal());
-        return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.crearPlanPago(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(planPagoUseCase.crearPlanPago(request));
     }
 
     @DeleteMapping("/{id}")
@@ -102,7 +103,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<Void> eliminarPlanPago(@PathVariable Long id) {
         log.info("DELETE /api/v1/planes-pago/{}", id);
-        pagoService.eliminarPlanPago(id);
+        planPagoUseCase.eliminarPlanPago(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -118,7 +119,7 @@ public class PlanPagoController {
             @PathVariable Long id,
             @Valid @RequestBody UpdatePlanPagoRequest request) {
         log.info("PUT /api/v1/planes-pago/{}", id);
-        return ResponseEntity.ok(pagoService.actualizarPlanPago(id, request));
+        return ResponseEntity.ok(planPagoUseCase.actualizarPlanPago(id, request));
     }
 
     @GetMapping("/{id}/tabla-amortizacion")
@@ -131,7 +132,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<TablaAmortizacionResponse> obtenerTablaAmortizacion(@PathVariable Long id) {
         log.info("GET /api/v1/planes-pago/{}/tabla-amortizacion", id);
-        return ResponseEntity.ok(pagoService.obtenerTablaAmortizacion(id));
+        return ResponseEntity.ok(planPagoUseCase.obtenerTablaAmortizacion(id));
     }
 
     @GetMapping("/{id}/amortizaciones")
@@ -145,7 +146,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<List<AmortizacionResponse>> obtenerAmortizaciones(@PathVariable Long id) {
         log.info("GET /api/v1/planes-pago/{}/amortizaciones", id);
-        return ResponseEntity.ok(pagoService.obtenerTablaAmortizacion(id).getAmortizaciones());
+        return ResponseEntity.ok(planPagoUseCase.obtenerTablaAmortizacion(id).getAmortizaciones());
     }
 
     @GetMapping("/{id}/estado-cuenta")
@@ -158,7 +159,7 @@ public class PlanPagoController {
     })
     public ResponseEntity<EstadoCuentaResponse> obtenerEstadoCuenta(@PathVariable Long id) {
         log.info("GET /api/v1/planes-pago/{}/estado-cuenta", id);
-        return ResponseEntity.ok(pagoService.obtenerEstadoCuenta(id));
+        return ResponseEntity.ok(planPagoUseCase.obtenerEstadoCuenta(id));
     }
 
 }

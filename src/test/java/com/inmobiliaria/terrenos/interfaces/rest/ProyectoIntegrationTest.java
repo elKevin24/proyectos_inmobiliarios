@@ -76,14 +76,16 @@ class ProyectoIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(get("/api/v1/proyectos")
                         .header("Authorization", tokenA))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nombre").value("Proyecto Residencial A"));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nombre").value("Proyecto Residencial A"));
 
         // 4. Listar proyectos con el token de Tenant B (debe retornar 0 proyectos, validando aislamiento multi-tenant)
         mockMvc.perform(get("/api/v1/proyectos")
                         .header("Authorization", tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
         // 5. Crear un proyecto bajo el contexto de Tenant B
         CreateProyectoRequest createB = new CreateProyectoRequest();
@@ -105,7 +107,8 @@ class ProyectoIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(get("/api/v1/proyectos")
                         .header("Authorization", tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nombre").value("Proyecto Residencial B"));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nombre").value("Proyecto Residencial B"));
     }
 }

@@ -1,11 +1,15 @@
 package com.inmobiliaria.terrenos.application.service;
 
 import com.inmobiliaria.terrenos.application.dto.pago.*;
+import com.inmobiliaria.terrenos.application.port.out.PaymentGatewayPort;
 import com.inmobiliaria.terrenos.domain.enums.MetodoPago;
+import com.inmobiliaria.terrenos.domain.repository.PlanPagoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.shared.exception.BusinessException;
+import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,16 +20,20 @@ import java.util.UUID;
 
 /**
  * Servicio de arquitectura para la integración con MercadoPago Checkout y Webhooks.
+ * Implementa {@link PaymentGatewayPort}.
  *
  * @author Dev A (Lead Backend & Architect)
- * @version 1.1.0
+ * @version 1.2.0
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MercadoPagoService {
+public class MercadoPagoService implements PaymentGatewayPort {
 
     private final PagoService pagoService;
+
+    @Autowired(required = false)
+    private PlanPagoRepository planPagoRepository;
 
     @Value("${app.mercadopago.access-token:APP_USR_SANDBOX_TOKEN_DEMO}")
     private String accessToken;
@@ -40,6 +48,11 @@ public class MercadoPagoService {
         Long tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
             throw new BusinessException("No se encontró tenant_id en el contexto", HttpStatus.UNAUTHORIZED);
+        }
+
+        if (planPagoRepository != null && request.getPlanPagoId() != null) {
+            planPagoRepository.findByIdAndTenantIdAndDeletedFalse(request.getPlanPagoId(), tenantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Plan de Pago no encontrado con ID: " + request.getPlanPagoId()));
         }
 
         String externalRef = tenantId + ":" + request.getPlanPagoId() + ":" +

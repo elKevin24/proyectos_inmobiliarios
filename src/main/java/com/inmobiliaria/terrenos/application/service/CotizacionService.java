@@ -5,6 +5,7 @@ import com.inmobiliaria.terrenos.application.dto.cotizacion.CreateCotizacionRequ
 import com.inmobiliaria.terrenos.domain.entity.Cotizacion;
 import com.inmobiliaria.terrenos.domain.entity.Terreno;
 import com.inmobiliaria.terrenos.domain.repository.CotizacionRepository;
+import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.CotizacionMapper;
@@ -13,6 +14,7 @@ import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -37,11 +39,14 @@ public class CotizacionService {
     private final TerrenoRepository terrenoRepository;
     private final CotizacionMapper cotizacionMapper;
 
+    @Autowired(required = false)
+    private ProyectoRepository proyectoRepository;
+
     @Transactional(readOnly = true)
     public PagedResponse<CotizacionResponse> listarCotizacionesPaginado(Pageable pageable) {
         Long tenantId = getTenantId();
         Page<Cotizacion> cotizacionesPage = cotizacionRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
-        List<CotizacionResponse> content = cotizacionMapper.toResponseList(cotizacionesPage.getContent());
+        List<CotizacionResponse> content = enriquecerLista(cotizacionMapper.toResponseList(cotizacionesPage.getContent()));
         return new PagedResponse<>(
                 content,
                 cotizacionesPage.getNumber(),
@@ -66,23 +71,23 @@ public class CotizacionService {
     public List<CotizacionResponse> listarCotizaciones() {
         Long tenantId = getTenantId();
         log.debug("Listando cotizaciones para tenant: {}", tenantId);
-        return cotizacionMapper.toResponseList(cotizacionRepository.findByTenantIdAndDeletedFalse(tenantId));
+        return enriquecerLista(cotizacionMapper.toResponseList(cotizacionRepository.findByTenantIdAndDeletedFalse(tenantId)));
     }
 
     @Transactional(readOnly = true)
     public List<CotizacionResponse> listarCotizacionesVigentes() {
         Long tenantId = getTenantId();
         log.debug("Listando cotizaciones vigentes para tenant: {}", tenantId);
-        return cotizacionMapper.toResponseList(
-                cotizacionRepository.findCotizacionesVigentes(tenantId, LocalDate.now()));
+        return enriquecerLista(cotizacionMapper.toResponseList(
+                cotizacionRepository.findCotizacionesVigentes(tenantId, LocalDate.now())));
     }
 
     @Transactional(readOnly = true)
     public List<CotizacionResponse> buscarPorCliente(String nombreCliente) {
         Long tenantId = getTenantId();
         log.debug("Buscando cotizaciones del cliente '{}' para tenant: {}", nombreCliente, tenantId);
-        return cotizacionMapper.toResponseList(
-                cotizacionRepository.findByClienteNombre(tenantId, nombreCliente));
+        return enriquecerLista(cotizacionMapper.toResponseList(
+                cotizacionRepository.findByClienteNombre(tenantId, nombreCliente)));
     }
 
     @Transactional(readOnly = true)
@@ -93,7 +98,7 @@ public class CotizacionService {
         Cotizacion cotizacion = cotizacionRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con id: " + id));
 
-        return cotizacionMapper.toResponse(cotizacion);
+        return enriquecer(cotizacionMapper.toResponse(cotizacion));
     }
 
     @Transactional
@@ -111,7 +116,56 @@ public class CotizacionService {
         Cotizacion cotizacionGuardada = cotizacionRepository.save(cotizacion);
         log.info("Cotización creada con id: {}", cotizacionGuardada.getId());
 
-        return cotizacionMapper.toResponse(cotizacionGuardada);
+        CotizacionResponse response = cotizacionMapper.toResponse(cotizacionGuardada);
+        if (response != null) {
+            if (response.getTerrenoNumeroLote() == null) {
+                response.setTerrenoNumeroLote(terreno.getNumeroLote());
+            }
+            if (response.getTerrenoManzana() == null) {
+                response.setTerrenoManzana(terreno.getManzana());
+            }
+            if (response.getProyectoId() == null) {
+                response.setProyectoId(terreno.getProyectoId());
+            }
+        }
+        return enriquecer(response);
+    }
+
+    private CotizacionResponse enriquecer(CotizacionResponse response) {
+        if (response == null) {
+            return null;
+        }
+        if (response.getTerrenoId() != null &&
+                (response.getTerrenoNumeroLote() == null || response.getProyectoId() == null)) {
+            if (terrenoRepository != null) {
+                terrenoRepository.findById(response.getTerrenoId()).ifPresent(terreno -> {
+                    if (response.getTerrenoNumeroLote() == null) {
+                        response.setTerrenoNumeroLote(terreno.getNumeroLote());
+                    }
+                    if (response.getTerrenoManzana() == null) {
+                        response.setTerrenoManzana(terreno.getManzana());
+                    }
+                    if (response.getProyectoId() == null) {
+                        response.setProyectoId(terreno.getProyectoId());
+                    }
+                    if (response.getProyectoNombre() == null && terreno.getProyecto() != null) {
+                        response.setProyectoNombre(terreno.getProyecto().getNombre());
+                    }
+                });
+            }
+        }
+        if (response.getProyectoId() != null && response.getProyectoNombre() == null && proyectoRepository != null) {
+            proyectoRepository.findById(response.getProyectoId())
+                    .ifPresent(proyecto -> response.setProyectoNombre(proyecto.getNombre()));
+        }
+        return response;
+    }
+
+    private List<CotizacionResponse> enriquecerLista(List<CotizacionResponse> responses) {
+        if (responses != null) {
+            responses.forEach(this::enriquecer);
+        }
+        return responses;
     }
 
     @Transactional
@@ -122,7 +176,7 @@ public class CotizacionService {
         Cotizacion cotizacion = cotizacionRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cotización no encontrada con id: " + id));
 
-        cotizacion.setDeleted(true);
+        cotizacion.softDelete();
         cotizacionRepository.save(cotizacion);
         log.info("Cotización {} eliminada exitosamente", id);
     }

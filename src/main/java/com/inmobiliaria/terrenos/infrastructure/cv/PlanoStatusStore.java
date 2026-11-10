@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.infrastructure.cv;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -21,6 +22,28 @@ public class PlanoStatusStore {
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final Map<String, TerminalEvent> terminalEvents = new ConcurrentHashMap<>();
+    private final Map<String, Long> tareaTenants = new ConcurrentHashMap<>();
+
+    public void registrarTareaTenant(String tareaId, Long tenantId) {
+        if (tareaId != null && tenantId != null) {
+            tareaTenants.put(tareaId, tenantId);
+        }
+    }
+
+    public void verificarAccesoTarea(String tareaId, Long tenantId) {
+        if (tareaId != null && tareaTenants.containsKey(tareaId)) {
+            Long ownerTenant = tareaTenants.get(tareaId);
+            if (ownerTenant != null && !ownerTenant.equals(tenantId)) {
+                throw new AccessDeniedException("No tiene acceso a esta tarea");
+            }
+        }
+    }
+
+    public void verificarAccesoTarea(Long tareaId, Long tenantId) {
+        if (tareaId != null) {
+            verificarAccesoTarea(String.valueOf(tareaId), tenantId);
+        }
+    }
 
     public void registrar(String tareaId, SseEmitter emitter) {
         TerminalEvent cached = terminalEvents.remove(tareaId);

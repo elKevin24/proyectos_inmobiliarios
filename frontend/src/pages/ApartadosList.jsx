@@ -23,8 +23,10 @@ const ApartadosList = () => {
 
   const getEstadoBadgeClass = (estado) => {
     const classes = {
+      ACTIVO: 'badge-success',
       VIGENTE: 'badge-success',
       VENCIDO: 'badge-danger',
+      COMPLETADO: 'badge-info',
       CONVERTIDO_A_VENTA: 'badge-info',
       CANCELADO: 'badge-warning'
     };
@@ -33,8 +35,10 @@ const ApartadosList = () => {
 
   const getEstadoLabel = (estado) => {
     const labels = {
+      ACTIVO: 'Vigente',
       VIGENTE: 'Vigente',
       VENCIDO: 'Vencido',
+      COMPLETADO: 'Convertido a Venta',
       CONVERTIDO_A_VENTA: 'Convertido a Venta',
       CANCELADO: 'Cancelado'
     };
@@ -54,7 +58,7 @@ const ApartadosList = () => {
   };
 
   const getDiasRestantes = (fechaVencimiento, estado) => {
-    if (estado !== 'VIGENTE') return '-';
+    if (estado !== 'ACTIVO' && estado !== 'VIGENTE') return '-';
     const hoy = new Date();
     const vencimiento = new Date(fechaVencimiento);
     const diffTime = vencimiento - hoy;
@@ -163,7 +167,7 @@ const ApartadosList = () => {
                     {formatCurrency(apartado.montoApartado)}
                   </td>
                   <td className="text-center">
-                    {apartado.porcentajeApartado}%
+                    {apartado.porcentajeApartado ?? apartado.porcentajePagado ?? 0}%
                   </td>
                   <td>{formatDate(apartado.fechaApartado)}</td>
                   <td>{formatDate(apartado.fechaVencimiento)}</td>
@@ -203,7 +207,7 @@ const ApartadosList = () => {
           <div className="summary-card">
             <span className="summary-label">Vigentes:</span>
             <span className="summary-value">
-              {apartados.filter(a => a.estado === 'VIGENTE').length}
+              {apartados.filter(a => a.estado === 'ACTIVO' || a.estado === 'VIGENTE').length}
             </span>
           </div>
           <div className="summary-card">
@@ -215,7 +219,7 @@ const ApartadosList = () => {
           <div className="summary-card">
             <span className="summary-label">Convertidos:</span>
             <span className="summary-value">
-              {apartados.filter(a => a.estado === 'CONVERTIDO_A_VENTA').length}
+              {apartados.filter(a => a.estado === 'COMPLETADO' || a.estado === 'CONVERTIDO_A_VENTA').length}
             </span>
           </div>
         </div>

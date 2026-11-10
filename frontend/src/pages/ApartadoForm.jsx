@@ -36,7 +36,7 @@ const ApartadoForm = () => {
     // Cargar terrenos disponibles
     fetchTerrenos({ estado: 'DISPONIBLE' });
     // Cargar clientes activos
-    fetchClientes({ estado: 'ACTIVO' });
+    fetchClientes({ activos: true });
   }, []);
 
   const terrenoId = watch('terrenoId');
@@ -58,18 +58,41 @@ const ApartadoForm = () => {
 
   const onSubmit = async (data) => {
     try {
+      const clienteSeleccionado = clientes.find(c => c.id === parseInt(data.clienteId));
+      const precioTotal = terrenoSeleccionado
+        ? parseFloat(terrenoSeleccionado.precioFinal)
+        : parseFloat(data.montoApartado || 0);
+      const montoCalculado = tipoMonto === 'porcentaje'
+        ? (precioTotal * parseFloat(data.porcentajeApartado)) / 100
+        : parseFloat(data.montoApartado);
+
+      let duracionDias = parseInt(data.diasVigencia) || 30;
+      if (data.fechaApartado && data.fechaVencimiento) {
+        const diffTime = new Date(data.fechaVencimiento) - new Date(data.fechaApartado);
+        duracionDias = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      }
+
+      const clienteNombre = clienteSeleccionado
+        ? (clienteSeleccionado.nombreCompleto || `${clienteSeleccionado.nombre || ''} ${clienteSeleccionado.apellidos || clienteSeleccionado.apellido || ''}`.trim())
+        : undefined;
+
       const apartadoData = {
         terrenoId: parseInt(data.terrenoId),
         clienteId: parseInt(data.clienteId),
-        diasVigencia: parseInt(data.diasVigencia),
-        observaciones: data.observaciones || null
+        clienteNombre,
+        clienteEmail: clienteSeleccionado?.email || undefined,
+        clienteTelefono: clienteSeleccionado?.telefono || undefined,
+        precioTotal,
+        montoApartado: parseFloat(Number(montoCalculado).toFixed(2)),
+        diasVigencia: duracionDias,
+        duracionDias,
+        observaciones: data.observaciones || data.notas || null,
+        notas: data.notas || data.observaciones || null
       };
 
       // Enviar monto o porcentaje según el tipo seleccionado
       if (tipoMonto === 'porcentaje') {
         apartadoData.porcentajeApartado = parseFloat(data.porcentajeApartado);
-      } else {
-        apartadoData.montoApartado = parseFloat(data.montoApartado);
       }
 
       await createApartado(apartadoData);
@@ -104,7 +127,7 @@ const ApartadoForm = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="apartado-form">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="apartado-form">
         {/* Información del Terreno */}
         <div className="form-section">
           <h3>Información del Terreno</h3>
@@ -121,7 +144,7 @@ const ApartadoForm = () => {
               <option value="">Seleccione un terreno</option>
               {terrenos.map((terreno) => (
                 <option key={terreno.id} value={terreno.id}>
-                  {terreno.numeroLote} - {terreno.proyectoNombre || 'Sin proyecto'} -{' '}
+                  {terreno.numero || terreno.numeroLote} - {terreno.proyectoNombre || 'Sin proyecto'} -{' '}
                   {formatCurrency(terreno.precioFinal)}
                 </option>
               ))}
@@ -156,7 +179,7 @@ const ApartadoForm = () => {
               <option value="">Seleccione un cliente</option>
               {clientes.map((cliente) => (
                 <option key={cliente.id} value={cliente.id}>
-                  {cliente.nombreCompleto} - {cliente.telefono}
+                  {cliente.nombreCompleto || `${cliente.nombre || ''} ${cliente.apellidos || cliente.apellido || ''}`.trim()} - {cliente.telefono}
                 </option>
               ))}
             </select>

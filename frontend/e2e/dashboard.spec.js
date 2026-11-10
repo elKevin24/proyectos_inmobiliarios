@@ -10,7 +10,7 @@ test.describe('Dashboard', () => {
   test('debe mostrar el dashboard con estadisticas', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.dashboard')).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: 'Buenos días, equipo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Buenos d[ií]as, equipo/i })).toBeVisible();
     await expect(page.locator('.dashboard-status')).toContainText('Datos actualizados');
   });
 
@@ -18,11 +18,11 @@ test.describe('Dashboard', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('text=Proyectos')).toBeVisible();
+    await expect(page.locator('.dashboard-section h2', { hasText: 'Proyectos' })).toBeVisible();
     await expect(page.locator('text=Inventario de Terrenos')).toBeVisible();
-    await expect(page.locator('text=Clientes')).toBeVisible();
+    await expect(page.locator('.dashboard-section h2', { hasText: 'Clientes' })).toBeVisible();
     await expect(page.locator('text=Ventas y Finanzas')).toBeVisible();
-    await expect(page.locator('text=Apartados')).toBeVisible();
+    await expect(page.locator('.dashboard-section h2', { hasText: 'Apartados' })).toBeVisible();
   });
 
   test('debe mostrar tarjetas de estadisticas', async ({ page }) => {
@@ -32,14 +32,14 @@ test.describe('Dashboard', () => {
     await expect(page.locator('text=Total Proyectos')).toBeVisible();
     await expect(page.locator('text=Total Terrenos')).toBeVisible();
     await expect(page.locator('text=Total Clientes')).toBeVisible();
-    await expect(page.locator('text=Total Ventas')).toBeVisible();
+    await expect(page.locator('text=Total Ventas').first()).toBeVisible();
   });
 
   test('debe mostrar acciones rapidas', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('text=Acciones Rapidas')).toBeVisible();
+    await expect(page.getByText(/Acciones R[aá]pidas/i)).toBeVisible();
     await expect(page.locator('text=Nuevo Proyecto')).toBeVisible();
     await expect(page.locator('text=Agregar Terreno')).toBeVisible();
     await expect(page.locator('text=Nuevo Cliente')).toBeVisible();
@@ -49,7 +49,7 @@ test.describe('Dashboard', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('text=Navegacion Rapida')).toBeVisible();
+    await expect(page.getByText(/Navegaci[oó]n R[aá]pida/i)).toBeVisible();
     await expect(page.locator('text=Ver Proyectos')).toBeVisible();
     await expect(page.locator('text=Ver Terrenos')).toBeVisible();
     await expect(page.locator('text=Ver Clientes')).toBeVisible();
@@ -64,15 +64,16 @@ test.describe('Navegacion Sidebar', () => {
 
   test('debe mostrar el sidebar con menu de navegacion', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.sidebar')).toBeVisible();
-    await expect(page.locator('text=Dashboard')).toBeVisible();
-    await expect(page.locator('text=Proyectos')).toBeVisible();
-    await expect(page.locator('text=Terrenos')).toBeVisible();
-    await expect(page.locator('text=Clientes')).toBeVisible();
-    await expect(page.locator('text=Ventas')).toBeVisible();
-    await expect(page.locator('text=Apartados')).toBeVisible();
-    await expect(page.locator('text=Cotizaciones')).toBeVisible();
-    await expect(page.locator('text=Planes de Pago')).toBeVisible();
+    const sidebar = page.locator('.sidebar');
+    await expect(sidebar).toBeVisible();
+    await expect(sidebar.getByText('Dashboard')).toBeVisible();
+    await expect(sidebar.getByText('Proyectos')).toBeVisible();
+    await expect(sidebar.getByTestId('nav-terrenos')).toBeVisible();
+    await expect(sidebar.getByText('Clientes')).toBeVisible();
+    await expect(sidebar.getByText('Ventas')).toBeVisible();
+    await expect(sidebar.getByText('Apartados')).toBeVisible();
+    await expect(sidebar.getByText(/Cotizaci[oó]n|Cotizaciones/i)).toBeVisible();
+    await expect(sidebar.getByText('Planes de Pago')).toBeVisible();
   });
 
   test('debe navegar a proyectos desde el sidebar', async ({ page }) => {
@@ -108,7 +109,7 @@ test.describe('Navegacion Sidebar', () => {
 
   test('debe navegar a cotizaciones desde el sidebar', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.sidebar').locator('a', { hasText: 'Cotizaciones' }).first().click();
+    await page.locator('.sidebar').locator('a', { hasText: /Cotizaci[oó]n|Cotizaciones/i }).first().click();
     await expect(page).toHaveURL('/cotizaciones');
   });
 
@@ -126,7 +127,7 @@ test.describe('Navegacion Sidebar', () => {
   test('debe tener boton de cerrar sesion', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.btn-logout')).toBeVisible();
-    await expect(page.locator('text=Cerrar Sesion')).toBeVisible();
+    await expect(page.getByText(/Cerrar Sesi[oó]n/i)).toBeVisible();
   });
 
   test('debe tener boton de cambiar tema', async ({ page }) => {

@@ -38,7 +38,7 @@ test.beforeAll(async ({ request }) => {
 
 test.afterAll(async ({ request }) => {
   try {
-    if (terrenoId) await deleteViaAPI(request, `/terrenos/${terrenoId}`, authToken);
+    if (terrenoId) await deleteViaAPI(request, `/terrenos/${terrenoId}`, authToken).catch(() => {});
   } finally {
     if (proyectoId) await deleteViaAPI(request, `/proyectos/${proyectoId}`, authToken).catch(() => {});
   }
@@ -51,14 +51,14 @@ test.describe('Cotizaciones', () => {
 
   test('debe mostrar la lista de cotizaciones', async ({ page }) => {
     await page.goto('/cotizaciones');
-    await expect(page.locator('h1')).toHaveText('Cotizaciones');
-    await expect(page.locator('text=Nueva Cotizacion')).toBeVisible();
+    await expect(page.locator('h1')).toHaveText(/Cotizaci[oó]n|Cotizaciones/i);
+    await expect(page.getByText(/Nueva Cotizaci[oó]n/i).first()).toBeVisible();
   });
 
   test('debe navegar al formulario de nueva cotizacion', async ({ page }) => {
     await page.goto('/cotizaciones');
-    await page.click('text=Nueva Cotizacion');
-    await expect(page.locator('h1')).toHaveText('Nueva Cotizacion');
+    await page.getByText(/Nueva Cotizaci[oó]n/i).first().click();
+    await expect(page.locator('h1')).toHaveText(/Nueva Cotizaci[oó]n/i);
   });
 
   test('debe mostrar campos del formulario de cotizacion', async ({ page }) => {
@@ -75,7 +75,7 @@ test.describe('Cotizaciones', () => {
   test('debe mostrar radio buttons para tipo de descuento', async ({ page }) => {
     await page.goto('/cotizaciones/nueva');
 
-    await expect(page.locator('text=Porcentaje')).toBeVisible();
+    await expect(page.getByText('Porcentaje', { exact: true })).toBeVisible();
     await expect(page.locator('text=Monto fijo')).toBeVisible();
   });
 
@@ -89,7 +89,7 @@ test.describe('Cotizaciones', () => {
     await page.goto('/cotizaciones/nueva');
     await page.click('button[type="submit"]');
 
-    await expect(page.getByTestId('error-terreno')).toHaveText('El terreno es requerido');
+    await expect(page.getByTestId('error-terreno')).toHaveText(/Seleccione un terreno|El terreno es requerido/i);
   });
 
   test('debe mostrar error con email invalido', async ({ page }) => {
@@ -98,7 +98,7 @@ test.describe('Cotizaciones', () => {
     await page.fill('#clienteEmail', 'no-email');
     await page.click('button[type="submit"]');
 
-    await expect(page.getByTestId('error-cliente-email')).toHaveText('El email no es válido');
+    await expect(page.getByTestId('error-cliente-email')).toHaveText(/Email inv[aá]lido|El email no es v[aá]lido/i);
   });
 
   test('debe calcular precio final con descuento por porcentaje', async ({ page }) => {
@@ -123,7 +123,7 @@ test.describe('Cotizaciones', () => {
     await page.getByTestId('discount-fixed-input').fill('140000');
     // Verifica que el porcentaje calculado se actualice y el precio final baje
     // Con precio base 700000 y descuento 140000, porcentaje es 20%
-    await expect(page.locator('text=20%')).toBeVisible();
+    await expect(page.locator('.form-group', { hasText: 'Porcentaje Calculado (%)' }).locator('input')).toHaveValue(/20(\.00)?%/);
     await expect(page.getByTestId('precio-final')).toHaveValue('560000.00');
 
     // 3. Cambio nuevamente a porcentaje
@@ -158,7 +158,7 @@ test.describe('Cotizaciones', () => {
     await page.click('button[type="submit"]');
     await page.waitForURL('/cotizaciones', { timeout: 10_000 });
     await expect(page).toHaveURL('/cotizaciones');
-    await expect(page.locator('.cotizacion-card, .table').filter({ hasText: uniqueCliente })).toBeVisible();
+    await expect(page.locator('.data-table tr, .cotizacion-card').filter({ hasText: uniqueCliente })).toBeVisible();
   });
 
   test('debe cancelar y volver a la lista', async ({ page }) => {

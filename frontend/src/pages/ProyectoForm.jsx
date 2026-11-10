@@ -84,7 +84,7 @@ function ProyectoForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="form-container">
         <h3>Información General</h3>
         <div className="form-grid">
           <div className="form-group">

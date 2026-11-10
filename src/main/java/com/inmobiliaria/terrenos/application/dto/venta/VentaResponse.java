@@ -31,8 +31,10 @@ public class VentaResponse {
     private Long proyectoId;
     private String proyectoNombre;
     private Long apartadoId;
+    private Long clienteId;
     private Long usuarioId;
     private String usuarioNombre;
+    private String folio;
     private String compradorNombre;
     private String compradorEmail;
     private String compradorTelefono;
@@ -88,5 +90,29 @@ public class VentaResponse {
             return String.format("Mz %s Lt %s", terrenoManzana, terrenoNumeroLote);
         }
         return String.format("Lt %s", terrenoNumeroLote);
+    }
+
+    public String getClienteNombre() {
+        return compradorNombre;
+    }
+
+    public BigDecimal getMontoTotal() {
+        return precioTotal;
+    }
+
+    public BigDecimal getEnganche() {
+        return montoApartadoAcreditado;
+    }
+
+    public BigDecimal getMontoFinanciado() {
+        return montoFinal;
+    }
+
+    public String getMetodoPago() {
+        return formaPago;
+    }
+
+    public String getTerrenoNumero() {
+        return terrenoNumeroLote;
     }
 }

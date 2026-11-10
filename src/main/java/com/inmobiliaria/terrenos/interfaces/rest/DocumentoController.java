@@ -1,6 +1,6 @@
 package com.inmobiliaria.terrenos.interfaces.rest;
 
-import com.inmobiliaria.terrenos.application.service.PdfService;
+import com.inmobiliaria.terrenos.application.port.in.DocumentoPdfPort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller REST para descarga y visualización de documentos oficiales en PDF.
+ * Depende de la interfaz {@link DocumentoPdfPort} (DIP & ISP).
  *
  * @author Dev A (Lead Backend & Architect)
- * @version 1.1.0
+ * @version 1.2.0
  */
 @RestController
 @RequestMapping("/api/v1/documentos")
@@ -26,10 +27,10 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Documentos PDF", description = "Endpoints para la descarga de Contratos y Estados de Cuenta en PDF")
 public class DocumentoController {
 
-    private final PdfService pdfService;
+    private final DocumentoPdfPort documentoPdfPort;
 
     @GetMapping("/contrato-venta/{ventaId}")
-    @PreAuthorize("hasAuthority('VENTA_VER')")
+    @PreAuthorize("hasAnyAuthority('VENTA_VER', 'ADMIN')")
     @Operation(summary = "Descargar Contrato de Compraventa en PDF", description = "Genera y descarga el PDF del contrato privado de compraventa")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "PDF generado exitosamente"),
@@ -39,7 +40,7 @@ public class DocumentoController {
     public ResponseEntity<byte[]> descargarContratoVenta(@PathVariable Long ventaId) {
         log.info("GET /api/v1/documentos/contrato-venta/{}", ventaId);
 
-        byte[] pdfBytes = pdfService.generarContratoVentaPdf(ventaId);
+        byte[] pdfBytes = documentoPdfPort.generarContratoVentaPdf(ventaId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
@@ -52,7 +53,7 @@ public class DocumentoController {
     }
 
     @GetMapping("/estado-cuenta/{planPagoId}")
-    @PreAuthorize("hasAuthority('PLAN_PAGO_VER')")
+    @PreAuthorize("hasAnyAuthority('PLAN_PAGO_VER', 'ADMIN')")
     @Operation(summary = "Descargar Estado de Cuenta en PDF", description = "Genera y descarga el PDF del estado de cuenta y amortización")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "PDF generado exitosamente"),
@@ -62,7 +63,7 @@ public class DocumentoController {
     public ResponseEntity<byte[]> descargarEstadoCuenta(@PathVariable Long planPagoId) {
         log.info("GET /api/v1/documentos/estado-cuenta/{}", planPagoId);
 
-        byte[] pdfBytes = pdfService.generarEstadoCuentaPdf(planPagoId);
+        byte[] pdfBytes = documentoPdfPort.generarEstadoCuentaPdf(planPagoId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

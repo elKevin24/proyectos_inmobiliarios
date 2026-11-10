@@ -4,12 +4,12 @@ import com.inmobiliaria.terrenos.domain.enums.EstadoCliente;
 import com.inmobiliaria.terrenos.domain.enums.OrigenCliente;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para Clientes/Compradores
@@ -23,16 +23,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class Cliente {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class Cliente extends TenantBaseEntity {
 
     // Información personal
     @Column(nullable = false, length = 100)
@@ -95,33 +88,11 @@ public class Cliente {
     @Column(columnDefinition = "jsonb")
     private String preferencias;
 
-    // Auditoría
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "updated_by")
     private String updatedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     /**
      * Obtiene el nombre completo del cliente

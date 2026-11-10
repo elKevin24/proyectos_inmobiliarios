@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const API_URL = process.env.API_URL || 'http://localhost:8080/api/v1';
 
 export default defineConfig({
@@ -17,19 +17,19 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     },
   ],
   webServer: [
     {
-      command: 'npm run dev',
+      command: 'npm run dev -- --port 3000',
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,

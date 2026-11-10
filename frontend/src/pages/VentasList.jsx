@@ -104,7 +104,7 @@ function VentasList() {
                 </Link>
               </div>
             ) : (
-              <table className="ventas-table">
+              <table className="ventas-table table">
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -122,16 +122,16 @@ function VentasList() {
                     <tr key={venta.id}>
                       <td>#{venta.id}</td>
                       <td>{formatDate(venta.fechaVenta)}</td>
-                      <td>{venta.clienteNombre || 'N/A'}</td>
-                      <td>{venta.terrenoNumeroLote || 'N/A'}</td>
+                      <td>{venta.clienteNombre || venta.compradorNombre || 'N/A'}</td>
+                      <td>{venta.terrenoNumeroLote || venta.terrenoNumero || 'N/A'}</td>
                       <td className="monto">
-                        ${Number(venta.montoTotal).toLocaleString('es-MX', {
+                        ${Number(venta.montoTotal ?? venta.precioTotal ?? 0).toLocaleString('es-MX', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2
                         })}
                       </td>
                       <td className="monto">
-                        ${Number(venta.enganche || 0).toLocaleString('es-MX', {
+                        ${Number(venta.enganche ?? venta.montoApartadoAcreditado ?? 0).toLocaleString('es-MX', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2
                         })}

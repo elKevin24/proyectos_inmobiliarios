@@ -3,11 +3,11 @@ package com.inmobiliaria.terrenos.domain.entity;
 import com.inmobiliaria.terrenos.domain.enums.EstadoApartado;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para Apartados/Reservas de terrenos
@@ -21,16 +21,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class Apartado {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class Apartado extends TenantBaseEntity {
 
     @Column(name = "terreno_id", nullable = false)
     private Long terrenoId;
@@ -48,6 +41,18 @@ public class Apartado {
 
     @Column(name = "cliente_id")
     private Long clienteId;
+
+    @Column(name = "cliente_nombre", nullable = false, length = 255)
+    private String clienteNombre;
+
+    @Column(name = "cliente_email", length = 255)
+    private String clienteEmail;
+
+    @Column(name = "cliente_telefono", length = 20)
+    private String clienteTelefono;
+
+    @Column(name = "cliente_direccion", columnDefinition = "TEXT")
+    private String clienteDireccion;
 
     @Column(name = "usuario_id")
     private Long usuarioId;
@@ -79,30 +84,9 @@ public class Apartado {
     @Column(name = "motivo_cancelacion", length = 255)
     private String motivoCancelacion;
 
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "created_by", length = 100)
     private String createdBy;
 
     @Column(name = "updated_by", length = 100)
     private String updatedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

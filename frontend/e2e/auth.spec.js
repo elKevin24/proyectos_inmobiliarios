@@ -6,10 +6,11 @@ test.describe('Autenticacion', () => {
   test.describe('Login', () => {
     test('debe mostrar el formulario de login', async ({ page }) => {
       await page.goto('/login');
-      await expect(page.locator('h1')).toHaveText('Iniciar Sesion');
+      await expect(page.locator('h1')).toHaveText(/[iI]niciar [sS]esi[oó]n/i);
+      await expect(page.getByLabel(/[cC]orreo [eE]lectr[oó]nico|Email/i)).toBeVisible();
       await expect(page.locator('#email')).toBeVisible();
       await expect(page.locator('#password')).toBeVisible();
-      await expect(page.locator('button[type="submit"]')).toHaveText('Iniciar Sesion');
+      await expect(page.locator('button[type="submit"]')).toHaveText(/[iI]niciar [sS]esi[oó]n/i);
     });
 
     test('debe mostrar error con credenciales invalidas', async ({ page }) => {
@@ -47,7 +48,7 @@ test.describe('Autenticacion', () => {
 
     test('debe navegar al registro desde login', async ({ page }) => {
       await page.goto('/login');
-      await page.click('text=Registrate aqui');
+      await page.locator('a', { hasText: /Reg[ií]strate aqu[ií]/i }).click();
       await expect(page).toHaveURL('/register');
     });
 
@@ -90,7 +91,7 @@ test.describe('Autenticacion', () => {
       await page.fill('#confirmPassword', 'DifferentPass123!');
       await page.click('button[type="submit"]');
 
-      await expect(page.locator('text=Las contrasenas no coinciden')).toBeVisible();
+      await expect(page.getByText(/Las contrase[ñn]as no coinciden/i)).toBeVisible();
     });
 
     test('debe mostrar error con telefono invalido', async ({ page }) => {
@@ -106,7 +107,7 @@ test.describe('Autenticacion', () => {
 
     test('debe navegar al login desde registro', async ({ page }) => {
       await page.goto('/register');
-      await page.click('text=Inicia sesion aqui');
+      await page.locator('a', { hasText: /Inicia sesi[oó]n aqu[ií]/i }).click();
       await expect(page).toHaveURL('/login');
     });
   });
@@ -116,7 +117,7 @@ test.describe('Autenticacion', () => {
       await login(page, TEST_USER.email, TEST_USER.password);
       await expect(page).toHaveURL('/');
 
-      await page.click('text=Cerrar Sesion');
+      await page.locator('button', { hasText: /Cerrar Sesi[oó]n/i }).click();
       await expect(page).toHaveURL('/login');
     });
   });

@@ -174,7 +174,7 @@ public class FaseService {
             throw FaseException.tieneTerrenosApartados();
         }
 
-        fase.setDeleted(true);
+        fase.softDelete();
         faseRepository.save(fase);
         log.info("Fase {} eliminada exitosamente", id);
     }

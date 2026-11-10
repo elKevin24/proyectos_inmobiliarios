@@ -57,6 +57,40 @@ class ExtractionResult(BaseModel):
     tiempo_procesamiento_ms: float
 
 
+def _resolve_upload_path(file_path: str) -> str:
+    """
+    Resuelve de forma segura la ruta del plano dentro de UPLOAD_DIR.
+    Previene ataques de Path Traversal y soporta fallback a la raíz de UPLOAD_DIR
+    cuando ArchivoService almacena el archivo sin subdirectorio de proyecto.
+    """
+    if not file_path or not file_path.strip():
+        raise HTTPException(status_code=400, detail="Ruta de archivo vacía")
+
+    upload_dir = os.path.abspath(os.getenv("UPLOAD_DIR", UPLOAD_DIR))
+    candidate = os.path.abspath(os.path.join(upload_dir, file_path))
+
+    try:
+        in_upload_dir = os.path.commonpath([upload_dir, candidate]) == upload_dir
+    except ValueError:
+        in_upload_dir = False
+
+    if not in_upload_dir or candidate == upload_dir:
+        raise HTTPException(status_code=400, detail="Ruta de archivo inválida o fuera del directorio permitido")
+
+    if os.path.isfile(candidate):
+        return candidate
+
+    # Fallback: ArchivoService guarda archivos directamente en UPLOAD_DIR/<nombreAlmacenado>
+    basename = os.path.basename(file_path)
+    if basename:
+        fallback = os.path.abspath(os.path.join(upload_dir, basename))
+        if os.path.commonpath([upload_dir, fallback]) == upload_dir and os.path.isfile(fallback):
+            logger.info("Archivo resuelto mediante fallback en raíz de uploads: %s", fallback)
+            return fallback
+
+    raise HTTPException(status_code=404, detail=f"Archivo no encontrado: {file_path}")
+
+
 def _load_image(full_path: str) -> np.ndarray:
     """Carga imagen desde disco; si es PDF, convierte la primera página a imagen."""
     ext = os.path.splitext(full_path)[1].lower()
@@ -74,6 +108,13 @@ def _load_image(full_path: str) -> np.ndarray:
             raise ValueError(f"No se pudo procesar el archivo PDF: {e}")
     else:
         image = cv2.imread(full_path)
+        if image is None and os.path.isfile(full_path):
+            try:
+                raw = np.fromfile(full_path, dtype=np.uint8)
+                if raw.size > 0:
+                    image = cv2.imdecode(raw, cv2.IMREAD_COLOR)
+            except Exception:
+                image = None
         if image is None:
             raise ValueError(f"No se pudo leer la imagen en {full_path}. Formato inválido o corrupto.")
         return image
@@ -105,10 +146,14 @@ def _process_image_sync(full_path: str, min_area: int = MIN_LOTE_AREA) -> dict:
     image = _load_image(full_path)
 
     h, w = image.shape[:2]
+    scale = 1.0
     if max(h, w) > MAX_IMAGE_DIMENSION:
         scale = MAX_IMAGE_DIMENSION / max(h, w)
         image = cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
         logger.info("Imagen redimensionada a max dimensión %d (%dx%d)", MAX_IMAGE_DIMENSION, int(w * scale), int(h * scale))
+
+    inv_scale = 1.0 / scale
+    area_scale = inv_scale * inv_scale
 
     # Convertir a escala de grises
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -123,27 +168,47 @@ def _process_image_sync(full_path: str, min_area: int = MIN_LOTE_AREA) -> dict:
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # Detección de contornos de la estructura
-    contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Detección jerárquica de contornos para soportar lotes subdivididos dentro de manzanas
+    contours, hierarchy = cv2.findContours(morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    max_valid_area = min(MAX_LOTE_AREA, int(gray.shape[0] * gray.shape[1] * 0.90))
+    areas = [cv2.contourArea(c) for c in contours]
+    valid_indices = {
+        idx for idx, a in enumerate(areas)
+        if min_area <= a <= max_valid_area
+    }
+
+    # Excluir contornos contenedores (marcos o manzanas) que ya tienen sub-contornos de lote válidos
+    leaf_valid_indices = set(valid_indices)
+    if hierarchy is not None and len(hierarchy) > 0:
+        hier = hierarchy[0]
+        for idx in valid_indices:
+            parent_idx = int(hier[idx][3])
+            while parent_idx != -1:
+                if parent_idx in leaf_valid_indices:
+                    leaf_valid_indices.discard(parent_idx)
+                parent_idx = int(hier[parent_idx][3])
 
     lotes: List[dict] = []
 
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area < min_area or area > MAX_LOTE_AREA:
-            continue
+    for idx in sorted(leaf_valid_indices):
+        cnt = contours[idx]
+        area = areas[idx] * area_scale
 
         # Aproximación de polígono
         epsilon = 0.015 * cv2.arcLength(cnt, True)
         approx = cv2.approxPolyDP(cnt, epsilon, True)
 
-        poligono = [Point(x=int(p[0][0]), y=int(p[0][1])) for p in approx]
+        poligono = [
+            Point(x=int(round(p[0][0] * inv_scale)), y=int(round(p[0][1] * inv_scale)))
+            for p in approx
+        ]
 
         # Centroide del polígono
         M = cv2.moments(cnt)
         if M["m00"] != 0:
-            cx = int(M["m10"] / M["m00"])
-            cy = int(M["m01"] / M["m00"])
+            cx = int(round((M["m10"] / M["m00"]) * inv_scale))
+            cy = int(round((M["m01"] / M["m00"]) * inv_scale))
         else:
             cx, cy = 0, 0
 
@@ -216,7 +281,8 @@ async def health_check():
         checks["tesseract"] = "error"
         ok = False
 
-    checks["upload_dir"] = "ok" if os.path.isdir(UPLOAD_DIR) else "missing"
+    upload_dir = os.getenv("UPLOAD_DIR", UPLOAD_DIR)
+    checks["upload_dir"] = "ok" if os.path.isdir(upload_dir) else "missing"
 
     return {"status": "ok" if ok else "degraded", "checks": checks}
 
@@ -231,10 +297,7 @@ async def extract_lots(
     - `file_path`: Ruta relativa dentro de UPLOAD_DIR (ej. "planos/plano1.png" o "planos/plano1.pdf")
     - `min_area`: Área mínima opcional en px² para filtrar contornos pequeños.
     """
-    full_path = os.path.join(UPLOAD_DIR, file_path)
-
-    if not os.path.isfile(full_path):
-        raise HTTPException(status_code=404, detail=f"Archivo no encontrado: {file_path}")
+    full_path = _resolve_upload_path(file_path)
 
     area_filtro = min_area if min_area is not None else MIN_LOTE_AREA
 

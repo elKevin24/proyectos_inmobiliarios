@@ -2,7 +2,7 @@ package com.inmobiliaria.terrenos.interfaces.rest;
 
 import com.inmobiliaria.terrenos.application.dto.pago.CreatePagoRequest;
 import com.inmobiliaria.terrenos.application.dto.pago.PagoResponse;
-import com.inmobiliaria.terrenos.application.service.PagoService;
+import com.inmobiliaria.terrenos.application.port.in.PagoApplicationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -23,10 +23,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controlador REST para registro de pagos
+ * Controlador REST para registro de pagos.
+ * Depende de la interfaz segregada {@link PagoApplicationUseCase} (ISP & DIP).
  *
  * @author Kevin
- * @version 1.0.0
+ * @version 2.0.0
  */
 @RestController
 @RequestMapping("/api/v1/pagos")
@@ -36,7 +37,7 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class PagoController {
 
-    private final PagoService pagoService;
+    private final PagoApplicationUseCase pagoApplicationUseCase;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('PAGO_VER', 'PAGO_REGISTRAR', 'ADMIN')")
@@ -47,7 +48,7 @@ public class PagoController {
     })
     public ResponseEntity<List<PagoResponse>> listarPagos() {
         log.info("GET /api/v1/pagos");
-        return ResponseEntity.ok(pagoService.listarPagos());
+        return ResponseEntity.ok(pagoApplicationUseCase.listarPagos());
     }
 
     @PostMapping
@@ -62,7 +63,7 @@ public class PagoController {
     public ResponseEntity<PagoResponse> registrarPago(@Valid @RequestBody CreatePagoRequest request) {
         log.info("POST /api/v1/pagos - Plan: {}, Monto: {}, Método: {}",
                 request.getPlanPagoId(), request.getMontoPagado(), request.getMetodoPago());
-        return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.aplicarPago(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(pagoApplicationUseCase.aplicarPago(request));
     }
 
     @GetMapping("/{id}")
@@ -76,7 +77,7 @@ public class PagoController {
     public ResponseEntity<PagoResponse> obtenerPago(
             @Parameter(description = "ID del pago", required = true) @PathVariable Long id) {
         log.info("GET /api/v1/pagos/{}", id);
-        return ResponseEntity.ok(pagoService.obtenerPago(id));
+        return ResponseEntity.ok(pagoApplicationUseCase.obtenerPago(id));
     }
 
     @GetMapping("/venta/{ventaId}")
@@ -90,7 +91,7 @@ public class PagoController {
     public ResponseEntity<List<PagoResponse>> listarPagosPorVenta(
             @Parameter(description = "ID de la venta", required = true) @PathVariable Long ventaId) {
         log.info("GET /api/v1/pagos/venta/{}", ventaId);
-        return ResponseEntity.ok(pagoService.listarPagosPorVenta(ventaId));
+        return ResponseEntity.ok(pagoApplicationUseCase.listarPagosPorVenta(ventaId));
     }
 
     @DeleteMapping("/{id}")
@@ -104,7 +105,7 @@ public class PagoController {
     public ResponseEntity<Void> eliminarPago(
             @Parameter(description = "ID del pago", required = true) @PathVariable Long id) {
         log.info("DELETE /api/v1/pagos/{}", id);
-        pagoService.eliminarPago(id);
+        pagoApplicationUseCase.eliminarPago(id);
         return ResponseEntity.noContent().build();
     }
 }

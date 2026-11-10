@@ -126,7 +126,7 @@ function PlanPagoForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="form-container">
         <h3>Información del Plan</h3>
         <div className="form-grid">
           <div className="form-group">

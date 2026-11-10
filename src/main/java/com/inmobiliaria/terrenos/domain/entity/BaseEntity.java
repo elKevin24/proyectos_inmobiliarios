@@ -1,8 +1,12 @@
 package com.inmobiliaria.terrenos.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -20,6 +24,9 @@ import java.time.LocalDateTime;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class BaseEntity {
 
     @Id
@@ -35,10 +42,29 @@ public abstract class BaseEntity {
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted", nullable = false)
+    @Builder.Default
     private Boolean deleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @PrePersist
+    protected void onBaseCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+        if (deleted == null) {
+            deleted = false;
+        }
+    }
+
+    @PreUpdate
+    protected void onBaseUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     /**
      * Soft delete: marca la entidad como eliminada.

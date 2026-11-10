@@ -4,6 +4,8 @@ import com.inmobiliaria.terrenos.domain.enums.RolEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
+import lombok.experimental.SuperBuilder;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,7 +23,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Rol extends TenantBaseEntity {
 
     @Enumerated(EnumType.STRING)

@@ -1,9 +1,13 @@
 package com.inmobiliaria.terrenos.application.service;
 
 import com.inmobiliaria.terrenos.application.dto.pago.*;
+import com.inmobiliaria.terrenos.application.port.in.PagoApplicationUseCase;
+import com.inmobiliaria.terrenos.application.port.in.PlanPagoUseCase;
 import com.inmobiliaria.terrenos.domain.entity.*;
 import com.inmobiliaria.terrenos.domain.enums.*;
 import com.inmobiliaria.terrenos.domain.repository.*;
+import com.inmobiliaria.terrenos.domain.service.amortizacion.AmortizacionCalculatorStrategy;
+import com.inmobiliaria.terrenos.domain.service.amortizacion.MoraCalculator;
 import com.inmobiliaria.terrenos.infrastructure.security.SecurityUtils;
 import com.inmobiliaria.terrenos.infrastructure.tenant.TenantContext;
 import com.inmobiliaria.terrenos.interfaces.mapper.*;
@@ -26,15 +30,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Servicio de gestión de pagos y financiamiento
+ * Servicio de gestión de pagos y financiamiento.
+ * Implementa {@link PlanPagoUseCase} y {@link PagoApplicationUseCase} (ISP).
+ * Delega cálculos a {@link AmortizacionCalculatorStrategy} y {@link MoraCalculator} (SRP & OCP).
  *
  * @author Kevin
- * @version 1.0.0
+ * @version 2.0.0
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PagoService {
+public class PagoService implements PlanPagoUseCase, PagoApplicationUseCase {
 
     private final PlanPagoRepository planPagoRepository;
     private final AmortizacionRepository amortizacionRepository;
@@ -47,6 +53,9 @@ public class PagoService {
     private final PlanPagoMapper planPagoMapper;
     private final AmortizacionMapper amortizacionMapper;
     private final PagoMapper pagoMapper;
+
+    private final List<AmortizacionCalculatorStrategy> amortizacionStrategies;
+    private final MoraCalculator moraCalculator;
 
     private Long getTenantId() {
         Long tenantId = TenantContext.getTenantId();
@@ -129,16 +138,16 @@ public class PagoService {
 
         amortizacionRepository.findByPlanPagoId(tenantId, planPago.getId())
                 .forEach(a -> {
-                    a.setDeleted(true);
+                    a.softDelete();
                     amortizacionRepository.save(a);
                 });
 
         pagos.forEach(p -> {
-            p.setDeleted(true);
+            p.softDelete();
             pagoRepository.save(p);
         });
 
-        planPago.setDeleted(true);
+        planPago.softDelete();
         planPago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
         planPagoRepository.save(planPago);
         log.info("Plan de pago eliminado lógicamente: {}", id);
@@ -173,6 +182,25 @@ public class PagoService {
     public void generarAmortizaciones(PlanPago planPago) {
         log.info("Generando amortizaciones para plan de pago: {}", planPago.getId());
 
+        List<Amortizacion> amortizaciones = null;
+        if (amortizacionStrategies != null) {
+            for (AmortizacionCalculatorStrategy strategy : amortizacionStrategies) {
+                if (strategy.supports(planPago)) {
+                    amortizaciones = strategy.generarTabla(planPago);
+                    break;
+                }
+            }
+        }
+
+        if (amortizaciones == null || amortizaciones.isEmpty()) {
+            amortizaciones = fallbackGenerarAmortizaciones(planPago);
+        }
+
+        amortizacionRepository.saveAll(amortizaciones);
+        log.info("Generadas {} amortizaciones", amortizaciones.size());
+    }
+
+    private List<Amortizacion> fallbackGenerarAmortizaciones(PlanPago planPago) {
         BigDecimal montoFinanciado = planPago.getMontoFinanciado();
         Integer numeroPagos = planPago.getNumeroPagos();
         BigDecimal tasaMensual = planPago.getTasaInteresMensual();
@@ -182,15 +210,13 @@ public class PagoService {
         BigDecimal saldoRestante = montoFinanciado;
         LocalDate fechaVencimiento = planPago.getFechaPrimerPago();
 
-        if (aplicaInteres && tasaMensual.compareTo(BigDecimal.ZERO) > 0) {
-            // Amortización francesa (cuota fija con interés)
+        if (Boolean.TRUE.equals(aplicaInteres) && tasaMensual != null && tasaMensual.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal cuotaFija = calcularCuotaFija(montoFinanciado, tasaMensual, numeroPagos);
 
             for (int i = 1; i <= numeroPagos; i++) {
                 BigDecimal interes = saldoRestante.multiply(tasaMensual.divide(new BigDecimal("100"), 6, RoundingMode.HALF_UP));
                 BigDecimal capital = cuotaFija.subtract(interes);
 
-                // Ajustar última cuota para eliminar diferencias por redondeo
                 if (i == numeroPagos) {
                     capital = saldoRestante;
                 }
@@ -205,13 +231,11 @@ public class PagoService {
                 fechaVencimiento = calcularSiguienteFechaVencimiento(fechaVencimiento, planPago.getFrecuenciaPago());
             }
         } else {
-            // Sin interés - capital dividido en partes iguales
             BigDecimal capitalPorCuota = montoFinanciado.divide(new BigDecimal(numeroPagos), 2, RoundingMode.HALF_UP);
 
             for (int i = 1; i <= numeroPagos; i++) {
                 BigDecimal capital = capitalPorCuota;
 
-                // Ajustar última cuota
                 if (i == numeroPagos) {
                     capital = saldoRestante;
                 }
@@ -226,9 +250,7 @@ public class PagoService {
                 fechaVencimiento = calcularSiguienteFechaVencimiento(fechaVencimiento, planPago.getFrecuenciaPago());
             }
         }
-
-        amortizacionRepository.saveAll(amortizaciones);
-        log.info("Generadas {} amortizaciones", amortizaciones.size());
+        return amortizaciones;
     }
 
     private Amortizacion crearAmortizacion(PlanPago planPago, int numeroCuota, BigDecimal capital,
@@ -385,7 +407,7 @@ public class PagoService {
             throw new BusinessException("Solo se pueden eliminar pagos aplicados", HttpStatus.CONFLICT);
         }
 
-        pago.setDeleted(true);
+        pago.softDelete();
         pago.setUpdatedBy(SecurityUtils.getCurrentUsername().orElse("SYSTEM"));
         pagoRepository.save(pago);
         log.info("Pago eliminado lógicamente: {}", id);
@@ -495,6 +517,9 @@ public class PagoService {
      * Mora = MontoPendiente * (TasaMoraMensual / 30) * DiasAtraso
      */
     private BigDecimal calcularMora(BigDecimal montoPendiente, BigDecimal tasaMoraMensual, int diasAtraso) {
+        if (moraCalculator != null) {
+            return moraCalculator.calcularMora(montoPendiente, tasaMoraMensual, diasAtraso);
+        }
         if (tasaMoraMensual == null || tasaMoraMensual.compareTo(BigDecimal.ZERO) == 0 || diasAtraso <= 0) {
             return BigDecimal.ZERO;
         }

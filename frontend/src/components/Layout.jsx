@@ -53,7 +53,7 @@ function Layout() {
 
         <ul className="nav-menu">
           <li>
-            <NavLink to="/" end>
+            <NavLink to="/" end data-testid="nav-dashboard">
               <FaHome /> <span>Dashboard</span>
             </NavLink>
           </li>
@@ -78,17 +78,17 @@ function Layout() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/apartados">
+            <NavLink to="/apartados" data-testid="nav-apartados">
               <FaBookmark /> <span>Apartados</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/cotizaciones">
+            <NavLink to="/cotizaciones" data-testid="nav-cotizaciones">
               <FaFileInvoiceDollar /> <span>Cotizaciones</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/planes-pago">
+            <NavLink to="/planes-pago" data-testid="nav-planes-pago">
               <FaCalculator /> <span>Planes de Pago</span>
             </NavLink>
           </li>
@@ -98,7 +98,7 @@ function Layout() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/auditoria">
+            <NavLink to="/auditoria" data-testid="nav-auditoria">
               <FaShieldAlt /> <span>Auditoría</span>
             </NavLink>
           </li>

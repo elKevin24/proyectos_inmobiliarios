@@ -49,11 +49,19 @@ public class ApartadoResponse {
      * Calcula el porcentaje de apartado
      */
     public BigDecimal getPorcentajeApartado() {
-        if (precioTotal == null || precioTotal.compareTo(BigDecimal.ZERO) == 0) {
+        if (precioTotal == null || precioTotal.compareTo(BigDecimal.ZERO) == 0 || montoApartado == null) {
             return BigDecimal.ZERO;
         }
         return montoApartado.multiply(BigDecimal.valueOf(100))
                 .divide(precioTotal, 2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getPorcentajePagado() {
+        return getPorcentajeApartado();
+    }
+
+    public Integer getDiasVigencia() {
+        return duracionDias;
     }
 
     /**

@@ -57,6 +57,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: terrenos-backend
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
@@ -65,12 +66,15 @@ services:
       - DATABASE_PASSWORD=postgres
       - SPRING_PROFILES_ACTIVE=dev
       - CV_ENGINE_URL=http://cv-engine:8000
+      - FILE_UPLOAD_DIR=/app/uploads
     volumes:
       - ./uploads:/app/uploads
     networks:
       - terrenos-network
     depends_on:
       postgres:
+        condition: service_healthy
+      cv-engine:
         condition: service_healthy
 
   # Microservicio Computer Vision (Python)
@@ -79,12 +83,34 @@ services:
       context: ./cv-engine
       dockerfile: Dockerfile
     container_name: terrenos-cv-engine
+    restart: unless-stopped
     ports:
       - "8000:8000"
+    environment:
+      - UPLOAD_DIR=/app/uploads
+      - MAX_IMAGE_DIMENSION=8000
+      - MIN_LOTE_AREA=1000
+      - MAX_LOTE_AREA=5000000
+      - THREAD_WORKERS=4
     volumes:
       - ./uploads:/app/uploads
     networks:
       - terrenos-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Tests del microservicio Computer Vision (unit tests)
+  cv-engine-test:
+    build:
+      context: ./cv-engine
+      dockerfile: Dockerfile
+    container_name: terrenos-cv-engine-test
+    working_dir: /app
+    command: ["python", "-m", "unittest", "discover", "-s", ".", "-p", "test_*.py", "-v"]
 
 volumes:
   postgres_data:

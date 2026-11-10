@@ -4,6 +4,7 @@ import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
 import com.inmobiliaria.terrenos.domain.enums.TipoPrecio;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
@@ -20,16 +21,9 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class Proyecto {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class Proyecto extends TenantBaseEntity {
 
     @Column(nullable = false, length = 200)
     private String nombre;
@@ -76,16 +70,6 @@ public class Proyecto {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private java.time.LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private java.time.LocalDateTime updatedAt;
-
     @Column(name = "created_by")
     private String createdBy;
 
@@ -95,15 +79,4 @@ public class Proyecto {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "proyecto_id", insertable = false, updatable = false)
     private java.util.List<Terreno> terrenos;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = java.time.LocalDateTime.now();
-        updatedAt = java.time.LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = java.time.LocalDateTime.now();
-    }
 }

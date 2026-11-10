@@ -59,7 +59,7 @@ function PagoForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="form-container">
         <div className="form-grid">
           <div className="form-group">
             <label htmlFor="monto">Monto del Pago *</label>

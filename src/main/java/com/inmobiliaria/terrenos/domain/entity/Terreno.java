@@ -1,14 +1,15 @@
 package com.inmobiliaria.terrenos.domain.entity;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inmobiliaria.terrenos.domain.enums.EstadoTerreno;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para Terrenos/Lotes
@@ -22,16 +23,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class Terreno {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class Terreno extends TenantBaseEntity {
 
     @Column(name = "proyecto_id", nullable = false)
     private Long proyectoId;
@@ -98,35 +92,52 @@ public class Terreno {
     @Column(columnDefinition = "jsonb")
     private String caracteristicas;
 
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "updated_by")
     private String updatedBy;
 
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
     @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    @PreUpdate
+    protected void onTerrenoSave() {
         // Calcular precio final si no está establecido
         if (precioFinal == null) {
             calcularPrecioFinal();
         }
+        // Asegurar que caracteristicas sea JSON válido para la columna jsonb
+        this.caracteristicas = normalizeJson(this.caracteristicas);
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    /**
+     * Normaliza el campo caracteristicas para asegurar que se almacene
+     * como JSON sintácticamente válido (objeto, array o string delimitado),
+     * evitando errores de sintaxis en columnas jsonb de PostgreSQL/H2.
+     */
+    public static String normalizeJson(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String trimmed = value.trim();
+        // Si ya es un objeto, array o string JSON delimitado, validar su sintaxis
+        if ((trimmed.startsWith("{") && trimmed.endsWith("}"))
+                || (trimmed.startsWith("[") && trimmed.endsWith("]"))
+                || (trimmed.startsWith("\"") && trimmed.endsWith("\"") && trimmed.length() >= 2)) {
+            try {
+                JSON_MAPPER.readTree(trimmed);
+                return trimmed;
+            } catch (Exception ignored) {
+                // No es JSON válido a pesar de los delimitadores, se codifica abajo
+            }
+        }
+        // Si es texto plano (p. ej. "Lote E2E Test"), envolverlo como string JSON válido
+        try {
+            return JSON_MAPPER.writeValueAsString(trimmed);
+        } catch (Exception e) {
+            return "\"" + trimmed.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+        }
     }
 
     /**

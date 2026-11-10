@@ -50,4 +50,12 @@ public class DashboardResponse {
     // Métricas
     private BigDecimal ticketPromedio;
     private BigDecimal tasaConversion; // % de cotizaciones que se convierten en ventas
+
+    public BigDecimal getMontoComisiones() {
+        return montoTotalComisiones;
+    }
+
+    public BigDecimal getPorcentajeAvanceVentas() {
+        return porcentajeOcupacion;
+    }
 }

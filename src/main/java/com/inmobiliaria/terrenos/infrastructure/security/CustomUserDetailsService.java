@@ -41,9 +41,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(permiso -> new SimpleGrantedAuthority(permiso.getCodigo()))
                 .collect(Collectors.toSet());
 
-        // Agregar también los roles como authorities
-        usuario.getRoles().forEach(rol -> 
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + rol.getNombre())));
+        // Agregar también los roles como authorities (con y sin prefijo ROLE_)
+        usuario.getRoles().forEach(rol -> {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + rol.getNombre().name()));
+            authorities.add(new SimpleGrantedAuthority(rol.getNombre().name()));
+        });
 
         return User.builder()
                 .username(usuario.getEmail())

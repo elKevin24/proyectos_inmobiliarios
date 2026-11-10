@@ -3,6 +3,8 @@ package com.inmobiliaria.terrenos.application.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inmobiliaria.terrenos.application.dto.plano.ConfirmarIngestaRequest;
 import com.inmobiliaria.terrenos.application.dto.plano.CvEngineResponse;
+import com.inmobiliaria.terrenos.application.port.out.ExecutionContextPort;
+import com.inmobiliaria.terrenos.application.port.out.FileStoragePort;
 import com.inmobiliaria.terrenos.domain.entity.Proyecto;
 import com.inmobiliaria.terrenos.domain.entity.Terreno;
 import com.inmobiliaria.terrenos.domain.enums.EstadoTerreno;
@@ -14,6 +16,7 @@ import com.inmobiliaria.terrenos.shared.exception.BusinessException;
 import com.inmobiliaria.terrenos.shared.exception.PlanoException;
 import com.inmobiliaria.terrenos.shared.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -40,15 +43,15 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
  * Servicio de ingesta de planos con análisis de Computer Vision.
+ * Aplica DIP integrando {@link FileStoragePort} y {@link ExecutionContextPort}.
  *
  * @author Kevin
- * @version 2.1.0
+ * @version 2.2.0
  */
 @Service
 @Slf4j
@@ -60,6 +63,9 @@ public class PlanoIngestaService {
     private final PlanoStatusStore statusStore;
     private final ObjectMapper objectMapper;
     private final Executor planoTaskExecutor;
+    private final ProyectoContadorService proyectoContadorService;
+    private final FileStoragePort fileStoragePort;
+    private final ExecutionContextPort executionContextPort;
 
     @Value("${CV_ENGINE_URL:http://localhost:8000}")
     private String cvEngineUrl;
@@ -67,22 +73,43 @@ public class PlanoIngestaService {
     private static final String BASE_UPLOAD_DIR = "uploads";
     private static final long MAX_FILE_SIZE_BYTES = 100L * 1024 * 1024; // 100 MB
 
+    @Autowired
     public PlanoIngestaService(
             TerrenoRepository terrenoRepository,
             ProyectoRepository proyectoRepository,
             RestTemplate restTemplate,
             PlanoStatusStore statusStore,
             ObjectMapper objectMapper,
-            @Qualifier("planoTaskExecutor") Executor planoTaskExecutor) {
+            @Qualifier("planoTaskExecutor") Executor planoTaskExecutor,
+            @Autowired(required = false) ProyectoContadorService proyectoContadorService,
+            @Autowired(required = false) FileStoragePort fileStoragePort,
+            @Autowired(required = false) ExecutionContextPort executionContextPort) {
         this.terrenoRepository = terrenoRepository;
         this.proyectoRepository = proyectoRepository;
         this.restTemplate = restTemplate;
         this.statusStore = statusStore;
         this.objectMapper = objectMapper;
         this.planoTaskExecutor = planoTaskExecutor;
+        this.proyectoContadorService = proyectoContadorService;
+        this.fileStoragePort = fileStoragePort;
+        this.executionContextPort = executionContextPort;
+    }
+
+    public PlanoIngestaService(
+            TerrenoRepository terrenoRepository,
+            ProyectoRepository proyectoRepository,
+            RestTemplate restTemplate,
+            PlanoStatusStore statusStore,
+            ObjectMapper objectMapper,
+            @Qualifier("planoTaskExecutor") Executor planoTaskExecutor,
+            @Autowired(required = false) ProyectoContadorService proyectoContadorService) {
+        this(terrenoRepository, proyectoRepository, restTemplate, statusStore, objectMapper, planoTaskExecutor, proyectoContadorService, null, null);
     }
 
     private Long getTenantId() {
+        if (executionContextPort != null) {
+            return executionContextPort.requireTenantId();
+        }
         Long tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
             throw new BusinessException("No se encontró tenant_id en el contexto", HttpStatus.UNAUTHORIZED);
@@ -96,27 +123,40 @@ public class PlanoIngestaService {
     @Transactional(readOnly = true)
     public String iniciarAnalisisPorNombre(Long proyectoId, String nombreAlmacenado) {
         Long tenantId = getTenantId();
-        proyectoRepository.findByIdAndTenantIdAndDeletedFalse(proyectoId, tenantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
+        if (nombreAlmacenado == null || nombreAlmacenado.isBlank()
+                || nombreAlmacenado.contains("..")
+                || nombreAlmacenado.contains("/")
+                || nombreAlmacenado.contains("\\")) {
+            throw new BusinessException("Nombre de archivo inválido", HttpStatus.BAD_REQUEST);
+        }
+        if (proyectoRepository != null) {
+            proyectoRepository.findByIdAndTenantIdAndDeletedFalse(proyectoId, tenantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
+        }
 
         String tareaId = UUID.randomUUID().toString();
         String relativePath = "planos/proyecto_" + proyectoId + "/" + nombreAlmacenado;
 
-        CompletableFuture.runAsync(
-                () -> procesarPlanoAsync(tareaId, relativePath, tenantId),
-                planoTaskExecutor
-        );
+        if (statusStore != null) {
+            statusStore.registrarTareaTenant(tareaId, tenantId);
+        }
+
+        if (planoTaskExecutor != null) {
+            planoTaskExecutor.execute(() -> procesarPlanoAsync(tareaId, relativePath, tenantId));
+        }
         return tareaId;
     }
 
     /**
-     * Guarda el plano en disco y lanza el análisis de CV en el pool dedicado.
+     * Guarda el plano y lanza el análisis de CV en el pool dedicado.
      */
     @Transactional(readOnly = true)
     public String iniciarAnalisis(Long proyectoId, MultipartFile file) throws IOException {
         Long tenantId = getTenantId();
-        proyectoRepository.findByIdAndTenantIdAndDeletedFalse(proyectoId, tenantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
+        if (proyectoRepository != null) {
+            proyectoRepository.findByIdAndTenantIdAndDeletedFalse(proyectoId, tenantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
+        }
 
         validarArchivo(file);
 
@@ -124,10 +164,13 @@ public class PlanoIngestaService {
         Path rutaArchivo = guardarArchivoSeguro(proyectoId, file);
         String relativePath = "planos/proyecto_" + proyectoId + "/" + rutaArchivo.getFileName();
 
-        CompletableFuture.runAsync(
-                () -> procesarPlanoAsync(tareaId, relativePath, tenantId),
-                planoTaskExecutor
-        );
+        if (statusStore != null) {
+            statusStore.registrarTareaTenant(tareaId, tenantId);
+        }
+
+        if (planoTaskExecutor != null) {
+            planoTaskExecutor.execute(() -> procesarPlanoAsync(tareaId, relativePath, tenantId));
+        }
         return tareaId;
     }
 
@@ -192,23 +235,31 @@ public class PlanoIngestaService {
     public void confirmarIngesta(ConfirmarIngestaRequest request) {
         Long tenantId = getTenantId();
 
-        Proyecto proyecto = proyectoRepository.findByIdAndTenantIdAndDeletedFalse(request.getProyectoId(), tenantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + request.getProyectoId()));
-
         if (request.getLotes() == null || request.getLotes().isEmpty()) {
-            throw new PlanoException("Debe incluir al menos un lote para confirmar la ingesta");
+            throw new BusinessException("Debe confirmar al menos un lote", HttpStatus.BAD_REQUEST);
         }
 
-        BigDecimal precioBaseProyecto = proyecto.getPrecioBase() != null ? proyecto.getPrecioBase() : BigDecimal.ZERO;
+        Proyecto proyecto = null;
+        BigDecimal precioBaseProyecto = BigDecimal.ZERO;
+        if (proyectoRepository != null) {
+            proyecto = proyectoRepository.findByIdAndTenantIdAndDeletedFalse(request.getProyectoId(), tenantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + request.getProyectoId()));
+            if (proyecto.getPrecioBase() != null) {
+                precioBaseProyecto = proyecto.getPrecioBase();
+            }
+        }
+
+        final BigDecimal precioBaseFinal = precioBaseProyecto;
+        final Long proyectoIdFinal = proyecto != null ? proyecto.getId() : request.getProyectoId();
 
         List<Terreno> nuevosTerrenos = request.getLotes().stream()
                 .map(dto -> Terreno.builder()
                         .tenantId(tenantId)
-                        .proyectoId(proyecto.getId())
+                        .proyectoId(proyectoIdFinal)
                         .numeroLote(dto.getNumeroLote() != null && !dto.getNumeroLote().isBlank() ? dto.getNumeroLote() : "S/N")
                         .area(dto.getArea() != null ? dto.getArea() : BigDecimal.ONE)
-                        .precioBase(precioBaseProyecto)
-                        .precioFinal(precioBaseProyecto)
+                        .precioBase(precioBaseFinal)
+                        .precioFinal(precioBaseFinal)
                         .estado(EstadoTerreno.DISPONIBLE)
                         .coordenadasPlano(dto.getCoordenadasPlanoJson())
                         .build())
@@ -216,28 +267,38 @@ public class PlanoIngestaService {
 
         terrenoRepository.saveAll(nuevosTerrenos);
 
-        long totalTerrenos = terrenoRepository.countByTenantIdAndProyectoIdAndDeletedFalse(tenantId, proyecto.getId());
-        long disponibles = terrenoRepository.countByTenantIdAndProyectoIdAndEstadoAndDeletedFalse(
-                tenantId, proyecto.getId(), EstadoTerreno.DISPONIBLE);
-        proyecto.setTotalTerrenos((int) totalTerrenos);
-        proyecto.setTerrenosDisponibles((int) disponibles);
-        proyectoRepository.save(proyecto);
+        if (proyectoContadorService != null && proyecto != null) {
+            proyectoContadorService.sincronizarContadores(proyecto);
+        } else if (proyecto != null && proyectoRepository != null) {
+            long totalTerrenos = terrenoRepository.countByTenantIdAndProyectoIdAndDeletedFalse(tenantId, proyecto.getId());
+            long disponibles = terrenoRepository.countByTenantIdAndProyectoIdAndEstadoAndDeletedFalse(
+                    tenantId, proyecto.getId(), EstadoTerreno.DISPONIBLE);
+            proyecto.setTotalTerrenos((int) totalTerrenos);
+            proyecto.setTerrenosDisponibles((int) disponibles);
+            proyectoRepository.save(proyecto);
+        }
 
         log.info("[Tenant {}] {} lotes ingresados para proyecto {}",
-                tenantId, nuevosTerrenos.size(), proyecto.getId());
+                tenantId, nuevosTerrenos.size(), proyectoIdFinal);
     }
 
     private Path guardarArchivoSeguro(Long proyectoId, MultipartFile file) throws IOException {
-        Path uploadDir = Paths.get(BASE_UPLOAD_DIR, "planos", "proyecto_" + proyectoId);
-        Files.createDirectories(uploadDir);
-
         String nombreOriginal = StringUtils.cleanPath(
                 Objects.requireNonNull(file.getOriginalFilename(), "Nombre de archivo nulo"));
         String extension = nombreOriginal.contains(".")
                 ? nombreOriginal.substring(nombreOriginal.lastIndexOf("."))
                 : "";
         String nombreSeguro = UUID.randomUUID() + extension;
+        String subDirectory = "planos/proyecto_" + proyectoId;
 
+        if (fileStoragePort != null) {
+            Path destino = fileStoragePort.store(file, subDirectory, nombreSeguro);
+            log.info("Archivo guardado en: {}", destino);
+            return destino;
+        }
+
+        Path uploadDir = Paths.get(BASE_UPLOAD_DIR, "planos", "proyecto_" + proyectoId);
+        Files.createDirectories(uploadDir);
         Path destino = uploadDir.resolve(nombreSeguro);
         Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
 
@@ -247,7 +308,7 @@ public class PlanoIngestaService {
 
     private void validarArchivo(MultipartFile file) {
         if (file.isEmpty()) {
-            throw PlanoException.archivoVacio();
+            throw new PlanoException("El archivo está vacío", "PLANO_ARCHIVO_VACIO", HttpStatus.BAD_REQUEST);
         }
         if (file.getSize() > MAX_FILE_SIZE_BYTES) {
             throw PlanoException.archivoExcedeLimite(100);

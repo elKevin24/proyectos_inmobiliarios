@@ -4,6 +4,8 @@ import com.inmobiliaria.terrenos.domain.enums.TipoArchivo;
 import jakarta.persistence.*;
 import lombok.*;
 
+import lombok.experimental.SuperBuilder;
+
 /**
  * Entidad para gestión de archivos (planos, imágenes, documentos)
  *
@@ -21,7 +23,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Archivo extends TenantBaseEntity {
 
     @Column(name = "proyecto_id")

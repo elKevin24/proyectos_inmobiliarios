@@ -26,6 +26,12 @@ function ClienteForm() {
       Object.keys(cliente).forEach(key => {
         setValue(key, cliente[key]);
       });
+      if (!cliente.apellidos && cliente.apellido) {
+        setValue('apellidos', cliente.apellido);
+      }
+      if (!cliente.estadoCliente && cliente.estado) {
+        setValue('estadoCliente', cliente.estado);
+      }
     } catch (error) {
       console.error('Error loading cliente:', error);
       alert('Error al cargar el cliente');
@@ -37,6 +43,7 @@ function ClienteForm() {
       const clienteData = {
         nombre: data.nombre,
         apellidos: data.apellidos,
+        apellido: data.apellidos,
         email: data.email,
         telefono: data.telefono,
         rfc: data.rfc || null,
@@ -73,7 +80,7 @@ function ClienteForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="form-container">
         <h3>Información Personal</h3>
         <div className="form-grid">
           <div className="form-group">

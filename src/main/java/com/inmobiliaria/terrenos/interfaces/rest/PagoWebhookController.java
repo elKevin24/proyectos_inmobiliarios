@@ -1,7 +1,7 @@
 package com.inmobiliaria.terrenos.interfaces.rest;
 
 import com.inmobiliaria.terrenos.application.dto.pago.WebhookMercadoPagoNotification;
-import com.inmobiliaria.terrenos.application.service.MercadoPagoService;
+import com.inmobiliaria.terrenos.application.port.out.PaymentGatewayPort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST público para recepción e ingesta de Webhooks de Pasarelas de Pago (MercadoPago).
+ * Controller REST público para recepción e ingesta de Webhooks de Pasarelas de Pago.
+ * Depende de {@link PaymentGatewayPort} (DIP).
  *
  * @author Dev A (Lead Backend & Architect)
- * @version 1.1.0
+ * @version 1.2.0
  */
 @RestController
 @RequestMapping("/api/v1/webhooks")
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Webhooks", description = "Endpoints receptores de Webhooks en tiempo real")
 public class PagoWebhookController {
 
-    private final MercadoPagoService mercadoPagoService;
+    private final PaymentGatewayPort paymentGatewayPort;
 
     @PostMapping("/mercadopago")
     @Operation(summary = "Webhook de MercadoPago", description = "Endpoint público para recibir notificaciones instantáneas de pago")
@@ -41,7 +42,7 @@ public class PagoWebhookController {
         String paymentId = id != null ? id : (notification.getData() != null && notification.getData().containsKey("id") ?
                 notification.getData().get("id").toString() : "MP-TEST-" + System.currentTimeMillis());
 
-        mercadoPagoService.procesarNotificacionWebhook(notification, paymentId, externalReference);
+        paymentGatewayPort.procesarNotificacionWebhook(notification, paymentId, externalReference);
 
         return ResponseEntity.ok("OK");
     }

@@ -31,11 +31,11 @@ WORKDIR /app
 # Copiar JAR desde stage de build
 COPY --from=build /app/target/*.jar app.jar
 
-# Cambiar ownership
-RUN chown -R spring:spring /app
+# Crear directorio de uploads y cambiar ownership
+RUN mkdir -p /app/uploads && chown -R spring:spring /app
 
 # Instalar curl para el healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Cambiar a usuario no-root
 USER spring:spring

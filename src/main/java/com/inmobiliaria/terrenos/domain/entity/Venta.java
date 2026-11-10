@@ -3,11 +3,11 @@ package com.inmobiliaria.terrenos.domain.entity;
 import com.inmobiliaria.terrenos.domain.enums.EstadoVenta;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para Ventas de terrenos
@@ -21,16 +21,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class Venta {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class Venta extends TenantBaseEntity {
 
     @Column(name = "terreno_id", nullable = false)
     private Long terrenoId;
@@ -116,30 +109,9 @@ public class Venta {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "created_by", length = 100)
     private String createdBy;
 
     @Column(name = "updated_by", length = 100)
     private String updatedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

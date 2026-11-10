@@ -65,9 +65,9 @@ public abstract class BaseIntegrationTest {
                     // Planes de pago
                     "PLAN_PAGO_VER", "PLAN_PAGO_CREAR", "PLAN_PAGO_EDITAR", "PLAN_PAGO_ELIMINAR",
                     // Pagos
-                    "PAGO_REGISTRAR",
+                    "PAGO_REGISTRAR", "PAGO_VER", "PAGO_ELIMINAR",
                     // Archivos
-                    "ARCHIVO_CREAR",
+                    "ARCHIVO_CREAR", "ARCHIVO_VER", "ARCHIVO_ELIMINAR",
                     // Admin (special authority for audit endpoints)
                     "ADMIN"
             ).forEach(codigo -> permisoRepository.save(

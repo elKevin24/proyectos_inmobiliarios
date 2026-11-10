@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.auth;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -49,6 +50,7 @@ public class RegisterRequest {
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
     private String nombre;
 
+    @JsonAlias("apellidos")
     @NotBlank(message = "El apellido del administrador es obligatorio")
     @Size(min = 2, max = 100, message = "El apellido debe tener entre 2 y 100 caracteres")
     private String apellido;

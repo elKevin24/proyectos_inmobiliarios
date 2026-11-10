@@ -30,7 +30,6 @@ public interface ProyectoMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "terrenos", ignore = true)
-    @Mapping(target = "estado", source = "estadoProyecto")
     Proyecto toEntity(CreateProyectoRequest request);
 
     /**
@@ -58,6 +57,5 @@ public interface ProyectoMapper {
     @Mapping(target = "terrenosDisponibles", ignore = true)
     @Mapping(target = "terrenosApartados", ignore = true)
     @Mapping(target = "terrenosVendidos", ignore = true)
-    @Mapping(target = "estado", source = "estadoProyecto")
     void updateEntityFromRequest(UpdateProyectoRequest request, @MappingTarget Proyecto proyecto);
 }

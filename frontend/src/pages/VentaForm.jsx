@@ -13,7 +13,9 @@ function VentaForm() {
   const { createVenta, isLoading } = useVentaStore();
   const { fetchTerrenos } = useTerrenoStore();
   const { clientes, fetchClientes } = clienteStore();
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+    mode: 'onChange'
+  });
 
   const [terrenosDisponibles, setTerrenosDisponibles] = useState([]);
 
@@ -28,8 +30,10 @@ function VentaForm() {
     try {
       await fetchClientes();
       const allTerrenos = await fetchTerrenos();
-      // Solo mostrar terrenos disponibles
-      const disponibles = allTerrenos.filter(t => t.estado === 'DISPONIBLE');
+      // Solo mostrar terrenos disponibles (o el terreno apartado en conversión)
+      const disponibles = allTerrenos.filter(
+        t => t.estado === 'DISPONIBLE' || t.id === Number(apartadoData?.terrenoId)
+      );
       setTerrenosDisponibles(disponibles);
 
       // Si viene desde apartado, pre-llenar campos
@@ -104,7 +108,7 @@ function VentaForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="form-container">
         <h3>Información de la Venta</h3>
         <div className="form-grid">
           <div className="form-group">
@@ -116,7 +120,7 @@ function VentaForm() {
               <option value="">Seleccionar terreno</option>
               {terrenosDisponibles.map(terreno => (
                 <option key={terreno.id} value={terreno.id}>
-                  Lote {terreno.numero} - {terreno.area}m² - ${Number(terreno.precioFinal).toLocaleString('es-MX')}
+                  Lote {terreno.numero || terreno.numeroLote} - {terreno.area}m² - ${Number(terreno.precioFinal).toLocaleString('es-MX')}
                 </option>
               ))}
             </select>
@@ -132,7 +136,7 @@ function VentaForm() {
               <option value="">Seleccionar cliente</option>
               {clientes.map(cliente => (
                 <option key={cliente.id} value={cliente.id}>
-                  {cliente.nombre} {cliente.apellidos} - {cliente.email}
+                  {cliente.nombre} {cliente.apellidos || cliente.apellido || ''} - {cliente.email}
                 </option>
               ))}
             </select>
@@ -147,7 +151,8 @@ function VentaForm() {
               step="0.01"
               {...register('montoTotal', {
                 required: 'El monto total es requerido',
-                min: { value: 0, message: 'El monto debe ser mayor a 0' }
+                min: { value: 0, message: 'El monto debe ser mayor a 0' },
+                deps: ['enganche']
               })}
               placeholder="500000.00"
             />
@@ -163,7 +168,15 @@ function VentaForm() {
               {...register('enganche', {
                 required: 'El enganche es requerido',
                 min: { value: 0, message: 'El enganche debe ser mayor o igual a 0' },
-                max: { value: montoTotal, message: 'El enganche no puede ser mayor al monto total' }
+                validate: (val) => {
+                  const numEnganche = Number(val);
+                  const numTotal = Number(montoTotal);
+                  if (numEnganche > numTotal) {
+                    return 'El enganche no puede ser mayor al monto total';
+                  }
+                  return true;
+                },
+                deps: ['montoTotal']
               })}
               placeholder="100000.00"
             />

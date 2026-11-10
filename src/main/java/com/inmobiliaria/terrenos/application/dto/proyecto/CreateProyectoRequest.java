@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.proyecto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.inmobiliaria.terrenos.domain.enums.EstadoProyecto;
 import com.inmobiliaria.terrenos.domain.enums.TipoPrecio;
 import jakarta.validation.constraints.*;
@@ -29,19 +30,21 @@ public class CreateProyectoRequest {
     @Size(max = 1000, message = "La descripción no puede exceder 1000 caracteres")
     private String descripcion;
 
-    @NotBlank(message = "La dirección es obligatoria")
     @Size(max = 500, message = "La dirección no puede exceder 500 caracteres")
     private String direccion;
 
-    @NotBlank(message = "La ciudad es obligatoria")
     @Size(max = 100, message = "La ciudad no puede exceder 100 caracteres")
     private String ciudad;
 
-    @NotBlank(message = "El estado es obligatorio")
     @Size(max = 100, message = "El estado no puede exceder 100 caracteres")
     private String estado;
 
-    @NotBlank(message = "El código postal es obligatorio")
+    private String ubicacion;
+
+    private String estadoProvincia;
+
+    private BigDecimal areaTotal;
+
     @Pattern(regexp = "^\\d{5}$", message = "El código postal debe tener 5 dígitos")
     private String codigoPostal;
 
@@ -53,9 +56,9 @@ public class CreateProyectoRequest {
     @DecimalMax(value = "180.0", message = "La longitud debe ser menor o igual a 180")
     private Double longitud;
 
-    @NotNull(message = "El tipo de precio es obligatorio")
     private TipoPrecio tipoPrecio;
 
+    @JsonAlias({"precioBaseM2"})
     @DecimalMin(value = "0.0", inclusive = false, message = "El precio base debe ser mayor a 0")
     private BigDecimal precioBase;
 

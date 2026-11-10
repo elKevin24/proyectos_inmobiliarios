@@ -255,7 +255,7 @@ public class ClienteService {
             throw ClienteException.tieneApartadosVigentes();
         }
 
-        cliente.setDeleted(true);
+        cliente.softDelete();
         clienteRepository.save(cliente);
 
         log.info("Cliente {} eliminado exitosamente", id);

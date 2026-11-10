@@ -3,11 +3,11 @@ package com.inmobiliaria.terrenos.domain.entity;
 import com.inmobiliaria.terrenos.domain.enums.EstadoAmortizacion;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para Amortización (Cuota)
@@ -21,16 +21,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @SQLRestriction("deleted = false")
-public class Amortizacion {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+public class Amortizacion extends TenantBaseEntity {
 
     @Column(name = "plan_pago_id", nullable = false)
     private Long planPagoId;
@@ -88,30 +81,11 @@ public class Amortizacion {
     @Column(columnDefinition = "TEXT")
     private String notas;
 
-    // Auditoría
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private Boolean deleted = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-
+    protected void onAmortizacionCreate() {
         // Inicializar monto pendiente
         if (montoPendiente == null) {
             montoPendiente = montoCuota;
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
     }
 }

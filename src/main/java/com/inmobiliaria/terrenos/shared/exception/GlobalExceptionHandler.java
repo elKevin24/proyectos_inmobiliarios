@@ -96,129 +96,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Maneja excepciones de Clientes.
-     */
-    @ExceptionHandler(ClienteException.class)
-    public ResponseEntity<ErrorResponse> handleClienteException(
-            ClienteException ex, WebRequest request) {
-        return buildModuleError(ex, "Cliente", request);
-    }
-
-    /**
-     * Maneja excepciones de Ventas.
-     */
-    @ExceptionHandler(VentaException.class)
-    public ResponseEntity<ErrorResponse> handleVentaException(
-            VentaException ex, WebRequest request) {
-        return buildModuleError(ex, "Venta", request);
-    }
-
-    /**
-     * Maneja excepciones de Pagos.
-     */
-    @ExceptionHandler(PagoException.class)
-    public ResponseEntity<ErrorResponse> handlePagoException(
-            PagoException ex, WebRequest request) {
-        return buildModuleError(ex, "Pago", request);
-    }
-
-    /**
-     * Maneja excepciones de Proyectos.
-     */
-    @ExceptionHandler(ProyectoException.class)
-    public ResponseEntity<ErrorResponse> handleProyectoException(
-            ProyectoException ex, WebRequest request) {
-        return buildModuleError(ex, "Proyecto", request);
-    }
-
-    /**
-     * Maneja excepciones de Terrenos.
-     */
-    @ExceptionHandler(TerrenoException.class)
-    public ResponseEntity<ErrorResponse> handleTerrenoException(
-            TerrenoException ex, WebRequest request) {
-        return buildModuleError(ex, "Terreno", request);
-    }
-
-    /**
-     * Maneja excepciones de Apartados.
-     */
-    @ExceptionHandler(ApartadoException.class)
-    public ResponseEntity<ErrorResponse> handleApartadoException(
-            ApartadoException ex, WebRequest request) {
-        return buildModuleError(ex, "Apartado", request);
-    }
-
-    /**
-     * Maneja excepciones de Fases.
-     */
-    @ExceptionHandler(FaseException.class)
-    public ResponseEntity<ErrorResponse> handleFaseException(
-            FaseException ex, WebRequest request) {
-        return buildModuleError(ex, "Fase", request);
-    }
-
-    /**
-     * Maneja excepciones de Cotizaciones.
-     */
-    @ExceptionHandler(CotizacionException.class)
-    public ResponseEntity<ErrorResponse> handleCotizacionException(
-            CotizacionException ex, WebRequest request) {
-        return buildModuleError(ex, "Cotizacion", request);
-    }
-
-    /**
-     * Maneja excepciones de Archivos.
-     */
-    @ExceptionHandler(ArchivoException.class)
-    public ResponseEntity<ErrorResponse> handleArchivoException(
-            ArchivoException ex, WebRequest request) {
-        return buildModuleError(ex, "Archivo", request);
-    }
-
-    /**
-     * Maneja excepciones de Autenticación.
-     */
-    @ExceptionHandler(AuthException.class)
-    public ResponseEntity<ErrorResponse> handleAuthException(
-            AuthException ex, WebRequest request) {
-        return buildModuleError(ex, "Auth", request);
-    }
-
-    /**
-     * Maneja excepciones de Planos.
-     */
-    @ExceptionHandler(PlanoException.class)
-    public ResponseEntity<ErrorResponse> handlePlanoException(
-            PlanoException ex, WebRequest request) {
-        return buildModuleError(ex, "Plano", request);
-    }
-
-    /**
-     * Maneja excepciones de Auditoría.
-     */
-    @ExceptionHandler(AuditException.class)
-    public ResponseEntity<ErrorResponse> handleAuditException(
-            AuditException ex, WebRequest request) {
-        return buildModuleError(ex, "Audit", request);
-    }
-
-    /**
-     * Maneja excepciones de Reportes.
-     */
-    @ExceptionHandler(ReporteException.class)
-    public ResponseEntity<ErrorResponse> handleReporteException(
-            ReporteException ex, WebRequest request) {
-        return buildModuleError(ex, "Reporte", request);
-    }
-
-    /**
-     * Maneja excepciones de lógica de negocio genéricas.
+     * Maneja excepciones de lógica de negocio y subclases de módulo de forma polimórfica (OCP & LSP).
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex, WebRequest request) {
-        return buildModuleError(ex, "Business", request);
+        String module = ex.getModuleName();
+        if (module == null || "Business".equals(module)) {
+            String className = ex.getClass().getSimpleName();
+            if (className.endsWith("Exception") && !className.equals("BusinessException")) {
+                module = className.substring(0, className.length() - "Exception".length());
+            }
+        }
+        return buildModuleError(ex, module, request);
     }
 
     private ResponseEntity<ErrorResponse> buildModuleError(

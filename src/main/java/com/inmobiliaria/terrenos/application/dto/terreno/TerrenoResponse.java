@@ -76,4 +76,43 @@ public class TerrenoResponse {
         }
         return String.format("Lt %s", numeroLote);
     }
+
+    public String getNumero() {
+        return numeroLote;
+    }
+
+    public String getCaracteristicas() {
+        if (caracteristicas != null && !caracteristicas.isBlank()) {
+            String trimmed = caracteristicas.trim();
+            if (trimmed.startsWith("\"") && trimmed.endsWith("\"") && trimmed.length() >= 2) {
+                return trimmed.substring(1, trimmed.length() - 1);
+            }
+        }
+        return caracteristicas;
+    }
+
+    public String getNombre() {
+        if (caracteristicas != null && !caracteristicas.isBlank()) {
+            String trimmed = caracteristicas.trim();
+            if (trimmed.startsWith("\"") && trimmed.endsWith("\"") && trimmed.length() >= 2) {
+                return trimmed.substring(1, trimmed.length() - 1);
+            }
+            if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+                return trimmed;
+            }
+        }
+        return "Lote " + (numeroLote != null ? numeroLote : "");
+    }
+
+    public String getDescripcion() {
+        return observaciones;
+    }
+
+    public BigDecimal getAjustePrecio() {
+        return precioAjuste;
+    }
+
+    public BigDecimal getMultiplicadorPrecio() {
+        return precioMultiplicador;
+    }
 }

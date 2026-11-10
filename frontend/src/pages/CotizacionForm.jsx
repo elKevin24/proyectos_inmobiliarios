@@ -127,7 +127,7 @@ const CotizacionForm = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="cotizacion-form">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="cotizacion-form">
         {/* Información del Terreno */}
         <div className="form-section">
           <h3>Información del Terreno</h3>

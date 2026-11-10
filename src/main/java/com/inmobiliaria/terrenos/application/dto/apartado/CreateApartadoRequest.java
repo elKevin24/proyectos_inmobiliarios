@@ -1,5 +1,6 @@
 package com.inmobiliaria.terrenos.application.dto.apartado;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * DTO para crear un nuevo apartado
@@ -25,7 +27,8 @@ public class CreateApartadoRequest {
 
     private Long cotizacionId;
 
-    @NotBlank(message = "El nombre del cliente es obligatorio")
+    private Long clienteId;
+
     @Size(max = 200, message = "El nombre no puede exceder 200 caracteres")
     private String clienteNombre;
 
@@ -43,15 +46,18 @@ public class CreateApartadoRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "El monto debe ser mayor a 0")
     private BigDecimal montoApartado;
 
-    @NotNull(message = "El precio total es obligatorio")
     @DecimalMin(value = "0.0", inclusive = false, message = "El precio total debe ser mayor a 0")
     private BigDecimal precioTotal;
 
-    @NotNull(message = "La duración es obligatoria")
     @Min(value = 1, message = "La duración debe ser al menos 1 día")
     @Max(value = 365, message = "La duración no puede exceder 365 días")
     private Integer duracionDias;
 
+    private LocalDate fechaApartado;
+
+    private LocalDate fechaVencimiento;
+
+    @JsonAlias("notas")
     @Size(max = 1000, message = "Las observaciones no pueden exceder 1000 caracteres")
     private String observaciones;
 }

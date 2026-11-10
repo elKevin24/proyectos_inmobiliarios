@@ -2,40 +2,53 @@ import { create } from 'zustand';
 import authService from '../services/authService';
 import { jwtDecode } from 'jwt-decode';
 
+/**
+ * Helper sincrónico para inicializar el estado de autenticación desde localStorage
+ */
+export const getInitialAuthState = () => {
+  try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    if (token) {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
+      if (decoded && decoded.exp > currentTime) {
+        return {
+          isAuthenticated: true,
+          user: {
+            email: decoded.sub,
+            tenantId: decoded.tenant_id,
+            roles: decoded.roles || [],
+          },
+        };
+      } else {
+        // Token expirado
+        authService.logout();
+      }
+    }
+  } catch (error) {
+    console.error('Error decoding initial auth token:', error);
+    authService.logout();
+  }
+
+  return {
+    isAuthenticated: false,
+    user: null,
+  };
+};
+
+const initialAuth = getInitialAuthState();
+
 const useAuthStore = create((set) => ({
-  user: null,
-  isAuthenticated: false,
+  user: initialAuth.user,
+  isAuthenticated: initialAuth.isAuthenticated,
   isLoading: false,
   error: null,
 
   // Inicializar el estado desde localStorage
   initialize: () => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
-
-        if (decoded.exp > currentTime) {
-          set({
-            isAuthenticated: true,
-            user: {
-              email: decoded.sub,
-              tenantId: decoded.tenant_id,
-              roles: decoded.roles || [],
-            }
-          });
-        } else {
-          // Token expirado
-          authService.logout();
-          set({ isAuthenticated: false, user: null });
-        }
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        authService.logout();
-        set({ isAuthenticated: false, user: null });
-      }
-    }
+    const state = getInitialAuthState();
+    set(state);
   },
 
   // Login

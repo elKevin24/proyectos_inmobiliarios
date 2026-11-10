@@ -47,8 +47,8 @@ function TerrenosList() {
   };
 
   const filteredTerrenos = terrenos.filter(terreno =>
-    terreno.nombre?.toLowerCase().includes(filter.toLowerCase()) ||
-    terreno.numero?.toLowerCase().includes(filter.toLowerCase())
+    (terreno.nombre || terreno.caracteristicas)?.toLowerCase().includes(filter.toLowerCase()) ||
+    (terreno.numero || terreno.numeroLote)?.toLowerCase().includes(filter.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredTerrenos.length / ITEMS_PER_PAGE);
@@ -140,7 +140,7 @@ function TerrenosList() {
               paginatedTerrenos.map((terreno) => (
                 <div key={terreno.id} className="terreno-card">
                   <div className="terreno-header">
-                    <h3>{terreno.nombre || `Lote ${terreno.numero}`}</h3>
+                    <h3>{terreno.nombre || terreno.caracteristicas || `Lote ${terreno.numero || terreno.numeroLote}`}</h3>
                     <span className={`badge ${getEstadoBadge(terreno.estado)}`}>
                       {terreno.estado}
                     </span>
@@ -149,7 +149,7 @@ function TerrenosList() {
                   <div className="terreno-info">
                     <div className="info-row">
                       <span className="label">Número:</span>
-                      <span className="value">{terreno.numero}</span>
+                      <span className="value">{terreno.numero || terreno.numeroLote}</span>
                     </div>
                     <div className="info-row">
                       <span className="label">Área:</span>
@@ -183,7 +183,7 @@ function TerrenosList() {
                       <FaEdit />
                     </Link>
                     <button
-                      onClick={() => handleDelete(terreno.id, terreno.nombre || terreno.numero)}
+                      onClick={() => handleDelete(terreno.id, terreno.nombre || terreno.numero || terreno.numeroLote)}
                       className="btn-icon btn-danger"
                       title="Eliminar"
                     >

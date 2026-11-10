@@ -3,6 +3,8 @@ package com.inmobiliaria.terrenos.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import lombok.experimental.SuperBuilder;
+
 /**
  * Entidad Permiso del sistema.
  * Define acciones granulares que pueden realizar los usuarios.
@@ -18,7 +20,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Permiso extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 100)
