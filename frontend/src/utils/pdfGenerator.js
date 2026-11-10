@@ -395,16 +395,16 @@ export const generarReporteVentas = (ventas, titulo = 'Reporte de Ventas') => {
   // Subtítulo
   doc.setTextColor(...COLORS.gray);
   doc.setFontSize(10);
-  const montoTotal = ventas.reduce((sum, v) => sum + Number(v.montoTotal || 0), 0);
+  const montoTotal = ventas.reduce((sum, v) => sum + Number(v.montoTotal ?? v.precioTotal ?? 0), 0);
   doc.text(`Generado: ${formatDate(new Date())} | Total: ${ventas.length} ventas | Monto: ${formatCurrency(montoTotal)}`, 14, 35);
 
   // Tabla
   const data = ventas.map(v => [
     v.id,
-    formatDateShort(v.fechaVenta),
-    v.compradorNombre,
-    v.terrenoNumeroLote,
-    formatCurrency(v.montoTotal),
+    formatDateShort(v.fechaVenta || v.createdAt),
+    v.compradorNombre || v.clienteNombre || 'N/A',
+    v.terrenoNumeroLote || v.terrenoNumero || 'N/A',
+    formatCurrency(v.montoTotal ?? v.precioTotal ?? 0),
     v.estado
   ]);
 

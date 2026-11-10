@@ -28,6 +28,7 @@ public class CotizacionResponse {
     private String terrenoManzana;
     private Long proyectoId;
     private String proyectoNombre;
+    private Long clienteId;
     private String clienteNombre;
     private String clienteEmail;
     private String clienteTelefono;

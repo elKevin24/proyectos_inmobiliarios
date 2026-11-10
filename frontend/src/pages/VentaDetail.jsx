@@ -55,13 +55,23 @@ function VentaDetail() {
   };
 
   const getEstadoBadge = (estado) => {
+    const estadoKey = estado?.toUpperCase();
     const badges = {
       PENDIENTE: 'badge-pendiente',
       PAGADO: 'badge-pagado',
       CANCELADO: 'badge-cancelado',
       CANCELADA: 'badge-cancelado',
     };
-    return badges[estado] || 'badge-default';
+    return badges[estadoKey] || 'badge-default';
+  };
+
+  const formatCurrency = (amount) => {
+    const num = Number(amount);
+    const validAmount = isNaN(num) ? 0 : num;
+    return `$${validAmount.toLocaleString('es-MX', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
   };
 
   const formatDate = (dateString) => {
@@ -74,8 +84,14 @@ function VentaDetail() {
     });
   };
 
-  const totalPagado = pagos.reduce((sum, pago) => sum + Number(pago.monto || 0), 0);
-  const saldoPendiente = selectedVenta ? Number(selectedVenta.montoTotal ?? selectedVenta.precioTotal ?? 0) - totalPagado : 0;
+  const totalPagado = pagos.reduce((sum, pago) => {
+    const monto = Number(pago.monto);
+    return sum + (isNaN(monto) ? 0 : monto);
+  }, 0);
+
+  const rawMontoTotal = Number(selectedVenta ? (selectedVenta.montoTotal ?? selectedVenta.precioTotal) : 0);
+  const montoTotalNum = isNaN(rawMontoTotal) ? 0 : rawMontoTotal;
+  const saldoPendiente = Math.max(0, montoTotalNum - totalPagado);
 
   if (isLoading) {
     return (
@@ -130,7 +146,7 @@ function VentaDetail() {
               </div>
               <div className="info-card">
                 <span className="info-label">Fecha de Venta</span>
-                <span className="info-value">{formatDate(selectedVenta.fechaVenta)}</span>
+                <span className="info-value">{formatDate(selectedVenta.fechaVenta || selectedVenta.createdAt)}</span>
               </div>
               <div className="info-card">
                 <span className="info-label">Cliente</span>
@@ -138,7 +154,13 @@ function VentaDetail() {
               </div>
               <div className="info-card">
                 <span className="info-label">Terreno</span>
-                <span className="info-value">Lote {selectedVenta.terrenoNumero || selectedVenta.terrenoNumeroLote || 'N/A'}</span>
+                <span className="info-value">
+                  {selectedVenta.terrenoIdentificador || (selectedVenta.terrenoManzana
+                    ? `Mz ${selectedVenta.terrenoManzana} Lt ${selectedVenta.terrenoNumeroLote || selectedVenta.terrenoNumero}`
+                    : (selectedVenta.terrenoNumeroLote || selectedVenta.terrenoNumero
+                        ? `Lote ${selectedVenta.terrenoNumeroLote || selectedVenta.terrenoNumero}`
+                        : (selectedVenta.terrenoId ? `ID: ${selectedVenta.terrenoId}` : 'N/A')))}
+                </span>
               </div>
             </div>
           </div>
@@ -149,25 +171,19 @@ function VentaDetail() {
               <div className="info-card">
                 <span className="info-label">Monto Total</span>
                 <span className="info-value">
-                  ${Number(selectedVenta.montoTotal ?? selectedVenta.precioTotal ?? 0).toLocaleString('es-MX', {
-                    minimumFractionDigits: 2
-                  })}
+                  {formatCurrency(selectedVenta.montoTotal ?? selectedVenta.precioTotal)}
                 </span>
               </div>
               <div className="info-card">
                 <span className="info-label">Enganche</span>
                 <span className="info-value">
-                  ${Number(selectedVenta.enganche ?? selectedVenta.montoApartadoAcreditado ?? 0).toLocaleString('es-MX', {
-                    minimumFractionDigits: 2
-                  })}
+                  {formatCurrency(selectedVenta.enganche ?? selectedVenta.montoApartadoAcreditado)}
                 </span>
               </div>
               <div className="info-card">
                 <span className="info-label">Monto Financiado</span>
                 <span className="info-value">
-                  ${Number(selectedVenta.montoFinanciado ?? selectedVenta.montoFinal ?? 0).toLocaleString('es-MX', {
-                    minimumFractionDigits: 2
-                  })}
+                  {formatCurrency(selectedVenta.montoFinanciado ?? selectedVenta.montoFinal)}
                 </span>
               </div>
               <div className="info-card">
@@ -209,11 +225,11 @@ function VentaDetail() {
             <div className="pagos-summary">
               <div className="summary-item">
                 <span className="label">Total Pagado:</span>
-                <span className="value pagado">${totalPagado.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                <span className="value pagado">{formatCurrency(totalPagado)}</span>
               </div>
               <div className="summary-item">
                 <span className="label">Saldo Pendiente:</span>
-                <span className="value pendiente">${saldoPendiente.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                <span className="value pendiente">{formatCurrency(saldoPendiente)}</span>
               </div>
             </div>
 
@@ -244,9 +260,7 @@ function VentaDetail() {
                     <tr key={pago.id}>
                       <td>{formatDate(pago.fechaPago)}</td>
                       <td className="monto">
-                        ${Number(pago.monto).toLocaleString('es-MX', {
-                          minimumFractionDigits: 2
-                        })}
+                        {formatCurrency(pago.monto)}
                       </td>
                       <td>{pago.metodoPago}</td>
                       <td>{pago.referencia || '-'}</td>

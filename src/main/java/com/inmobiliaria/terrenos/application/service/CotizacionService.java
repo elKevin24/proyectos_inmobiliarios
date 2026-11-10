@@ -2,8 +2,10 @@ package com.inmobiliaria.terrenos.application.service;
 
 import com.inmobiliaria.terrenos.application.dto.cotizacion.CotizacionResponse;
 import com.inmobiliaria.terrenos.application.dto.cotizacion.CreateCotizacionRequest;
+import com.inmobiliaria.terrenos.domain.entity.Cliente;
 import com.inmobiliaria.terrenos.domain.entity.Cotizacion;
 import com.inmobiliaria.terrenos.domain.entity.Terreno;
+import com.inmobiliaria.terrenos.domain.repository.ClienteRepository;
 import com.inmobiliaria.terrenos.domain.repository.CotizacionRepository;
 import com.inmobiliaria.terrenos.domain.repository.ProyectoRepository;
 import com.inmobiliaria.terrenos.domain.repository.TerrenoRepository;
@@ -41,6 +43,9 @@ public class CotizacionService {
 
     @Autowired(required = false)
     private ProyectoRepository proyectoRepository;
+
+    @Autowired(required = false)
+    private ClienteRepository clienteRepository;
 
     @Transactional(readOnly = true)
     public PagedResponse<CotizacionResponse> listarCotizacionesPaginado(Pageable pageable) {
@@ -110,8 +115,27 @@ public class CotizacionService {
         Terreno terreno = terrenoRepository.findByIdAndTenantIdAndDeletedFalse(request.getTerrenoId(), tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Terreno no encontrado con id: " + request.getTerrenoId()));
 
+        // Resolver datos del cliente si se envió clienteId y falta clienteNombre
+        if ((request.getClienteNombre() == null || request.getClienteNombre().isBlank())
+                && request.getClienteId() != null && clienteRepository != null) {
+            Cliente cliente = clienteRepository.findByIdAndTenantIdAndDeletedFalse(request.getClienteId(), tenantId)
+                    .orElse(null);
+            if (cliente != null) {
+                request.setClienteNombre(cliente.getNombreCompleto());
+                if (request.getClienteEmail() == null) {
+                    request.setClienteEmail(cliente.getEmail());
+                }
+                if (request.getClienteTelefono() == null) {
+                    request.setClienteTelefono(cliente.getTelefono());
+                }
+            }
+        }
+
         Cotizacion cotizacion = cotizacionMapper.toEntity(request);
         cotizacion.setTenantId(tenantId);
+        if (cotizacion.getClienteId() == null && request.getClienteId() != null) {
+            cotizacion.setClienteId(request.getClienteId());
+        }
 
         Cotizacion cotizacionGuardada = cotizacionRepository.save(cotizacion);
         log.info("Cotización creada con id: {}", cotizacionGuardada.getId());

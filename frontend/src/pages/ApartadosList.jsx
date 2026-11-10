@@ -22,6 +22,7 @@ const ApartadosList = () => {
   };
 
   const getEstadoBadgeClass = (estado) => {
+    const estadoKey = estado?.toUpperCase();
     const classes = {
       ACTIVO: 'badge-success',
       VIGENTE: 'badge-success',
@@ -30,10 +31,11 @@ const ApartadosList = () => {
       CONVERTIDO_A_VENTA: 'badge-info',
       CANCELADO: 'badge-warning'
     };
-    return classes[estado] || 'badge-secondary';
+    return classes[estadoKey] || 'badge-secondary';
   };
 
   const getEstadoLabel = (estado) => {
+    const estadoKey = estado?.toUpperCase();
     const labels = {
       ACTIVO: 'Vigente',
       VIGENTE: 'Vigente',
@@ -42,14 +44,18 @@ const ApartadosList = () => {
       CONVERTIDO_A_VENTA: 'Convertido a Venta',
       CANCELADO: 'Cancelado'
     };
-    return labels[estado] || estado;
+    return labels[estadoKey] || estado;
   };
 
+  const puedeConvertir = (estado) => ['ACTIVO', 'VIGENTE'].includes(estado?.toUpperCase());
+  const puedeCancelar = (estado) => ['ACTIVO', 'VIGENTE', 'VENCIDO'].includes(estado?.toUpperCase()) && !['COMPLETADO', 'CONVERTIDO_A_VENTA', 'CANCELADO'].includes(estado?.toUpperCase());
+
   const formatCurrency = (amount) => {
+    const num = Number(amount);
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
-    }).format(amount);
+    }).format(isNaN(num) ? 0 : num);
   };
 
   const formatDate = (dateString) => {
@@ -58,7 +64,8 @@ const ApartadosList = () => {
   };
 
   const getDiasRestantes = (fechaVencimiento, estado) => {
-    if (estado !== 'ACTIVO' && estado !== 'VIGENTE') return '-';
+    const estadoKey = estado?.toUpperCase();
+    if (estadoKey !== 'ACTIVO' && estadoKey !== 'VIGENTE') return '-';
     const hoy = new Date();
     const vencimiento = new Date(fechaVencimiento);
     const diffTime = vencimiento - hoy;
@@ -188,6 +195,22 @@ const ApartadosList = () => {
                       >
                         👁️
                       </button>
+                      {puedeConvertir(apartado.estado) && (
+                        <button
+                          className="btn-icon"
+                          onClick={() => navigate('/ventas/nueva', {
+                            state: {
+                              apartadoId: apartado.id,
+                              terrenoId: apartado.terrenoId,
+                              clienteId: apartado.clienteId,
+                              montoApartado: apartado.montoApartado
+                            }
+                          })}
+                          title="Convertir a Venta"
+                        >
+                          🔄
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -207,19 +230,19 @@ const ApartadosList = () => {
           <div className="summary-card">
             <span className="summary-label">Vigentes:</span>
             <span className="summary-value">
-              {apartados.filter(a => a.estado === 'ACTIVO' || a.estado === 'VIGENTE').length}
+              {apartados.filter(a => ['ACTIVO', 'VIGENTE'].includes(a.estado?.toUpperCase())).length}
             </span>
           </div>
           <div className="summary-card">
             <span className="summary-label">Vencidos:</span>
             <span className="summary-value">
-              {apartados.filter(a => a.estado === 'VENCIDO').length}
+              {apartados.filter(a => a.estado?.toUpperCase() === 'VENCIDO').length}
             </span>
           </div>
           <div className="summary-card">
             <span className="summary-label">Convertidos:</span>
             <span className="summary-value">
-              {apartados.filter(a => a.estado === 'COMPLETADO' || a.estado === 'CONVERTIDO_A_VENTA').length}
+              {apartados.filter(a => ['COMPLETADO', 'CONVERTIDO_A_VENTA'].includes(a.estado?.toUpperCase())).length}
             </span>
           </div>
         </div>

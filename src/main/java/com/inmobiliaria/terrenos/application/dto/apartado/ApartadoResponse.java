@@ -31,6 +31,7 @@ public class ApartadoResponse {
     private Long proyectoId;
     private String proyectoNombre;
     private Long cotizacionId;
+    private Long clienteId;
     private String clienteNombre;
     private String clienteEmail;
     private String clienteTelefono;

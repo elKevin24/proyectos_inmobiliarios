@@ -33,13 +33,23 @@ function VentasList() {
   };
 
   const getEstadoBadge = (estado) => {
+    const estadoKey = estado?.toUpperCase();
     const badges = {
       PENDIENTE: 'badge-pendiente',
       PAGADO: 'badge-pagado',
       CANCELADO: 'badge-cancelado',
       CANCELADA: 'badge-cancelado',
     };
-    return badges[estado] || 'badge-default';
+    return badges[estadoKey] || 'badge-default';
+  };
+
+  const formatCurrency = (amount) => {
+    const num = Number(amount);
+    const validAmount = isNaN(num) ? 0 : num;
+    return `$${validAmount.toLocaleString('es-MX', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
   };
 
   const formatDate = (dateString) => {
@@ -121,20 +131,20 @@ function VentasList() {
                   {paginatedVentas.map((venta) => (
                     <tr key={venta.id}>
                       <td>#{venta.id}</td>
-                      <td>{formatDate(venta.fechaVenta)}</td>
+                      <td>{formatDate(venta.fechaVenta || venta.createdAt)}</td>
                       <td>{venta.clienteNombre || venta.compradorNombre || 'N/A'}</td>
-                      <td>{venta.terrenoNumeroLote || venta.terrenoNumero || 'N/A'}</td>
-                      <td className="monto">
-                        ${Number(venta.montoTotal ?? venta.precioTotal ?? 0).toLocaleString('es-MX', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })}
+                      <td>
+                        {venta.terrenoIdentificador || (venta.terrenoManzana
+                          ? `Mz ${venta.terrenoManzana} Lt ${venta.terrenoNumeroLote || venta.terrenoNumero}`
+                          : (venta.terrenoNumeroLote || venta.terrenoNumero
+                              ? `Lt ${venta.terrenoNumeroLote || venta.terrenoNumero}`
+                              : (venta.terrenoId ? `ID: ${venta.terrenoId}` : 'N/A')))}
                       </td>
                       <td className="monto">
-                        ${Number(venta.enganche ?? venta.montoApartadoAcreditado ?? 0).toLocaleString('es-MX', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })}
+                        {formatCurrency(venta.montoTotal ?? venta.precioTotal)}
+                      </td>
+                      <td className="monto">
+                        {formatCurrency(venta.enganche ?? venta.montoApartadoAcreditado)}
                       </td>
                       <td>
                         <span className={`badge ${getEstadoBadge(venta.estado)}`}>

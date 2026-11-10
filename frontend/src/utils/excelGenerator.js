@@ -94,18 +94,18 @@ export const exportarClientesExcel = (clientes) => {
 export const exportarVentasExcel = (ventas) => {
   const data = ventas.map(v => ({
     'ID': v.id,
-    'Fecha Venta': formatDate(v.fechaVenta),
-    'Comprador': v.compradorNombre,
-    'Teléfono': v.compradorTelefono || '',
-    'Email': v.compradorEmail || '',
-    'Terreno': v.terrenoNumeroLote,
+    'Fecha Venta': formatDate(v.fechaVenta || v.createdAt),
+    'Comprador': v.compradorNombre || v.clienteNombre || '',
+    'Teléfono': v.compradorTelefono || v.clienteTelefono || '',
+    'Email': v.compradorEmail || v.clienteEmail || '',
+    'Terreno': v.terrenoIdentificador || v.terrenoNumeroLote || v.terrenoNumero || '',
     'Proyecto': v.proyectoNombre || '',
-    'Monto Total': formatCurrency(v.montoTotal),
+    'Monto Total': formatCurrency(v.montoTotal ?? v.precioTotal ?? 0),
     'Enganche': formatCurrency(v.enganche || v.montoApartadoAcreditado || 0),
-    'Monto Final': formatCurrency(v.montoFinal || v.montoTotal),
+    'Monto Final': formatCurrency(v.montoFinal || v.montoFinanciado || v.montoTotal || v.precioTotal || 0),
     'Comisión (%)': v.porcentajeComision || 0,
     'Monto Comisión': formatCurrency(v.montoComision || 0),
-    'Forma de Pago': v.formaPago || '',
+    'Forma de Pago': v.formaPago || v.metodoPago || '',
     'Estado': v.estado,
     'Vendedor': v.usuarioNombre || ''
   }));

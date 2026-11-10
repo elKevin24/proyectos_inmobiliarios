@@ -23,10 +23,11 @@ const ApartadoDetail = () => {
   }, [id]);
 
   const formatCurrency = (amount) => {
+    const num = Number(amount);
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
-    }).format(amount);
+    }).format(isNaN(num) ? 0 : num);
   };
 
   const formatDate = (dateString) => {
@@ -39,6 +40,7 @@ const ApartadoDetail = () => {
   };
 
   const getEstadoBadgeClass = (estado) => {
+    const estadoKey = estado?.toUpperCase();
     const classes = {
       ACTIVO: 'badge-success',
       VIGENTE: 'badge-success',
@@ -47,10 +49,11 @@ const ApartadoDetail = () => {
       CONVERTIDO_A_VENTA: 'badge-info',
       CANCELADO: 'badge-warning'
     };
-    return classes[estado] || 'badge-secondary';
+    return classes[estadoKey] || 'badge-secondary';
   };
 
   const getEstadoLabel = (estado) => {
+    const estadoKey = estado?.toUpperCase();
     const labels = {
       ACTIVO: 'Vigente',
       VIGENTE: 'Vigente',
@@ -59,7 +62,7 @@ const ApartadoDetail = () => {
       CONVERTIDO_A_VENTA: 'Convertido a Venta',
       CANCELADO: 'Cancelado'
     };
-    return labels[estado] || estado;
+    return labels[estadoKey] || estado;
   };
 
   const getDiasRestantes = (fechaVencimiento) => {
@@ -128,9 +131,10 @@ const ApartadoDetail = () => {
     );
   }
 
+  const estadoNormalizado = selectedApartado.estado?.toUpperCase();
   const diasRestantes = getDiasRestantes(selectedApartado.fechaVencimiento);
-  const puedeConvertir = ['ACTIVO', 'VIGENTE'].includes(selectedApartado.estado);
-  const puedeCancelar = ['ACTIVO', 'VIGENTE', 'VENCIDO'].includes(selectedApartado.estado);
+  const puedeConvertir = ['ACTIVO', 'VIGENTE'].includes(estadoNormalizado);
+  const puedeCancelar = ['ACTIVO', 'VIGENTE', 'VENCIDO'].includes(estadoNormalizado) && !['COMPLETADO', 'CONVERTIDO_A_VENTA', 'CANCELADO'].includes(estadoNormalizado);
 
   return (
     <div className="detail-container">
@@ -145,13 +149,13 @@ const ApartadoDetail = () => {
       </div>
 
       {/* Alerta de vencimiento */}
-      {['ACTIVO', 'VIGENTE'].includes(selectedApartado.estado) && diasRestantes <= 7 && diasRestantes > 0 && (
+      {['ACTIVO', 'VIGENTE'].includes(estadoNormalizado) && diasRestantes <= 7 && diasRestantes > 0 && (
         <div className="alert alert-warning">
           ⚠️ Este apartado vence en {diasRestantes} día{diasRestantes !== 1 ? 's' : ''}
         </div>
       )}
 
-      {selectedApartado.estado === 'VENCIDO' && (
+      {estadoNormalizado === 'VENCIDO' && (
         <div className="alert alert-danger">
           ⚠️ Este apartado ha vencido
         </div>
@@ -181,7 +185,7 @@ const ApartadoDetail = () => {
             <label>Días de Vigencia:</label>
             <span>{selectedApartado.diasVigencia ?? selectedApartado.duracionDias ?? 0} días</span>
           </div>
-          {['ACTIVO', 'VIGENTE'].includes(selectedApartado.estado) && (
+          {['ACTIVO', 'VIGENTE'].includes(estadoNormalizado) && (
             <div className="info-item">
               <label>Días Restantes:</label>
               <span className={diasRestantes <= 7 ? 'text-danger' : ''}>
@@ -216,10 +220,10 @@ const ApartadoDetail = () => {
       )}
 
       {/* Motivo de Cancelación */}
-      {selectedApartado.estado === 'CANCELADO' && selectedApartado.motivo && (
+      {estadoNormalizado === 'CANCELADO' && (selectedApartado.motivo || selectedApartado.observaciones) && (
         <div className="info-section">
           <h2>Motivo de Cancelación</h2>
-          <p className="observaciones-text">{selectedApartado.motivo}</p>
+          <p className="observaciones-text">{selectedApartado.motivo || selectedApartado.observaciones}</p>
         </div>
       )}
 

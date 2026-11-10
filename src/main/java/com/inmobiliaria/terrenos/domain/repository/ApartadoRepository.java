@@ -59,9 +59,14 @@ public interface ApartadoRepository extends JpaRepository<Apartado, Long> {
      */
     @Query("SELECT a FROM Apartado a LEFT JOIN Cliente c ON a.clienteId = c.id " +
            "WHERE a.tenantId = :tenantId " +
-           "AND (LOWER(a.clienteNombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
-           "OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
-           "OR LOWER(c.apellido) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+           "AND (" +
+           "  (a.clienteNombre IS NOT NULL AND LOWER(a.clienteNombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+           "  OR (c.id IS NOT NULL AND (" +
+           "      LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+           "      OR LOWER(c.apellido) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+           "      OR LOWER(CONCAT(c.nombre, ' ', c.apellido)) LIKE LOWER(CONCAT('%', :nombre, '%'))" +
+           "  ))" +
+           ") " +
            "AND a.deleted = false " +
            "ORDER BY a.createdAt DESC")
     List<Apartado> findByClienteNombre(@Param("tenantId") Long tenantId, @Param("nombre") String nombre);

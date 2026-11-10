@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class PlanPagoControllerTest {
+public class PlanPagoControllerTest {
 
     private MockMvc mockMvc;
     private PagoService pagoService;

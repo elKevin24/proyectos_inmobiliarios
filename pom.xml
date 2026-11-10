@@ -62,6 +62,12 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Micrometer Prometheus Registry para métricas Actuator -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- RestClient (RestTemplateBuilder moved from autoconfigure in Boot 4) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

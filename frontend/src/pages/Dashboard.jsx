@@ -37,11 +37,13 @@ function Dashboard() {
   };
 
   const formatCurrency = (amount) => {
+    const num = Number(amount);
+    const validAmount = isNaN(num) ? 0 : num;
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN',
       minimumFractionDigits: 0
-    }).format(amount);
+    }).format(validAmount);
   };
 
   if (loading) {
@@ -68,6 +70,8 @@ function Dashboard() {
     );
   }
 
+  const stats = dashboardData || {};
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -87,10 +91,10 @@ function Dashboard() {
         <div className="stats-grid">
           <StatCard
             title="Total Proyectos"
-            value={dashboardData?.totalProyectos || 0}
+            value={stats.totalProyectos || 0}
             icon={<FaBuilding />}
             color="blue"
-            subtitle={`${dashboardData?.proyectosActivos || 0} activos`}
+            subtitle={`${stats.proyectosActivos || 0} activos`}
           />
         </div>
       </div>
@@ -103,27 +107,27 @@ function Dashboard() {
         <div className="stats-grid">
           <StatCard
             title="Total Terrenos"
-            value={dashboardData?.totalTerrenos || 0}
+            value={stats.totalTerrenos || 0}
             icon={<FaMap />}
             color="blue"
           />
           <StatCard
             title="Disponibles"
-            value={dashboardData?.terrenosDisponibles || 0}
+            value={stats.terrenosDisponibles || 0}
             icon={<FaCheckCircle />}
             color="green"
             subtitle="Listos para venta"
           />
           <StatCard
             title="Apartados"
-            value={dashboardData?.terrenosApartados || 0}
+            value={stats.terrenosApartados || 0}
             icon={<FaBookmark />}
             color="orange"
             subtitle="En reserva"
           />
           <StatCard
             title="Vendidos"
-            value={dashboardData?.terrenosVendidos || 0}
+            value={stats.terrenosVendidos || 0}
             icon={<FaMoneyBillWave />}
             color="purple"
             subtitle="Transacciones completadas"
@@ -139,10 +143,10 @@ function Dashboard() {
         <div className="stats-grid">
           <StatCard
             title="Total Clientes"
-            value={dashboardData?.totalClientes || 0}
+            value={stats.totalClientes || 0}
             icon={<FaUsers />}
             color="teal"
-            subtitle={`${dashboardData?.clientesActivos || 0} activos`}
+            subtitle={`${stats.clientesActivos || 0} activos`}
           />
         </div>
       </div>
@@ -155,26 +159,26 @@ function Dashboard() {
         <div className="stats-grid">
           <StatCard
             title="Total Ventas"
-            value={dashboardData?.totalVentas || 0}
+            value={stats.totalVentas || 0}
             icon={<FaMoneyBillWave />}
             color="green"
-            subtitle={`${dashboardData?.ventasPagadas || 0} pagadas`}
+            subtitle={`${stats.ventasPagadas || 0} pagadas`}
           />
           <StatCard
             title="Monto Total Ventas"
-            value={formatCurrency(dashboardData?.montoTotalVentas || 0)}
+            value={formatCurrency(stats.montoTotalVentas || 0)}
             icon={<FaMoneyBillWave />}
             color="purple"
           />
           <StatCard
             title="Comisiones Generadas"
-            value={formatCurrency(dashboardData?.montoComisiones ?? dashboardData?.montoTotalComisiones ?? 0)}
+            value={formatCurrency(stats.montoTotalComisiones || stats.montoComisiones || 0)}
             icon={<FaChartLine />}
             color="blue"
           />
           <StatCard
             title="Avance de Ventas"
-            value={`${(dashboardData?.porcentajeAvanceVentas ?? dashboardData?.porcentajeOcupacion ?? 0).toFixed(1)}%`}
+            value={`${Number(stats.porcentajeOcupacion || stats.porcentajeAvanceVentas || 0).toFixed(1)}%`}
             icon={<FaChartLine />}
             color="green"
             subtitle="Del inventario total"
@@ -190,20 +194,20 @@ function Dashboard() {
         <div className="stats-grid">
           <StatCard
             title="Total Apartados"
-            value={dashboardData?.totalApartados || 0}
+            value={stats.totalApartados || 0}
             icon={<FaBookmark />}
             color="orange"
           />
           <StatCard
             title="Vigentes"
-            value={dashboardData?.apartadosVigentes || 0}
+            value={stats.apartadosVigentes || 0}
             icon={<FaCheckCircle />}
             color="green"
             subtitle="Activos"
           />
           <StatCard
             title="Vencidos"
-            value={dashboardData?.apartadosVencidos || 0}
+            value={stats.apartadosVencidos || 0}
             icon={<FaExclamationTriangle />}
             color="red"
             subtitle="Requieren atención"

@@ -24,6 +24,8 @@ public class CreateCotizacionRequest {
     @NotNull(message = "El terreno es obligatorio")
     private Long terrenoId;
 
+    private Long clienteId;
+
     @NotBlank(message = "El nombre del cliente es obligatorio")
     @Size(max = 200, message = "El nombre no puede exceder 200 caracteres")
     private String clienteNombre;

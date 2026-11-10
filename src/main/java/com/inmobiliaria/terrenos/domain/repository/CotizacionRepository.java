@@ -43,9 +43,14 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, Long> {
      */
     @Query("SELECT c FROM Cotizacion c LEFT JOIN Cliente cl ON c.clienteId = cl.id " +
            "WHERE c.tenantId = :tenantId " +
-           "AND (LOWER(c.clienteNombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
-           "OR LOWER(cl.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
-           "OR LOWER(cl.apellido) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+           "AND (" +
+           "  (c.clienteNombre IS NOT NULL AND LOWER(c.clienteNombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+           "  OR (cl.id IS NOT NULL AND (" +
+           "      LOWER(cl.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+           "      OR LOWER(cl.apellido) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+           "      OR LOWER(CONCAT(cl.nombre, ' ', cl.apellido)) LIKE LOWER(CONCAT('%', :nombre, '%'))" +
+           "  ))" +
+           ") " +
            "AND c.deleted = false " +
            "ORDER BY c.createdAt DESC")
     List<Cotizacion> findByClienteNombre(@Param("tenantId") Long tenantId, @Param("nombre") String nombre);
